@@ -1,1 +1,1 @@
-# webtime-cli
+# binocs-cli
