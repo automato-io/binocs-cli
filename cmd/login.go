@@ -2,12 +2,15 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
 
+	util "github.com/automato-io/binocs-cli/util"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
@@ -19,6 +22,11 @@ const (
 	configFile                  = "config.json"
 	jwtFile                     = "auth.json"
 )
+
+// AuthResponse comes from the API
+type AuthResponse struct {
+	AccessToken string `json:"access_token"`
+}
 
 func init() {
 	rootCmd.AddCommand(loginCmd)
@@ -60,14 +68,29 @@ var loginCmd = &cobra.Command{
 		}
 
 		resetConfigStorage(home)
-		configContent := []byte("{\"access_key_id\": \"" + accessKeyID + "\", \"secret_access_key\": \"" + secretAccessKey + "\"}")
-		err = ioutil.WriteFile(home+"/"+storageDir+"/"+configFile, configContent, 0600)
+		storeConfig(home, accessKeyID, secretAccessKey)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		// @todo do auth via api and obtain jwt
+		postData := []byte("{\"access_key_id\": \"" + accessKeyID + "\", \"secret_access_key\": \"" + secretAccessKey + "\"}")
+		respData, err := util.BinocsAPI2("/authenticate", http.MethodPost, postData)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var respJSON AuthResponse
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = storeAccessToken(home, &respJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
@@ -83,4 +106,14 @@ func resetConfigStorage(home string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func storeConfig(home, accessKeyID, secretAccessKey string) error {
+	configContent := []byte("{\"access_key_id\": \"" + accessKeyID + "\", \"secret_access_key\": \"" + secretAccessKey + "\"}")
+	return ioutil.WriteFile(home+"/"+storageDir+"/"+configFile, configContent, 0600)
+}
+
+func storeAccessToken(home string, d *AuthResponse) error {
+	authContent := []byte("{\"access_token\": \"" + d.AccessToken + "\"}")
+	return ioutil.WriteFile(home+"/"+storageDir+"/"+jwtFile, authContent, 0600)
 }

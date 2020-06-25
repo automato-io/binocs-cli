@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -9,10 +10,10 @@ import (
 	"time"
 )
 
-const apiURLBase = "https://binocs.sh/"
+const apiURLBase = "https://binocs.sh"
 
 // BinocsAPI is a gateway to the binocs REST API
-func BinocsAPI(path string, method string) (string, int16, error) {
+func BinocsAPI(path string, method string, data url.Values) (string, int16, error) {
 	url, err := url.Parse(apiURLBase + path)
 	if err != nil {
 		return "", 0, err
@@ -33,7 +34,13 @@ func BinocsAPI(path string, method string) (string, int16, error) {
 		Transport: transport,
 		Timeout:   time.Second * 30,
 	}
-	resp, err := client.Do(req)
+
+	var resp *http.Response
+	if method == http.MethodPost && len(data) > 0 {
+		resp, err = client.PostForm(url.String(), data)
+	} else {
+		resp, err = client.Do(req)
+	}
 	if err != nil {
 		return "", 0, err
 	}
@@ -47,10 +54,30 @@ func BinocsAPI(path string, method string) (string, int16, error) {
 
 func createRequest(url *url.URL, method string) (*http.Request, error) {
 	body := strings.NewReader("")
-	request, err := http.NewRequest(method, url.String(), body)
+	return http.NewRequest(method, url.String(), body)
+}
+
+// BinocsAPI2 is another gateway to the binocs REST API
+func BinocsAPI2(path, method string, data []byte) ([]byte, error) {
+	var err error
+	url, err := url.Parse(apiURLBase + path)
 	if err != nil {
-		// log.Printf("unable to create %s request for %s", method, url.String())
-		return nil, err
+		return []byte{}, err
 	}
-	return request, nil
+	req, err := http.NewRequest(method, url.String(), bytes.NewReader(data))
+	if err != nil {
+		return []byte{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, err
+	}
+	return respBody, nil
 }
