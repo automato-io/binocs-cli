@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -9,6 +10,9 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
+
+// Verbose flag
+var Verbose bool
 
 var cfgFile string
 
@@ -36,13 +40,16 @@ func Execute() {
 }
 
 func init() {
+	// if the config's missing, assume it's the first run and create empty config, which will be used later
+
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.binocs-cli.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.binocs-cli.json)")
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -51,26 +58,41 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	var err error
 	if cfgFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
-		// Search config in home directory with name ".binocs-cli" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".binocs-cli")
+		if _, err = os.Stat(home + "/.binocs/config.json"); os.IsNotExist(err) {
+			err = writeConfigTemplate(home + "/.binocs/config.json")
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+		viper.AddConfigPath(home + "/.binocs/")
+		viper.SetConfigName("config")
+		viper.SetConfigType("json")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
+	viper.AutomaticEnv()
+	err = viper.ReadInConfig()
+	if err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Println("Config file not found")
+		} else {
+			fmt.Println("Cannot use config file:", viper.ConfigFileUsed())
+		}
+	} else if Verbose {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func writeConfigTemplate(path string) error {
+	configContent := []byte("{\"access_key_id\": \"\", \"secret_access_key\": \"\"}")
+	return ioutil.WriteFile(path, configContent, 0600)
 }
