@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/mitchellh/go-homedir"
+	"github.com/spf13/viper"
 )
 
 const apiURLBase = "https://binocs.sh"
@@ -38,10 +39,11 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 	if respStatusCode == http.StatusUnauthorized {
-		// authRespBody, authRespStatusCode, err := BinocsAPIGetAccessToken()
-		// 	// login with keys and save jwt
-		// 	// if ok then proceed to # 1
-		// 	// if nok then display error and suggest authorizing using /login (fixing incorrect or missing credentials)
+		BinocsAPIGetAccessToken(viper.Get("access_key_id").(string), viper.Get("secret_access_key").(string))
+		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
+		if respStatusCode == http.StatusUnauthorized {
+			return []byte{}, fmt.Errorf("access denied; please use `binocs login` to log in")
+		}
 	}
 	return respBody, nil
 }
