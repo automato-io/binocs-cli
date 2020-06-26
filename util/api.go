@@ -26,8 +26,8 @@ type AccessTokenStorage struct {
 	AccessToken string `json:"access_token"`
 }
 
-// BinocsAPI2 is another gateway to the binocs REST API
-func BinocsAPI2(path, method string, data []byte) ([]byte, error) {
+// BinocsAPI is another gateway to the binocs REST API
+func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	var err error
 	url, err := url.Parse(apiURLBase + path)
 	if err != nil {
@@ -55,7 +55,7 @@ func BinocsAPIGetAccessToken(accessKeyID, secretAccessKey string) {
 	}
 
 	postData := []byte("{\"access_key_id\": \"" + accessKeyID + "\", \"secret_access_key\": \"" + secretAccessKey + "\"}")
-	respData, err := BinocsAPI2("/authenticate", http.MethodPost, postData)
+	respData, err := BinocsAPI("/authenticate", http.MethodPost, postData)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
