@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/spf13/cobra"
@@ -31,11 +32,6 @@ type CheckResponse struct {
 	Created                    string   `json:"created"`
 	Updated                    string   `json:"updated"`
 }
-
-// ChecksResponse is a list of pointers to CheckResponses
-// type ChecksResponse struct {
-// 	Checks []*CheckResponse `json:"-"`
-// }
 
 func init() {
 	rootCmd.AddCommand(checkCmd)
@@ -97,7 +93,16 @@ var checkInspectCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Println(respJSON)
+
+		tpl := `Name: ` + respJSON.Name + `
+URL: ` + respJSON.URL + `
+Method: ` + respJSON.Method + `
+Status: ` + respJSON.LastStatusCode + `
+Interval: ` + strconv.Itoa(respJSON.Interval) + ` s
+Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
+Check from: ` + strings.Join(respJSON.Regions, ", ") + `
+`
+		fmt.Print(tpl)
 	},
 }
 

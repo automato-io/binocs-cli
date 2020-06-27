@@ -62,5 +62,11 @@ var loginCmd = &cobra.Command{
 		}
 
 		util.BinocsAPIGetAccessToken(accessKeyID, secretAccessKey)
+
+		tpl := `Credentials OK
+You are authenticated as dev@automato.io
+_Type binocs -help for documentation_
+`
+		fmt.Print(tpl)
 	},
 }
