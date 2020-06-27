@@ -30,6 +30,7 @@ type CheckResponse struct {
 	DownConfirmations          int      `json:"down_confirmations"`
 	LastStatus                 int      `json:"last_status"`
 	LastStatusCode             string   `json:"last_status_code"`
+	LastStatusDuration         string   `json:"last_status_duration"`
 	Created                    string   `json:"created"`
 	Updated                    string   `json:"updated"`
 }
@@ -63,6 +64,8 @@ var checkCmd = &cobra.Command{
 	Aliases: []string{"checks"},
 	Example: "",
 	Run: func(cmd *cobra.Command, args []string) {
+		// @todo filter by status, pseudo-fulltext
+		// @todo set -interval 24h|3d default 24h
 		respData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -110,7 +113,7 @@ var checkCmd = &cobra.Command{
 			apdexChart := drawCompactApdexChart(apdex, 3)
 
 			tableRow := []string{
-				strconv.Itoa(i + 1), v.Name, v.URL, statusName[v.LastStatus], v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), metrics.MRT + " s", fmt.Sprintf("%v %%", metrics.Uptime), metrics.Apdex, apdexChart,
+				strconv.Itoa(i + 1), v.Name, v.URL, statusName[v.LastStatus] + " " + v.LastStatusDuration, v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), metrics.MRT + " s", fmt.Sprintf("%v %%", metrics.Uptime), metrics.Apdex, apdexChart,
 			}
 			tableData = append(tableData, tableRow)
 		}
