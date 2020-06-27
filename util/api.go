@@ -38,6 +38,9 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
+	if respStatusCode == http.StatusNotFound {
+		return []byte{}, fmt.Errorf("requested resource does not exist")
+	}
 	if respStatusCode == http.StatusUnauthorized {
 		BinocsAPIGetAccessToken(viper.Get("access_key_id").(string), viper.Get("secret_access_key").(string))
 		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
