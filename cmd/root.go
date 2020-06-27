@@ -4,12 +4,51 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
+
+const (
+	statusUnknown  = 0
+	statusStepUp   = 1
+	statusUp       = 2
+	statusStepDown = 3
+	statusDown     = 4
+)
+
+const (
+	statusNameUnknown  = "UNKNOWN"
+	statusNameStepUp   = "UP (tentative)"
+	statusNameUp       = "UP"
+	statusNameStepDown = "DOWN (tentative)"
+	statusNameDown     = "DOWN"
+)
+
+var statusName = map[int]string{
+	statusUnknown:  statusNameUnknown,
+	statusStepUp:   statusNameStepUp,
+	statusUp:       statusNameUp,
+	statusStepDown: statusNameStepDown,
+	statusDown:     statusNameDown,
+}
+
+const (
+	periodHour  = "hour"
+	periodDay   = "day"
+	periodWeek  = "week"
+	periodMonth = "month"
+)
+
+var supportedPeriods = map[string]time.Duration{
+	periodHour:  time.Duration(1 * time.Hour),
+	periodDay:   time.Duration(24 * time.Hour),
+	periodWeek:  time.Duration(7 * 24 * time.Hour),
+	periodMonth: time.Duration(30 * 24 * time.Hour),
+}
 
 // Verbose flag
 var Verbose bool
