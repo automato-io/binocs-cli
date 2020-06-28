@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -14,8 +16,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CheckResponse comes from the API as a JSON
-type CheckResponse struct {
+// Check comes from the API as a JSON, or from user input as `check add` flags
+type Check struct {
 	ID                         int      `json:"id"`
 	Name                       string   `json:"name"`
 	URL                        string   `json:"url"`
@@ -49,12 +51,50 @@ type ApdexResponse struct {
 	To    string `json:"to"`
 }
 
+// `check add` flags and defaults
+var (
+	flagName                       string
+	flagURL                        string
+	flagMethod                     string
+	flagInterval                   int
+	flagTarget                     float64
+	flagRegions                    []string
+	flagUpCodes                    []string
+	flagUpConfirmationsThreshold   int
+	flagDownConfirmationsThreshold int
+	flagChannels                   []string
+)
+
+const (
+	supportedIntervalMinimum               = 5
+	supportedIntervalMaximum               = 900
+	supportedTargetMinimum                 = 0.01
+	supportedTargetMaximum                 = 10.0
+	validNamePattern                       = `^[a-zA-Z0-9_\ \-\.]{0,25}$`
+	validUpCodePattern                     = `^([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx)))$`
+	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
+	supportedConfirmationsThresholdMinimum = 1
+	supportedConfirmationsThresholdMaximum = 10
+)
+
 func init() {
 	rootCmd.AddCommand(checkCmd)
 	checkCmd.AddCommand(checkAddCmd)
 	checkCmd.AddCommand(checkInspectCmd)
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
+
+	checkAddCmd.Flags().StringVarP(&flagName, "name", "n", "", "Check alias")
+	checkAddCmd.Flags().StringVarP(&flagURL, "URL", "u", "", "URL to check")
+	checkAddCmd.Flags().StringVarP(&flagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
+	checkAddCmd.Flags().IntVarP(&flagInterval, "interval", "i", 30, "How often we check the URL, in seconds")
+	checkAddCmd.Flags().Float64VarP(&flagTarget, "target", "t", 0.7, "Response time in miliseconds for Apdex = 1.0")
+	checkAddCmd.Flags().StringSliceVarP(&flagRegions, "regions", "r", []string{"all"}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkAddCmd.Flags().StringSliceVarP(&flagUpCodes, "up_codes", "", []string{"200-302"}, "What are the Up HTTP response codes, e.g. `2xx` or `200-302`")
+	checkAddCmd.Flags().IntVarP(&flagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
+	checkAddCmd.Flags().IntVarP(&flagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
+	checkAddCmd.Flags().StringSliceVarP(&flagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
+	checkAddCmd.Flags().SortFlags = false
 }
 
 var checkCmd = &cobra.Command{
@@ -71,7 +111,7 @@ var checkCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		respJSON := make([]CheckResponse, 0)
+		respJSON := make([]Check, 0)
 		decoder := json.NewDecoder(bytes.NewBuffer(respData))
 		err = decoder.Decode(&respJSON)
 		if err != nil {
@@ -127,10 +167,73 @@ var checkCmd = &cobra.Command{
 	},
 }
 
+func askInput(paramName string, times int, required bool, prompt string, validPattern string) (string, error) {
+	var err error
+	var match bool
+	if times < 1 {
+		return "", fmt.Errorf("First `times` parameter must be > 1")
+	}
+	fmt.Print(prompt)
+	reader := bufio.NewReader(os.Stdin)
+	for i := 0; i < times; i = i + 1 {
+		val, _ := reader.ReadString('\n')
+		val = strings.TrimSpace(val)
+		match, err = regexp.MatchString(validPattern, val)
+		if err != nil {
+			return "", err
+		} else if match == false {
+			fmt.Printf("Invalid input for %s\n", paramName)
+			continue
+		} else {
+			return val, nil
+		}
+	}
+	if required {
+		return "", fmt.Errorf("Failed to set %s", paramName)
+	} else {
+		return "", nil
+	}
+}
+
 var checkAddCmd = &cobra.Command{
 	Use: "add",
+
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("check add")
+		var err error
+		var match bool
+
+		// check if Name is alphanum, space & normal chars, empty OK
+		if flagName != "" {
+			match, err = regexp.MatchString(validNamePattern, flagName)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else if match == false {
+				flagName, err := askInput("name", 1, false, "Check alias (optional): ", validNamePattern)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				} else if len(flagName) > 0 {
+					// verbose ack
+					fmt.Println("name okay: " + flagName)
+				}
+			} else {
+				// verbose ack
+				fmt.Println("name okay: " + flagName)
+			}
+		} else {
+			flagName, err := askInput("name", 1, false, "Check alias (optional): ", validNamePattern)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else {
+				fmt.Println("name okay: " + flagName)
+			}
+		}
+
+		tpl := `zzz
+`
+		fmt.Print(tpl)
 	},
 }
 
@@ -150,7 +253,7 @@ var checkInspectCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		var respJSON CheckResponse
+		var respJSON Check
 		err = json.Unmarshal(respData, &respJSON)
 		if err != nil {
 			fmt.Println(err)
