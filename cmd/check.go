@@ -187,7 +187,11 @@ func askInput(paramName string, times int, required bool, prompt string, validPa
 		if err != nil {
 			return "", err
 		} else if match == false {
-			fmt.Printf("Invalid input for %s\n", paramName)
+			if i == times-1 {
+				fmt.Printf("Invalid input for %s\n", paramName)
+			} else {
+				fmt.Printf("Invalid input for %s\nTry again: ", paramName)
+			}
 			continue
 		} else {
 			return val, nil
