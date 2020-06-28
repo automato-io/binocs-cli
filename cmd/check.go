@@ -262,7 +262,7 @@ var checkAddCmd = &cobra.Command{
 			validate := func(input string) error {
 				var inputInt, _ = strconv.Atoi(input)
 				if inputInt < supportedIntervalMinimum || inputInt > supportedIntervalMaximum {
-					return errors.New("Inteval must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum))
+					return errors.New("Interval must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum))
 				}
 				return nil
 			}
@@ -278,7 +278,28 @@ var checkAddCmd = &cobra.Command{
 			flagInterval, _ = strconv.Atoi(flagIntervalString)
 		}
 
-		fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval)
+		// check if Target is in supported range
+		if flagTarget < supportedTargetMinimum || flagTarget > supportedTargetMaximum {
+			validate := func(input string) error {
+				var inputFloat, _ = strconv.ParseFloat(input, 64)
+				if inputFloat < supportedTargetMinimum || inputFloat > supportedTargetMaximum {
+					return errors.New("Target must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum))
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "Response time in seconds",
+				Validate: validate,
+			}
+			flagTargetString, err := prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			flagTarget, _ = strconv.ParseFloat(flagTargetString, 64)
+		}
+
+		fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval, flagTarget)
 
 		// 		tpl := `zzz
 		// `
