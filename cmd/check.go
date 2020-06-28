@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	util "github.com/automato-io/binocs-cli/util"
+	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -66,21 +67,29 @@ var (
 )
 
 const (
-	flagMandatory = true
-	flagOptional  = false
-)
-
-const (
 	supportedIntervalMinimum               = 5
 	supportedIntervalMaximum               = 900
 	supportedTargetMinimum                 = 0.01
 	supportedTargetMaximum                 = 10.0
 	validNamePattern                       = `^[a-zA-Z0-9_\ \-\.]{0,25}$`
+	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
 	validUpCodePattern                     = `^([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx)))$`
 	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
 	supportedConfirmationsThresholdMinimum = 1
 	supportedConfirmationsThresholdMaximum = 10
 )
+
+var supportedHTTPMethods = map[string]bool{
+	http.MethodGet:     true,
+	http.MethodHead:    true,
+	http.MethodPost:    true,
+	http.MethodPut:     true,
+	http.MethodPatch:   false,
+	http.MethodDelete:  true,
+	http.MethodConnect: false,
+	http.MethodOptions: false,
+	http.MethodTrace:   false,
+}
 
 func init() {
 	rootCmd.AddCommand(checkCmd)
@@ -172,36 +181,39 @@ var checkCmd = &cobra.Command{
 	},
 }
 
-func askInput(paramName string, times int, required bool, prompt string, validPattern string) (string, error) {
+func askInput(paramName string, promptLabel string, validPattern string, validListItems []string) (string, error) {
 	var err error
 	var match bool
-	if times < 1 {
-		return "", fmt.Errorf("First `times` parameter must be > 1")
-	}
-	fmt.Print(prompt)
-	reader := bufio.NewReader(os.Stdin)
-	for i := 0; i < times; i = i + 1 {
-		val, _ := reader.ReadString('\n')
-		val = strings.TrimSpace(val)
-		match, err = regexp.MatchString(validPattern, val)
-		if err != nil {
-			return "", err
-		} else if match == false {
-			if i == times-1 {
-				fmt.Printf("Invalid input for %s\n", paramName)
-			} else {
-				fmt.Printf("Invalid input for %s\nTry again: ", paramName)
+	var result string
+
+	if len(validPattern) > 0 {
+		validate := func(input string) error {
+			match, err = regexp.MatchString(validPattern, input)
+			if err != nil {
+				return errors.New("Invalid input")
+			} else if match == false {
+				return errors.New("Invalid input value")
 			}
-			continue
-		} else {
-			return val, nil
+			return nil
 		}
-	}
-	if required {
-		return "", fmt.Errorf("Failed to set %s", paramName)
+		prompt := promptui.Prompt{
+			Label:    promptLabel,
+			Validate: validate,
+		}
+		result, err = prompt.Run()
+
+	} else if len(validListItems) > 0 {
+		prompt := promptui.Select{
+			Label: promptLabel,
+			Items: validListItems,
+		}
+		_, result, err = prompt.Run()
+
 	} else {
-		return "", nil
+		// no validation specified
 	}
+
+	return result, nil
 }
 
 var checkAddCmd = &cobra.Command{
@@ -212,64 +224,45 @@ var checkAddCmd = &cobra.Command{
 		var match bool
 
 		// check if Name is alphanum, space & normal chars, empty OK
-		if flagName != "" {
-			match, err = regexp.MatchString(validNamePattern, flagName)
+		match, err = regexp.MatchString(validNamePattern, flagName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if match == false || flagName == "" {
+			flagName, err = askInput("name", "Check alias (optional)", validNamePattern, []string{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if match == false {
-				flagName, err := askInput("name", 3, flagOptional, "Check alias (optional): ", validNamePattern)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				} else if len(flagName) > 0 {
-					// verbose ack
-					fmt.Println("name okay: " + flagName)
-				}
-			} else {
-				// verbose ack
-				fmt.Println("name okay: " + flagName)
-			}
-		} else {
-			flagName, err := askInput("name", 3, flagOptional, "Check alias (optional): ", validNamePattern)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			} else {
-				// verbose ack
-				fmt.Println("name okay: " + flagName)
 			}
 		}
 
-		// check if URL is url, empty Not OK
-		if flagURL != "" {
-			match, err = regexp.MatchString(validURLPattern, flagURL)
+		// check if URL is url, empty not OK
+		match, err = regexp.MatchString(validURLPattern, flagURL)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if match == false {
+			flagURL, err = askInput("name", "URL to check", validURLPattern, []string{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if match == false {
-				flagURL, err := askInput("url", 3, flagMandatory, "Check URL: ", validURLPattern)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				} else if len(flagURL) > 0 {
-					// verbose ack
-					fmt.Println("URL okay: " + flagURL)
-				}
-			} else {
-				// verbose ack
-				fmt.Println("URL okay: " + flagURL)
-			}
-		} else {
-			flagURL, err := askInput("url", 3, flagMandatory, "Check URL: ", validURLPattern)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			} else {
-				// verbose ack
-				fmt.Println("URL okay: " + flagURL)
 			}
 		}
+
+		// check if Method is one from a set, empty not OK
+		match, err = regexp.MatchString(validMethodPattern, flagMethod)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if match == false {
+			flagMethod, err = askInput("method", "HTTP method", "", []string{"GET", "HEAD", "POST", "PUT", "DELETE"}) // hardcoded; reflects supportedHTTPMethods
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+
+		fmt.Println(flagURL + " (" + flagName + "), " + flagMethod)
 
 		// 		tpl := `zzz
 		// `
