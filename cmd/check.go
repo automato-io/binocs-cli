@@ -66,6 +66,11 @@ var (
 )
 
 const (
+	flagMandatory = true
+	flagOptional  = false
+)
+
+const (
 	supportedIntervalMinimum               = 5
 	supportedIntervalMaximum               = 900
 	supportedTargetMinimum                 = 0.01
