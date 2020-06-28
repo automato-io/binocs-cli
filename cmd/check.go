@@ -233,7 +233,7 @@ var checkAddCmd = &cobra.Command{
 				Label:    "URL to check",
 				Validate: validate,
 			}
-			flagName, err = prompt.Run()
+			flagURL, err = prompt.Run()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
