@@ -299,7 +299,55 @@ var checkAddCmd = &cobra.Command{
 			flagTarget, _ = strconv.ParseFloat(flagTargetString, 64)
 		}
 
-		fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval, flagTarget)
+		// @todo check if Regions are one or more from a list of values, empty not allowed
+
+		// @todo check if UpCodes matches format, empty not allowed
+
+		// check UpConfirmationsThreshold is in supported range
+		if flagUpConfirmationsThreshold < supportedConfirmationsThresholdMinimum || flagUpConfirmationsThreshold > supportedConfirmationsThresholdMaximum {
+			validate := func(input string) error {
+				var inputInt, _ = strconv.Atoi(input)
+				if inputInt < supportedConfirmationsThresholdMinimum || inputInt > supportedConfirmationsThresholdMaximum {
+					return errors.New("Up Confirmations Threshold must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum))
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "How many subsequent Up responses before triggering notifications",
+				Validate: validate,
+			}
+			flagUpConfirmationsThresholdString, err := prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			flagUpConfirmationsThreshold, _ = strconv.Atoi(flagUpConfirmationsThresholdString)
+		}
+
+		// check DownConfirmationsThreshold is in supported range
+		if flagDownConfirmationsThreshold < supportedConfirmationsThresholdMinimum || flagDownConfirmationsThreshold > supportedConfirmationsThresholdMaximum {
+			validate := func(input string) error {
+				var inputInt, _ = strconv.Atoi(input)
+				if inputInt < supportedConfirmationsThresholdMinimum || inputInt > supportedConfirmationsThresholdMaximum {
+					return errors.New("Down Confirmations Threshold must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum))
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "How many subsequent Down responses before triggering notifications",
+				Validate: validate,
+			}
+			flagDownConfirmationsThresholdString, err := prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			flagDownConfirmationsThreshold, _ = strconv.Atoi(flagDownConfirmationsThresholdString)
+		}
+
+		// @todo check if Channels are one or more from a list of values, empty allowed
+
+		fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval, flagTarget, flagUpConfirmationsThreshold, flagDownConfirmationsThreshold)
 
 		// 		tpl := `zzz
 		// `
