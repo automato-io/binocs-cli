@@ -60,7 +60,7 @@ var (
 	flagInterval                   int
 	flagTarget                     float64
 	flagRegions                    []string
-	flagUpCodes                    []string
+	flagUpCodes                    string
 	flagUpConfirmationsThreshold   int
 	flagDownConfirmationsThreshold int
 	flagChannels                   []string
@@ -104,7 +104,7 @@ func init() {
 	checkAddCmd.Flags().IntVarP(&flagInterval, "interval", "i", 30, "How often we check the URL, in seconds")
 	checkAddCmd.Flags().Float64VarP(&flagTarget, "target", "t", 0.7, "Response time in miliseconds for Apdex = 1.0")
 	checkAddCmd.Flags().StringSliceVarP(&flagRegions, "regions", "r", []string{"all"}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
-	checkAddCmd.Flags().StringSliceVarP(&flagUpCodes, "up_codes", "", []string{"200-302"}, "What are the Up HTTP response codes, e.g. `2xx` or `200-302`")
+	checkAddCmd.Flags().StringVarP(&flagUpCodes, "up_codes", "", "200-302", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`")
 	checkAddCmd.Flags().IntVarP(&flagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
 	checkAddCmd.Flags().IntVarP(&flagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
 	checkAddCmd.Flags().StringSliceVarP(&flagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
@@ -187,6 +187,7 @@ var checkAddCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var match bool
+		var tpl string
 
 		// check if Name is alphanum, space & normal chars, empty OK
 		match, err = regexp.MatchString(validNamePattern, flagName)
@@ -349,9 +350,48 @@ var checkAddCmd = &cobra.Command{
 
 		fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval, flagTarget, flagUpConfirmationsThreshold, flagDownConfirmationsThreshold)
 
-		// 		tpl := `zzz
-		// `
-		// 		fmt.Print(tpl)
+		// all clear, we can call the API and confirm adding new check!
+		check := Check{
+			Name:                       flagName,
+			URL:                        flagURL,
+			Method:                     flagMethod,
+			Interval:                   flagInterval,
+			Target:                     flagTarget,
+			Regions:                    flagRegions,
+			UpCodes:                    flagUpCodes,
+			UpConfirmationsThreshold:   flagUpConfirmationsThreshold,
+			DownConfirmationsThreshold: flagDownConfirmationsThreshold,
+		}
+		postData, err := json.Marshal(check)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		respData, err := util.BinocsAPI("/checks", http.MethodPost, postData)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = json.Unmarshal(respData, &check)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if check.ID > 0 {
+			var checkIdent string
+			if len(check.Name) > 0 {
+				checkIdent = check.Name + " (" + check.URL + ")"
+			} else {
+				checkIdent = check.URL
+			}
+			tpl = checkIdent + ` will be checked every ` + strconv.Itoa(check.Interval) + ` s from ` + strconv.Itoa(len(check.Regions)) + ` regions.
+Run "binocs checks ls" to list all active checks.
+`
+		} else {
+			fmt.Println("Error adding check")
+			os.Exit(1)
+		}
+		fmt.Print(tpl)
 	},
 }
 
