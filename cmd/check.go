@@ -181,41 +181,6 @@ var checkCmd = &cobra.Command{
 	},
 }
 
-func askInput(paramName string, promptLabel string, validPattern string, validListItems []string) (string, error) {
-	var err error
-	var match bool
-	var result string
-
-	if len(validPattern) > 0 {
-		validate := func(input string) error {
-			match, err = regexp.MatchString(validPattern, input)
-			if err != nil {
-				return errors.New("Invalid input")
-			} else if match == false {
-				return errors.New("Invalid input value")
-			}
-			return nil
-		}
-		prompt := promptui.Prompt{
-			Label:    promptLabel,
-			Validate: validate,
-		}
-		result, err = prompt.Run()
-
-	} else if len(validListItems) > 0 {
-		prompt := promptui.Select{
-			Label: promptLabel,
-			Items: validListItems,
-		}
-		_, result, err = prompt.Run()
-
-	} else {
-		// no validation specified
-	}
-
-	return result, nil
-}
-
 var checkAddCmd = &cobra.Command{
 	Use: "add",
 
@@ -229,7 +194,20 @@ var checkAddCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		} else if match == false || flagName == "" {
-			flagName, err = askInput("name", "Check alias (optional)", validNamePattern, []string{})
+			validate := func(input string) error {
+				match, err = regexp.MatchString(validNamePattern, input)
+				if err != nil {
+					return errors.New("Invalid input")
+				} else if match == false {
+					return errors.New("Invalid input value")
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "Check alias (optional)",
+				Validate: validate,
+			}
+			flagName, err = prompt.Run()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -242,7 +220,20 @@ var checkAddCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		} else if match == false {
-			flagURL, err = askInput("name", "URL to check", validURLPattern, []string{})
+			validate := func(input string) error {
+				match, err = regexp.MatchString(validURLPattern, input)
+				if err != nil {
+					return errors.New("Invalid input")
+				} else if match == false {
+					return errors.New("Invalid input value")
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "URL to check",
+				Validate: validate,
+			}
+			flagName, err = prompt.Run()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -255,14 +246,39 @@ var checkAddCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		} else if match == false {
-			flagMethod, err = askInput("method", "HTTP method", "", []string{"GET", "HEAD", "POST", "PUT", "DELETE"}) // hardcoded; reflects supportedHTTPMethods
+			prompt := promptui.Select{
+				Label: "HTTP method",
+				Items: []string{"GET", "HEAD", "POST", "PUT", "DELETE"},
+			}
+			_, flagMethod, err = prompt.Run()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
 		}
 
-		fmt.Println(flagURL + " (" + flagName + "), " + flagMethod)
+		// check if Interval is in supported range
+		if flagInterval < supportedIntervalMinimum || flagInterval > supportedIntervalMaximum {
+			validate := func(input string) error {
+				var inputInt, _ = strconv.Atoi(input)
+				if inputInt < supportedIntervalMinimum || inputInt > supportedIntervalMaximum {
+					return errors.New("Inteval must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum))
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "Check interval in seconds",
+				Validate: validate,
+			}
+			flagIntervalString, err := prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			flagInterval, _ = strconv.Atoi(flagIntervalString)
+		}
+
+		fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval)
 
 		// 		tpl := `zzz
 		// `
