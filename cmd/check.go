@@ -218,7 +218,7 @@ var checkAddCmd = &cobra.Command{
 				fmt.Println(err)
 				os.Exit(1)
 			} else if match == false {
-				flagName, err := askInput("name", 1, false, "Check alias (optional): ", validNamePattern)
+				flagName, err := askInput("name", 3, flagOptional, "Check alias (optional): ", validNamePattern)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
@@ -231,18 +231,49 @@ var checkAddCmd = &cobra.Command{
 				fmt.Println("name okay: " + flagName)
 			}
 		} else {
-			flagName, err := askInput("name", 1, false, "Check alias (optional): ", validNamePattern)
+			flagName, err := askInput("name", 3, flagOptional, "Check alias (optional): ", validNamePattern)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			} else {
+				// verbose ack
 				fmt.Println("name okay: " + flagName)
 			}
 		}
 
-		tpl := `zzz
-`
-		fmt.Print(tpl)
+		// check if URL is url, empty Not OK
+		if flagURL != "" {
+			match, err = regexp.MatchString(validURLPattern, flagURL)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else if match == false {
+				flagURL, err := askInput("url", 3, flagMandatory, "Check URL: ", validURLPattern)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				} else if len(flagURL) > 0 {
+					// verbose ack
+					fmt.Println("URL okay: " + flagURL)
+				}
+			} else {
+				// verbose ack
+				fmt.Println("URL okay: " + flagURL)
+			}
+		} else {
+			flagURL, err := askInput("url", 3, flagMandatory, "Check URL: ", validURLPattern)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else {
+				// verbose ack
+				fmt.Println("URL okay: " + flagURL)
+			}
+		}
+
+		// 		tpl := `zzz
+		// `
+		// 		fmt.Print(tpl)
 	},
 }
 
