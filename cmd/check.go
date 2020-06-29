@@ -55,6 +55,7 @@ type ApdexResponse struct {
 
 // `check ls` flags
 var (
+	flagRegion string
 	flagStatus string
 )
 
@@ -81,6 +82,7 @@ const (
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
 	validUpCodePattern                     = `^([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx)))$`
 	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
+	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
 	supportedConfirmationsThresholdMinimum = 1
 	supportedConfirmationsThresholdMaximum = 10
 )
@@ -104,6 +106,7 @@ func init() {
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
 
+	checkCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME and APDEX from the specified region only")
 	checkCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
 
 	checkAddCmd.Flags().StringVarP(&flagName, "name", "n", "", "Check alias")
@@ -127,12 +130,26 @@ var checkCmd = &cobra.Command{
 	Aliases: []string{"checks"},
 	Example: "",
 	Run: func(cmd *cobra.Command, args []string) {
-		urlValues := url.Values{}
+		urlValues1 := url.Values{}
+		urlValues2 := url.Values{
+			"period": []string{"day"},
+		}
+
+		// @todo check against currently supported GET /regions
+		match, err := regexp.MatchString(validRegionPattern, flagRegion)
+		if len(flagRegion) > 0 && match == false {
+			fmt.Println("Invalid region provided")
+			os.Exit(1)
+		} else if err == nil && match == true {
+			urlValues2.Set("region", flagRegion)
+		}
+
 		flagStatus = strings.ToUpper(flagStatus)
 		if flagStatus == statusNameUp || flagStatus == statusNameDown {
-			urlValues.Set("status", flagStatus)
+			urlValues1.Set("status", flagStatus)
 		}
-		respData, err := util.BinocsAPI("/checks?"+urlValues.Encode(), http.MethodGet, []byte{})
+
+		respData, err := util.BinocsAPI("/checks?"+urlValues1.Encode(), http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -147,8 +164,7 @@ var checkCmd = &cobra.Command{
 
 		var tableData [][]string
 		for i, v := range respJSON {
-			// @todo accept period, region params
-			metricsData, err := util.BinocsAPI("/checks/"+strconv.Itoa(v.ID)+"/metrics?period=day", http.MethodGet, []byte{})
+			metricsData, err := util.BinocsAPI("/checks/"+strconv.Itoa(v.ID)+"/metrics?"+urlValues2.Encode(), http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -163,7 +179,7 @@ var checkCmd = &cobra.Command{
 				metrics.Uptime = "100"
 			}
 
-			apdexData, err := util.BinocsAPI("/checks/"+strconv.Itoa(v.ID)+"/apdex?period=day", http.MethodGet, []byte{})
+			apdexData, err := util.BinocsAPI("/checks/"+strconv.Itoa(v.ID)+"/apdex?"+urlValues2.Encode(), http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -178,8 +194,21 @@ var checkCmd = &cobra.Command{
 
 			apdexChart := drawCompactApdexChart(apdex, 3)
 
+			tableValueMRT := metrics.MRT + " s"
+			if metrics.MRT == "" {
+				tableValueMRT = "n/a"
+			}
+			tableValueUptime := fmt.Sprintf("%v %%", metrics.Uptime)
+			if metrics.Uptime == "" {
+				tableValueUptime = "n/a"
+			}
+			tableValueApdex := metrics.Apdex
+			if metrics.Apdex == "" {
+				tableValueApdex = "n/a"
+				apdexChart = "n/a"
+			}
 			tableRow := []string{
-				strconv.Itoa(i + 1), v.Name, v.URL, statusName[v.LastStatus] + " " + v.LastStatusDuration, v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), metrics.MRT + " s", fmt.Sprintf("%v %%", metrics.Uptime), metrics.Apdex, apdexChart,
+				strconv.Itoa(i + 1), v.Name, v.URL, statusName[v.LastStatus] + " " + v.LastStatusDuration, v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 			}
 			tableData = append(tableData, tableRow)
 		}
