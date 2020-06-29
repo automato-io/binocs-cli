@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -52,7 +53,12 @@ type ApdexResponse struct {
 	To    string `json:"to"`
 }
 
-// `check add` flags and defaults
+// `check ls` flags
+var (
+	flagStatus string
+)
+
+// `check add` flags
 var (
 	flagName                       string
 	flagURL                        string
@@ -98,6 +104,8 @@ func init() {
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
 
+	checkCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
+
 	checkAddCmd.Flags().StringVarP(&flagName, "name", "n", "", "Check alias")
 	checkAddCmd.Flags().StringVarP(&flagURL, "URL", "u", "", "URL to check")
 	checkAddCmd.Flags().StringVarP(&flagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
@@ -111,6 +119,7 @@ func init() {
 	checkAddCmd.Flags().SortFlags = false
 }
 
+// @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkCmd = &cobra.Command{
 	Use:     "check",
 	Short:   "Manage your checks - checks are the endpoints monitored by binocs",
@@ -118,9 +127,12 @@ var checkCmd = &cobra.Command{
 	Aliases: []string{"checks"},
 	Example: "",
 	Run: func(cmd *cobra.Command, args []string) {
-		// @todo filter by status, pseudo-fulltext
-		// @todo set -interval 24h|3d default 24h
-		respData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
+		urlValues := url.Values{}
+		flagStatus = strings.ToUpper(flagStatus)
+		if flagStatus == statusNameUp || flagStatus == statusNameDown {
+			urlValues.Set("status", flagStatus)
+		}
+		respData, err := util.BinocsAPI("/checks?"+urlValues.Encode(), http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
