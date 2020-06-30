@@ -19,6 +19,11 @@ type Incident struct {
 	CheckID       int    `json:"check_id"`
 	IncidentNote  string `json:"incident_note"`
 	IncidentState string `json:"incident_state"`
+	CheckName     string `json:"check_name"`
+	CheckURL      string `json:"check_url"`
+	Opened        string `json:"opened"`
+	Closed        string `json:"closed"`
+	ResponseCodes string `json:"response_codes"`
 }
 
 func init() {
@@ -47,21 +52,8 @@ var incidentCmd = &cobra.Command{
 
 		var tableData [][]string
 		for _, v := range respJSON {
-			checkData, err := util.BinocsAPI("/checks/"+strconv.Itoa(v.CheckID), http.MethodGet, []byte{})
-			if err != nil {
-				// skip non-existent or deleted checks and continue
-				continue
-			}
-			var check Check
-			err = json.Unmarshal(checkData, &check)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-
-			// @todo this URL is not necessarily the one that caused the incident
 			tableRow := []string{
-				strconv.Itoa(v.ID), check.Name, check.URL, v.IncidentState, "2010", "2020", "500, 503", v.IncidentNote,
+				strconv.Itoa(v.ID), v.CheckName, v.CheckURL, v.IncidentState, v.Opened, v.Closed, v.ResponseCodes, v.IncidentNote,
 			}
 			tableData = append(tableData, tableRow)
 		}
