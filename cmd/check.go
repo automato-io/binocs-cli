@@ -542,7 +542,6 @@ var checkUpdateCmd = &cobra.Command{
 			fmt.Println("only reference by id allowed atm")
 			os.Exit(1)
 		}
-
 	},
 }
 
@@ -550,7 +549,32 @@ var checkDeleteCmd = &cobra.Command{
 	Use:     "delete",
 	Aliases: []string{"del"},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("check delete")
+		if len(args) == 0 {
+			fmt.Println("RTFM")
+			os.Exit(1)
+		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
+			// @todo load ident and display in Label
+			prompt := promptui.Prompt{
+				Label:     "Delete Check",
+				IsConfirm: true,
+			}
+			_, err := prompt.Run()
+			if err != nil {
+				fmt.Println("Aborting")
+				os.Exit(0)
+			}
+			_, err = util.BinocsAPI("/checks/"+strconv.Itoa(checkID), http.MethodDelete, []byte{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			tpl := `Check successfully deleted
+`
+			fmt.Print(tpl)
+		} else {
+			fmt.Println("only reference by id allowed atm")
+			os.Exit(1)
+		}
 	},
 }
 
