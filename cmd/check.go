@@ -20,23 +20,23 @@ import (
 
 // Check comes from the API as a JSON, or from user input as `check add` flags
 type Check struct {
-	ID                         int      `json:"id"`
-	Name                       string   `json:"name"`
-	URL                        string   `json:"url"`
-	Method                     string   `json:"method"`
-	Interval                   int      `json:"interval"`
-	Target                     float64  `json:"target"`
-	Regions                    []string `json:"regions"`
-	UpCodes                    string   `json:"up_codes"`
-	UpConfirmationsThreshold   int      `json:"up_confirmations_threshold"`
-	UpConfirmations            int      `json:"up_confirmations"`
-	DownConfirmationsThreshold int      `json:"down_confirmations_threshold"`
-	DownConfirmations          int      `json:"down_confirmations"`
-	LastStatus                 int      `json:"last_status"`
-	LastStatusCode             string   `json:"last_status_code"`
-	LastStatusDuration         string   `json:"last_status_duration"`
-	Created                    string   `json:"created"`
-	Updated                    string   `json:"updated"`
+	ID                         int      `json:"id,omitempty"`
+	Name                       string   `json:"name,omitempty"`
+	URL                        string   `json:"url,omitempty"`
+	Method                     string   `json:"method,omitempty"`
+	Interval                   int      `json:"interval,omitempty"`
+	Target                     float64  `json:"target,omitempty"`
+	Regions                    []string `json:"regions,omitempty"`
+	UpCodes                    string   `json:"up_codes,omitempty"`
+	UpConfirmationsThreshold   int      `json:"up_confirmations_threshold,omitempty"`
+	UpConfirmations            int      `json:"up_confirmations,omitempty"`
+	DownConfirmationsThreshold int      `json:"down_confirmations_threshold,omitempty"`
+	DownConfirmations          int      `json:"down_confirmations,omitempty"`
+	LastStatus                 int      `json:"last_status,omitempty"`
+	LastStatusCode             string   `json:"last_status_code,omitempty"`
+	LastStatusDuration         string   `json:"last_status_duration,omitempty"`
+	Created                    string   `json:"created,omitempty"`
+	Updated                    string   `json:"updated,omitempty"`
 }
 
 // MetricsResponse comes from the API as a JSON
@@ -120,6 +120,18 @@ func init() {
 	checkAddCmd.Flags().IntVarP(&flagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
 	checkAddCmd.Flags().StringSliceVarP(&flagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
 	checkAddCmd.Flags().SortFlags = false
+
+	checkUpdateCmd.Flags().StringVarP(&flagName, "name", "n", "", "Check alias")
+	checkUpdateCmd.Flags().StringVarP(&flagURL, "URL", "u", "", "URL to check")
+	checkUpdateCmd.Flags().StringVarP(&flagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
+	checkUpdateCmd.Flags().IntVarP(&flagInterval, "interval", "i", 0, "How often we check the URL, in seconds")
+	checkUpdateCmd.Flags().Float64VarP(&flagTarget, "target", "t", 0, "Response time in miliseconds for Apdex = 1.0")
+	checkUpdateCmd.Flags().StringSliceVarP(&flagRegions, "regions", "r", []string{}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkUpdateCmd.Flags().StringVarP(&flagUpCodes, "up_codes", "", "", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`")
+	checkUpdateCmd.Flags().IntVarP(&flagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "How many subsequent Up responses before triggering notifications")
+	checkUpdateCmd.Flags().IntVarP(&flagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "How many subsequent Down responses before triggering notifications")
+	checkUpdateCmd.Flags().StringSliceVarP(&flagChannels, "channels", "", []string{}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
+	checkUpdateCmd.Flags().SortFlags = false
 }
 
 // @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
@@ -224,14 +236,19 @@ var checkCmd = &cobra.Command{
 	},
 }
 
-var checkAddCmd = &cobra.Command{
-	Use: "add",
+// mode = add|update
+func checkAddOrUpdate(mode string, checkID int) {
+	if mode != "add" && mode != "update" {
+		fmt.Println("Unknown mode: " + mode)
+		os.Exit(1)
+	}
+	var err error
+	var match bool
+	var tpl string
 
-	Run: func(cmd *cobra.Command, args []string) {
-		var err error
-		var match bool
-		var tpl string
-
+	if mode == "update" && flagName == "" {
+		// pass
+	} else {
 		// check if Name is alphanum, space & normal chars, empty OK
 		match, err = regexp.MatchString(validNamePattern, flagName)
 		if err != nil {
@@ -257,7 +274,11 @@ var checkAddCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+	}
 
+	if mode == "update" && flagURL == "" {
+		// pass
+	} else {
 		// check if URL is url, empty not OK
 		match, err = regexp.MatchString(validURLPattern, flagURL)
 		if err != nil {
@@ -283,7 +304,11 @@ var checkAddCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+	}
 
+	if mode == "update" && flagMethod == "" {
+		// pass
+	} else {
 		// check if Method is one from a set, empty not OK
 		match, err = regexp.MatchString(validMethodPattern, flagMethod)
 		if err != nil {
@@ -300,7 +325,11 @@ var checkAddCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+	}
 
+	if mode == "update" && flagInterval == 0 {
+		// pass
+	} else {
 		// check if Interval is in supported range
 		if flagInterval < supportedIntervalMinimum || flagInterval > supportedIntervalMaximum {
 			validate := func(input string) error {
@@ -321,7 +350,11 @@ var checkAddCmd = &cobra.Command{
 			}
 			flagInterval, _ = strconv.Atoi(flagIntervalString)
 		}
+	}
 
+	if mode == "update" && flagTarget == 0 {
+		// pass
+	} else {
 		// check if Target is in supported range
 		if flagTarget < supportedTargetMinimum || flagTarget > supportedTargetMaximum {
 			validate := func(input string) error {
@@ -342,11 +375,15 @@ var checkAddCmd = &cobra.Command{
 			}
 			flagTarget, _ = strconv.ParseFloat(flagTargetString, 64)
 		}
+	}
 
-		// @todo check if Regions are one or more from a list of values, empty not allowed
+	// @todo check if Regions are one or more from a list of values, empty not allowed
 
-		// @todo check if UpCodes matches format, empty not allowed
+	// @todo check if UpCodes matches format, empty not allowed
 
+	if mode == "update" && flagUpConfirmationsThreshold == 0 {
+		// pass
+	} else {
 		// check UpConfirmationsThreshold is in supported range
 		if flagUpConfirmationsThreshold < supportedConfirmationsThresholdMinimum || flagUpConfirmationsThreshold > supportedConfirmationsThresholdMaximum {
 			validate := func(input string) error {
@@ -367,7 +404,11 @@ var checkAddCmd = &cobra.Command{
 			}
 			flagUpConfirmationsThreshold, _ = strconv.Atoi(flagUpConfirmationsThresholdString)
 		}
+	}
 
+	if mode == "update" && flagDownConfirmationsThreshold == 0 {
+		// pass
+	} else {
 		// check DownConfirmationsThreshold is in supported range
 		if flagDownConfirmationsThreshold < supportedConfirmationsThresholdMinimum || flagDownConfirmationsThreshold > supportedConfirmationsThresholdMaximum {
 			validate := func(input string) error {
@@ -388,53 +429,69 @@ var checkAddCmd = &cobra.Command{
 			}
 			flagDownConfirmationsThreshold, _ = strconv.Atoi(flagDownConfirmationsThresholdString)
 		}
+	}
 
-		// @todo check if Channels are one or more from a list of values, empty allowed
+	// @todo check if Channels are one or more from a list of values, empty allowed
 
-		fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval, flagTarget, flagUpConfirmationsThreshold, flagDownConfirmationsThreshold)
+	// fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval, flagTarget, flagUpConfirmationsThreshold, flagDownConfirmationsThreshold)
 
-		// all clear, we can call the API and confirm adding new check!
-		check := Check{
-			Name:                       flagName,
-			URL:                        flagURL,
-			Method:                     flagMethod,
-			Interval:                   flagInterval,
-			Target:                     flagTarget,
-			Regions:                    flagRegions,
-			UpCodes:                    flagUpCodes,
-			UpConfirmationsThreshold:   flagUpConfirmationsThreshold,
-			DownConfirmationsThreshold: flagDownConfirmationsThreshold,
-		}
-		postData, err := json.Marshal(check)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		respData, err := util.BinocsAPI("/checks", http.MethodPost, postData)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		err = json.Unmarshal(respData, &check)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		if check.ID > 0 {
-			var checkIdent string
-			if len(check.Name) > 0 {
-				checkIdent = check.Name + " (" + check.URL + ")"
-			} else {
-				checkIdent = check.URL
-			}
-			tpl = checkIdent + ` will be checked every ` + strconv.Itoa(check.Interval) + ` s from ` + strconv.Itoa(len(check.Regions)) + ` regions.
-Run "binocs checks ls" to list all active checks.
-`
+	// all clear, we can call the API and confirm adding new check!
+	check := Check{
+		Name:                       flagName,
+		URL:                        flagURL,
+		Method:                     flagMethod,
+		Interval:                   flagInterval,
+		Target:                     flagTarget,
+		Regions:                    flagRegions,
+		UpCodes:                    flagUpCodes,
+		UpConfirmationsThreshold:   flagUpConfirmationsThreshold,
+		DownConfirmationsThreshold: flagDownConfirmationsThreshold,
+	}
+	postData, err := json.Marshal(check)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	var reqURL, reqMethod string
+	if mode == "add" {
+		reqURL = "/checks"
+		reqMethod = http.MethodPost
+	}
+	if mode == "update" {
+		reqURL = "/checks/" + strconv.Itoa(checkID)
+		reqMethod = http.MethodPut
+	}
+	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = json.Unmarshal(respData, &check)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if check.ID > 0 {
+		var checkIdent string
+		if len(check.Name) > 0 {
+			checkIdent = check.Name + " (" + check.URL + ")"
 		} else {
-			fmt.Println("Error adding check")
-			os.Exit(1)
+			checkIdent = check.URL
 		}
-		fmt.Print(tpl)
+		tpl = checkIdent + ` updated successfully
+`
+	} else {
+		fmt.Println("Error updating check")
+		os.Exit(1)
+	}
+	fmt.Print(tpl)
+}
+
+var checkAddCmd = &cobra.Command{
+	Use: "add",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		checkAddOrUpdate("add", 0)
 	},
 }
 
@@ -476,7 +533,16 @@ Check from: ` + strings.Join(respJSON.Regions, ", ") + `
 var checkUpdateCmd = &cobra.Command{
 	Use: "update",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("check update")
+		if len(args) == 0 {
+			fmt.Println("RTFM")
+			os.Exit(1)
+		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
+			checkAddOrUpdate("update", checkID)
+		} else {
+			fmt.Println("only reference by id allowed atm")
+			os.Exit(1)
+		}
+
 	},
 }
 
