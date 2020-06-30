@@ -236,6 +236,139 @@ var checkCmd = &cobra.Command{
 	},
 }
 
+var checkAddCmd = &cobra.Command{
+	Use: "add",
+
+	Run: func(cmd *cobra.Command, args []string) {
+		checkAddOrUpdate("add", 0)
+	},
+}
+
+var checkInspectCmd = &cobra.Command{
+	Use:     "inspect",
+	Aliases: []string{"view", "show"},
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("RTFM")
+			os.Exit(1)
+		} else if _, err := strconv.Atoi(args[0]); err != nil {
+			fmt.Println("only reference by id allowed atm")
+			os.Exit(1)
+		}
+		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var respJSON Check
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		tpl := `Name: ` + respJSON.Name + `
+URL: ` + respJSON.URL + `
+Method: ` + respJSON.Method + `
+Status: ` + respJSON.LastStatusCode + `
+Interval: ` + strconv.Itoa(respJSON.Interval) + ` s
+Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
+Check from: ` + strings.Join(respJSON.Regions, ", ") + `
+`
+		fmt.Print(tpl)
+	},
+}
+
+var checkUpdateCmd = &cobra.Command{
+	Use: "update",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("RTFM")
+			os.Exit(1)
+		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
+			checkAddOrUpdate("update", checkID)
+		} else {
+			fmt.Println("only reference by id allowed atm")
+			os.Exit(1)
+		}
+	},
+}
+
+var checkDeleteCmd = &cobra.Command{
+	Use:     "delete",
+	Aliases: []string{"del"},
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("RTFM")
+			os.Exit(1)
+		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
+			// @todo load ident and display in Label
+			prompt := promptui.Prompt{
+				Label:     "Delete Check",
+				IsConfirm: true,
+			}
+			_, err := prompt.Run()
+			if err != nil {
+				fmt.Println("Aborting")
+				os.Exit(0)
+			}
+			_, err = util.BinocsAPI("/checks/"+strconv.Itoa(checkID), http.MethodDelete, []byte{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			tpl := `Check successfully deleted
+`
+			fmt.Print(tpl)
+		} else {
+			fmt.Println("only reference by id allowed atm")
+			os.Exit(1)
+		}
+	},
+}
+
+func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
+	var compressed []float64
+	var compressStack []float64
+	for i, v := range apdex {
+		vf, _ := strconv.ParseFloat(v.Apdex, 32)
+		compressStack = append(compressStack, vf)
+		i = i + 1
+		if i%compress == 0 || i == len(apdex) {
+			var sum float64
+			for _, f := range compressStack {
+				sum = sum + f
+			}
+			compressed = append(compressed, sum/float64(len(compressStack)))
+			compressStack = []float64{}
+		}
+	}
+
+	var chart string
+	for _, v := range compressed {
+		var dot string
+		if v < 0.125 {
+			dot = "▁"
+		} else if v < 0.250 {
+			dot = "▂"
+		} else if v < 0.375 {
+			dot = "▃ "
+		} else if v < 0.500 {
+			dot = "▄ "
+		} else if v < 0.625 {
+			dot = "▅"
+		} else if v < 0.750 {
+			dot = "▆"
+		} else if v < 0.875 {
+			dot = "▇"
+		} else {
+			dot = "█"
+		}
+		chart = chart + dot
+	}
+	return chart
+}
+
 // mode = add|update
 func checkAddOrUpdate(mode string, checkID int) {
 	if mode != "add" && mode != "update" {
@@ -485,137 +618,4 @@ func checkAddOrUpdate(mode string, checkID int) {
 		os.Exit(1)
 	}
 	fmt.Print(tpl)
-}
-
-var checkAddCmd = &cobra.Command{
-	Use: "add",
-
-	Run: func(cmd *cobra.Command, args []string) {
-		checkAddOrUpdate("add", 0)
-	},
-}
-
-var checkInspectCmd = &cobra.Command{
-	Use:     "inspect",
-	Aliases: []string{"view", "show"},
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("RTFM")
-			os.Exit(1)
-		} else if _, err := strconv.Atoi(args[0]); err != nil {
-			fmt.Println("only reference by id allowed atm")
-			os.Exit(1)
-		}
-		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var respJSON Check
-		err = json.Unmarshal(respData, &respJSON)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		tpl := `Name: ` + respJSON.Name + `
-URL: ` + respJSON.URL + `
-Method: ` + respJSON.Method + `
-Status: ` + respJSON.LastStatusCode + `
-Interval: ` + strconv.Itoa(respJSON.Interval) + ` s
-Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
-Check from: ` + strings.Join(respJSON.Regions, ", ") + `
-`
-		fmt.Print(tpl)
-	},
-}
-
-var checkUpdateCmd = &cobra.Command{
-	Use: "update",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("RTFM")
-			os.Exit(1)
-		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
-			checkAddOrUpdate("update", checkID)
-		} else {
-			fmt.Println("only reference by id allowed atm")
-			os.Exit(1)
-		}
-	},
-}
-
-var checkDeleteCmd = &cobra.Command{
-	Use:     "delete",
-	Aliases: []string{"del"},
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("RTFM")
-			os.Exit(1)
-		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
-			// @todo load ident and display in Label
-			prompt := promptui.Prompt{
-				Label:     "Delete Check",
-				IsConfirm: true,
-			}
-			_, err := prompt.Run()
-			if err != nil {
-				fmt.Println("Aborting")
-				os.Exit(0)
-			}
-			_, err = util.BinocsAPI("/checks/"+strconv.Itoa(checkID), http.MethodDelete, []byte{})
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			tpl := `Check successfully deleted
-`
-			fmt.Print(tpl)
-		} else {
-			fmt.Println("only reference by id allowed atm")
-			os.Exit(1)
-		}
-	},
-}
-
-func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
-	var compressed []float64
-	var compressStack []float64
-	for i, v := range apdex {
-		vf, _ := strconv.ParseFloat(v.Apdex, 32)
-		compressStack = append(compressStack, vf)
-		i = i + 1
-		if i%compress == 0 || i == len(apdex) {
-			var sum float64
-			for _, f := range compressStack {
-				sum = sum + f
-			}
-			compressed = append(compressed, sum/float64(len(compressStack)))
-			compressStack = []float64{}
-		}
-	}
-
-	var chart string
-	for _, v := range compressed {
-		var dot string
-		if v < 0.125 {
-			dot = "▁"
-		} else if v < 0.250 {
-			dot = "▂"
-		} else if v < 0.375 {
-			dot = "▃ "
-		} else if v < 0.500 {
-			dot = "▄ "
-		} else if v < 0.625 {
-			dot = "▅"
-		} else if v < 0.750 {
-			dot = "▆"
-		} else if v < 0.875 {
-			dot = "▇"
-		} else {
-			dot = "█"
-		}
-		chart = chart + dot
-	}
-	return chart
 }
