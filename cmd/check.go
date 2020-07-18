@@ -53,6 +53,11 @@ type ApdexResponse struct {
 	To    string `json:"to"`
 }
 
+// RegionsResponse comes from the API as a JSON
+type RegionsResponse struct {
+	Regions []string `json:"regions"`
+}
+
 // `check ls` flags
 var (
 	flagRegion string
@@ -98,6 +103,8 @@ var supportedHTTPMethods = map[string]bool{
 	http.MethodOptions: false,
 	http.MethodTrace:   false,
 }
+
+var supportedRegions = []string{}
 
 func init() {
 	rootCmd.AddCommand(checkCmd)
@@ -327,6 +334,31 @@ var checkDeleteCmd = &cobra.Command{
 	},
 }
 
+func loadSupportedRegions() {
+	respData, err := util.BinocsAPI("/regions", http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	// @toto verbose print respData
+	regionsResponse := RegionsResponse{}
+	err = json.Unmarshal(respData, &regionsResponse)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	supportedRegions = regionsResponse.Regions
+}
+
+func isSupportedRegion(region string) bool {
+	for _, r := range supportedRegions {
+		if r == region {
+			return true
+		}
+	}
+	return false
+}
+
 func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
 	var compressed []float64
 	var compressStack []float64
@@ -510,7 +542,28 @@ func checkAddOrUpdate(mode string, checkID int) {
 		}
 	}
 
-	// @todo check if Regions are one or more from a list of values, empty not allowed
+	// @todo we cannot use the Prompt library here because of its lack of multi-select support,
+	// we choose the default "all" regions unless user specifies regions via the -r option; https://github.com/manifoldco/promptui/issues/72
+
+	if mode == "update" && len(flagRegions) == 0 {
+		// pass
+	} else {
+		loadSupportedRegions()
+		if len(flagRegions) == 0 {
+			flagRegions = supportedRegions
+		} else {
+			for _, r := range flagRegions {
+				if r == "all" {
+					flagRegions = supportedRegions
+					break
+				}
+				if isSupportedRegion(r) == false {
+					fmt.Println("unsupported region: " + r)
+					os.Exit(1)
+				}
+			}
+		}
+	}
 
 	// @todo check if UpCodes matches format, empty not allowed
 
