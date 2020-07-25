@@ -66,16 +66,30 @@ var (
 
 // `check add` flags
 var (
-	flagName                       string
-	flagURL                        string
-	flagMethod                     string
-	flagInterval                   int
-	flagTarget                     float64
-	flagRegions                    []string
-	flagUpCodes                    string
-	flagUpConfirmationsThreshold   int
-	flagDownConfirmationsThreshold int
-	flagChannels                   []string
+	checkAddFlagName                       string
+	checkAddFlagURL                        string
+	checkAddFlagMethod                     string
+	checkAddFlagInterval                   int
+	checkAddFlagTarget                     float64
+	checkAddFlagRegions                    []string
+	checkAddFlagUpCodes                    string
+	checkAddFlagUpConfirmationsThreshold   int
+	checkAddFlagDownConfirmationsThreshold int
+	checkAddFlagChannels                   []string
+)
+
+// `check update` flags
+var (
+	checkUpdateFlagName                       string
+	checkUpdateFlagURL                        string
+	checkUpdateFlagMethod                     string
+	checkUpdateFlagInterval                   int
+	checkUpdateFlagTarget                     float64
+	checkUpdateFlagRegions                    []string
+	checkUpdateFlagUpCodes                    string
+	checkUpdateFlagUpConfirmationsThreshold   int
+	checkUpdateFlagDownConfirmationsThreshold int
+	checkUpdateFlagChannels                   []string
 )
 
 const (
@@ -116,35 +130,35 @@ func init() {
 	checkCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME and APDEX from the specified region only")
 	checkCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
 
-	checkAddCmd.Flags().StringVarP(&flagName, "name", "n", "", "Check alias")
-	checkAddCmd.Flags().StringVarP(&flagURL, "URL", "u", "", "URL to check")
-	checkAddCmd.Flags().StringVarP(&flagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
-	checkAddCmd.Flags().IntVarP(&flagInterval, "interval", "i", 30, "How often we check the URL, in seconds")
-	checkAddCmd.Flags().Float64VarP(&flagTarget, "target", "t", 0.7, "Response time in miliseconds for Apdex = 1.0")
-	checkAddCmd.Flags().StringSliceVarP(&flagRegions, "regions", "r", []string{"all"}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
-	checkAddCmd.Flags().StringVarP(&flagUpCodes, "up_codes", "", "200-302", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`")
-	checkAddCmd.Flags().IntVarP(&flagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
-	checkAddCmd.Flags().IntVarP(&flagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
-	checkAddCmd.Flags().StringSliceVarP(&flagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check alias")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "URL", "u", "", "URL to check")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 30, "How often we check the URL, in seconds")
+	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 0.7, "Response time in miliseconds for Apdex = 1.0")
+	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
+	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
 	checkAddCmd.Flags().SortFlags = false
 
-	checkUpdateCmd.Flags().StringVarP(&flagName, "name", "n", "", "Check alias")
-	checkUpdateCmd.Flags().StringVarP(&flagURL, "URL", "u", "", "URL to check")
-	checkUpdateCmd.Flags().StringVarP(&flagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
-	checkUpdateCmd.Flags().IntVarP(&flagInterval, "interval", "i", 0, "How often we check the URL, in seconds")
-	checkUpdateCmd.Flags().Float64VarP(&flagTarget, "target", "t", 0, "Response time in miliseconds for Apdex = 1.0")
-	checkUpdateCmd.Flags().StringSliceVarP(&flagRegions, "regions", "r", []string{}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
-	checkUpdateCmd.Flags().StringVarP(&flagUpCodes, "up_codes", "", "", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`")
-	checkUpdateCmd.Flags().IntVarP(&flagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "How many subsequent Up responses before triggering notifications")
-	checkUpdateCmd.Flags().IntVarP(&flagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "How many subsequent Down responses before triggering notifications")
-	checkUpdateCmd.Flags().StringSliceVarP(&flagChannels, "channels", "", []string{}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check alias")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "URL", "u", "", "URL to check")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "How often we check the URL, in seconds")
+	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "Response time in miliseconds for Apdex = 1.0")
+	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "How many subsequent Up responses before triggering notifications")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "How many subsequent Down responses before triggering notifications")
+	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagChannels, "channels", "", []string{}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
 	checkUpdateCmd.Flags().SortFlags = false
 }
 
 // @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkCmd = &cobra.Command{
 	Use:     "check",
-	Short:   "Manage your checks - checks are the endpoints monitored by binocs",
+	Short:   "Manage your checks",
 	Long:    `...`,
 	Aliases: []string{"checks"},
 	Example: "",
@@ -407,9 +421,48 @@ func checkAddOrUpdate(mode string, checkID int) {
 		fmt.Println("Unknown mode: " + mode)
 		os.Exit(1)
 	}
+
 	var err error
 	var match bool
 	var tpl string
+
+	var (
+		flagName                       string
+		flagURL                        string
+		flagMethod                     string
+		flagInterval                   int
+		flagTarget                     float64
+		flagRegions                    []string
+		flagUpCodes                    string
+		flagUpConfirmationsThreshold   int
+		flagDownConfirmationsThreshold int
+		flagChannels                   []string
+	)
+
+	switch mode {
+	case "add":
+		flagName = checkAddFlagName
+		flagURL = checkAddFlagURL
+		flagMethod = checkAddFlagMethod
+		flagInterval = checkAddFlagInterval
+		flagTarget = checkAddFlagTarget
+		flagRegions = checkAddFlagRegions
+		flagUpCodes = checkAddFlagUpCodes
+		flagUpConfirmationsThreshold = checkAddFlagUpConfirmationsThreshold
+		flagDownConfirmationsThreshold = checkAddFlagDownConfirmationsThreshold
+		flagChannels = checkAddFlagChannels
+	case "update":
+		flagName = checkUpdateFlagName
+		flagURL = checkUpdateFlagURL
+		flagMethod = checkUpdateFlagMethod
+		flagInterval = checkUpdateFlagInterval
+		flagTarget = checkUpdateFlagTarget
+		flagRegions = checkUpdateFlagRegions
+		flagUpCodes = checkUpdateFlagUpCodes
+		flagUpConfirmationsThreshold = checkUpdateFlagUpConfirmationsThreshold
+		flagDownConfirmationsThreshold = checkUpdateFlagDownConfirmationsThreshold
+		flagChannels = checkUpdateFlagChannels
+	}
 
 	if mode == "update" && flagName == "" {
 		// pass
@@ -566,6 +619,7 @@ func checkAddOrUpdate(mode string, checkID int) {
 	}
 
 	// @todo check if UpCodes matches format, empty not allowed
+	fmt.Println(flagUpCodes)
 
 	if mode == "update" && flagUpConfirmationsThreshold == 0 {
 		// pass
@@ -618,8 +672,9 @@ func checkAddOrUpdate(mode string, checkID int) {
 	}
 
 	// @todo check if Channels are one or more from a list of values, empty allowed
-
-	// fmt.Println(flagURL+" ("+flagName+") "+flagMethod, flagInterval, flagTarget, flagUpConfirmationsThreshold, flagDownConfirmationsThreshold)
+	if false {
+		fmt.Println(flagChannels)
+	}
 
 	// all clear, we can call the API and confirm adding new check!
 	check := Check{
@@ -647,11 +702,13 @@ func checkAddOrUpdate(mode string, checkID int) {
 		reqURL = "/checks/" + strconv.Itoa(checkID)
 		reqMethod = http.MethodPut
 	}
+	// @todo verbose print postData
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	// @toto verbose print respData
 	err = json.Unmarshal(respData, &check)
 	if err != nil {
 		fmt.Println(err)
@@ -664,9 +721,11 @@ func checkAddOrUpdate(mode string, checkID int) {
 		} else {
 			checkIdent = check.URL
 		}
+		// @todo updated | created
 		tpl = checkIdent + ` updated successfully
 `
 	} else {
+		// @todo updated | created
 		fmt.Println("Error updating check")
 		os.Exit(1)
 	}
