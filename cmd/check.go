@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/manifoldco/promptui"
@@ -241,7 +243,7 @@ var checkCmd = &cobra.Command{
 				apdexChart = "n/a"
 			}
 			tableRow := []string{
-				strconv.Itoa(i + 1), v.Name, v.URL, statusName[v.LastStatus] + " " + v.LastStatusDuration, v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+				strconv.Itoa(i + 1), v.Name, v.URL, statusName[v.LastStatus] + " " + outputDurationWithDays(v.LastStatusDuration), v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 			}
 			tableData = append(tableData, tableRow)
 		}
@@ -371,6 +373,23 @@ func isSupportedRegion(region string) bool {
 		}
 	}
 	return false
+}
+
+func outputDurationWithDays(d string) string {
+	parsed, err := time.ParseDuration(d)
+	if err != nil {
+		return d
+	}
+	if parsed.Hours() > 48 {
+		days := math.Floor(parsed.Hours() / 24)
+		hours := math.Floor(parsed.Hours() - days*24)
+		re1 := regexp.MustCompile(`([0-9]+)h`)
+		rest := re1.ReplaceAllString(d, fmt.Sprintf("%.0f", hours)+"h")
+		re2 := regexp.MustCompile(`([0-9]+)s`)
+		rest = re2.ReplaceAllString(rest, "")
+		return fmt.Sprintf("%.0fd %s", days, rest)
+	}
+	return d
 }
 
 func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
