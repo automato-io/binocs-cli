@@ -243,13 +243,13 @@ var checkCmd = &cobra.Command{
 				apdexChart = "n/a"
 			}
 			tableRow := []string{
-				strconv.Itoa(i + 1), v.Name, v.URL, statusName[v.LastStatus] + " " + outputDurationWithDays(v.LastStatusDuration), v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+				strconv.Itoa(i + 1), v.Name, v.URL, v.Method, statusName[v.LastStatus] + " " + outputDurationWithDays(v.LastStatusDuration), v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 			}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"#", "NAME", "URL", "STATUS", "HTTP CODE", "INTERVAL", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX 24 h"})
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
+		table.SetHeader([]string{"#", "NAME", "URL", "METHOD", "STATUS", "HTTP CODE", "INTERVAL", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX 24 h"})
+		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
 		for _, v := range tableData {
