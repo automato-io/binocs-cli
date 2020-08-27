@@ -4,6 +4,26 @@
 
 - [binocs](#binocs)
 - [binocs account](#binocs-account)
+- [binocs account update](#binocs-account-update)
+- [binocs check](#binocs-check)
+- [binocs check add](#binocs-check-add)
+- [binocs check delete](#binocs-check-delete)
+- [binocs check inspect](#binocs-check-inspect)
+- [binocs check list](#binocs-check-list)
+- [binocs check update](#binocs-check-update)
+- [binocs help](#binocs-help)
+- [binocs incident](#binocs-incident)
+- [binocs incident view](#binocs-incident-view)
+- [binocs login](#binocs-login)
+- [binocs channel](#binocs-channel)
+- [binocs channel add](#binocs-channel-add)
+- [binocs channel associate](#binocs-channel-associate)
+- [binocs channel disassociate](#binocs-channel-disassociate)
+- [binocs channel list](#binocs-channel-list)
+- [binocs channel remove](#binocs-channel-remove)
+- [binocs channel update](#binocs-channel-update)
+- [binocs status](#binocs-status)
+- [binocs version](#binocs-version)
 
 ### binocs
 
@@ -61,6 +81,8 @@ Global Flags:
 Use "binocs-cli account [command] --help" for more information about a command.
 ```
 
+### binocs account update
+
 `binocs account update --help`
 
 ```
@@ -75,6 +97,8 @@ Global Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
+
+## binocs check
 
 `binocs check --help`
 
@@ -107,11 +131,27 @@ Global Flags:
 Use "binocs-cli check [command] --help" for more information about a command.
 ```
 
+## binocs check add
+
 `binocs check add --help`
+
+### binocs check delete
+
 `binocs check delete --help`
+
+## binocs check inspect
+
 `binocs check inspect --help`
+
+## binocs check list
+
 `binocs check list --help`
+
+## binocs check update
+
 `binocs check update --help`
+
+## binocs help
 
 `binocs help --help`
 
@@ -129,6 +169,8 @@ Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
+
+## binocs incident
 
 `binocs incident --help`
 
@@ -155,7 +197,11 @@ Global Flags:
 Use "binocs-cli incident [command] --help" for more information about a command.
 ```
 
-`binocsq incident view --help`
+## binocs incident view
+
+`binocs incident view --help`
+
+## binocs login
 
 `binocs login --help`
 
@@ -176,14 +222,39 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
+## binocs channel
+
 `binocs channel --help`
+
+## binocs channel add
+
 `binocs channel add --help`
+
+## binocs channel associate
+
 `binocs channel associate --help`
+
+## binocs channel disassociate
+
 `binocs channel disassociate --help`
+
+## binocs channel list
+
 `binocs channel list --help`
+
+## binocs channel remove
+
 `binocs channel remove --help`
+
+## binocs channel update
+
 `binocs channel update --help`
+
+## binocs status
+
 `binocs status --help`
+
+## binocs version
 
 `binocs version --help`
 
