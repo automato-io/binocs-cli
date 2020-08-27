@@ -1,6 +1,11 @@
 # CLI Documentation
 
-(todo: ToC)
+## ToC
+
+- [binocs](#binocs)
+- [binocs account](#binocs-account)
+
+### binocs
 
 `binocs --help`
 
@@ -33,30 +38,48 @@ Flags:
 Use "binocs-cli [command] --help" for more information about a command.
 ```
 
+### binocs account
+
 `binocs account --help`
 
 ```
-...
+Display information about your binocs user account.
 
 Usage:
   binocs-cli account [flags]
+
+Available Commands:
+  update     Manage your binocs account
 
 Flags:
   -h, --help   help for account
 
 Global Flags:
-      --config string   config file (default is $HOME/.binocs-cli.json)
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
+
+Use "binocs-cli account [command] --help" for more information about a command.
 ```
 
 `binocs account update --help`
 
+```
+Usage:
+  binocs-cli account update [flags]
+
+Flags:
+  -e, --example string                        Example
+  -h, --help                               help for add
+
+Global Flags:
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
 `binocs check --help`
 
 ```
-...
-(todo: notify if unsupported command is supplied)
-(todo: make `checks` and `check` aliases for `check list`)
+Manage your checks.
 
 Usage:
   binocs-cli check [flags]
