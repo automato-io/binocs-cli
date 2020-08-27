@@ -1,6 +1,8 @@
 # CLI Documentation
 
-`go run main.go --help`
+(todo: ToC)
+
+`binocs --help`
 
 ```
 binocs is a devops-oriented monitoring tool for websites, applications and APIs.
@@ -29,7 +31,7 @@ Flags:
 Use "binocs-cli [command] --help" for more information about a command.
 ```
 
-`go run main.go account --help`
+`binocs account --help`
 
 ```
 ...
@@ -45,10 +47,12 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-`go run main.go check --help`
+`binocs check --help`
 
 ```
 ...
+(todo: notify if unsupported command is supplied)
+(todo: make `checks` and `check` aliases for `check list`)
 
 Usage:
   binocs-cli check [flags]
@@ -76,13 +80,13 @@ Global Flags:
 Use "binocs-cli check [command] --help" for more information about a command.
 ```
 
-`go run main.go check add --help`
-`go run main.go check delete --help`
-`go run main.go check inspect --help`
-`go run main.go check list --help`
-`go run main.go check update --help`
+`binocs check add --help`
+`binocs check delete --help`
+`binocs check inspect --help`
+`binocs check list --help`
+`binocs check update --help`
 
-`go run main.go help --help`
+`binocs help --help`
 
 ```
 Help provides help for any command in the application.
@@ -99,7 +103,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-`go run main.go incident --help`
+`binocs incident --help`
 
 ```
 ...
@@ -124,9 +128,9 @@ Global Flags:
 Use "binocs-cli incident [command] --help" for more information about a command.
 ```
 
-`go run main.go incident inspect --help`
+`binocsq incident inspect --help`
 
-`go run main.go login --help`
+`binocs login --help`
 
 ```
 Login to binocs using your Access ID and Secret Key. 
@@ -145,7 +149,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-`go run main.go version --help`
+`binocs version --help`
 
 ```
 All software has versions. This is binocs's
