@@ -120,7 +120,7 @@ Use "binocs-cli incident [command] --help" for more information about a command.
 `go run main.go login --help`
 
 ```
-Use your Access Key ID and Secret Access Key and login to binocs
+Login to binocs using your Access ID and Secret Key. 
 
 Usage:
   binocs-cli login [flags]
@@ -132,7 +132,7 @@ Flags:
   -h, --help   help for login
 
 Global Flags:
-      --config string   config file (default is $HOME/.binocs-cli.json)
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
 
