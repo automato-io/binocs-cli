@@ -20,6 +20,8 @@ Available Commands:
   help        Help about any command
   incident    Manage incidents
   login       Login to binocs
+  channel     Manage your notification channels
+  status      Display binocs service status info
   version     Print the version number of binocs
 
 Flags:
@@ -46,6 +48,8 @@ Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
+
+`binocs account update --help`
 
 `binocs check --help`
 
@@ -116,7 +120,7 @@ Aliases:
   incident, incidents
 
 Available Commands:
-  inspect
+  view
 
 Flags:
   -h, --help   help for incident
@@ -128,7 +132,7 @@ Global Flags:
 Use "binocs-cli incident [command] --help" for more information about a command.
 ```
 
-`binocsq incident inspect --help`
+`binocsq incident view --help`
 
 `binocs login --help`
 
@@ -148,6 +152,15 @@ Global Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
+
+`binocs channel --help`
+`binocs channel add --help`
+`binocs channel associate --help`
+`binocs channel disassociate --help`
+`binocs channel list --help`
+`binocs channel remove --help`
+`binocs channel update --help`
+`binocs status --help`
 
 `binocs version --help`
 
