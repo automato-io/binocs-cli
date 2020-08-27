@@ -61,6 +61,7 @@ Available Commands:
   add
   delete
   inspect
+  list
   update
 
 Flags:
@@ -69,11 +70,17 @@ Flags:
   -s, --status string   List only "up" or "down" checks, default "all"
 
 Global Flags:
-      --config string   config file (default is $HOME/.binocs-cli.json)
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 
 Use "binocs-cli check [command] --help" for more information about a command.
 ```
+
+`go run main.go check add --help`
+`go run main.go check delete --help`
+`go run main.go check inspect --help`
+`go run main.go check list --help`
+`go run main.go check update --help`
 
 `go run main.go help --help`
 
@@ -116,6 +123,8 @@ Global Flags:
 
 Use "binocs-cli incident [command] --help" for more information about a command.
 ```
+
+`go run main.go incident inspect --help`
 
 `go run main.go login --help`
 
