@@ -39,7 +39,7 @@ and provides insight into current state and metrics history.
 Get notified via Slack, Telegram and SMS.
 
 Usage:
-  binocs-cli [command]
+  binocs [command]
 
 Available Commands:
   account     Manage your binocs account
@@ -57,7 +57,7 @@ Flags:
   -t, --toggle          Help message for toggle
   -v, --verbose         verbose output
 
-Use "binocs-cli [command] --help" for more information about a command.
+Use "binocs [command] --help" for more information about a command.
 ```
 
 ### binocs account
@@ -68,7 +68,7 @@ Use "binocs-cli [command] --help" for more information about a command.
 Display information about your binocs user account.
 
 Usage:
-  binocs-cli account [flags]
+  binocs account [flags]
 
 Available Commands:
   update     Manage your binocs account
@@ -80,7 +80,7 @@ Global Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 
-Use "binocs-cli account [command] --help" for more information about a command.
+Use "binocs account [command] --help" for more information about a command.
 ```
 
 ### binocs account update
@@ -89,7 +89,7 @@ Use "binocs-cli account [command] --help" for more information about a command.
 
 ```
 Usage:
-  binocs-cli account update [flags]
+  binocs account update [flags]
 
 Flags:
   -e, --example string                        Example
@@ -108,8 +108,8 @@ Global Flags:
 Manage your checks.
 
 Usage:
-  binocs-cli check [flags]
-  binocs-cli check [command]
+  binocs check [flags]
+  binocs check [command]
 
 Aliases:
   check, checks
@@ -130,7 +130,7 @@ Global Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 
-Use "binocs-cli check [command] --help" for more information about a command.
+Use "binocs check [command] --help" for more information about a command.
 ```
 
 ## binocs check add
@@ -159,10 +159,10 @@ Use "binocs-cli check [command] --help" for more information about a command.
 
 ```
 Help provides help for any command in the application.
-Simply type binocs-cli help [path to command] for full details.
+Simply type binocs help [path to command] for full details.
 
 Usage:
-  binocs-cli help [command] [flags]
+  binocs help [command] [flags]
 
 Flags:
   -h, --help   help for help
@@ -180,8 +180,8 @@ Global Flags:
 ...
 
 Usage:
-  binocs-cli incident [flags]
-  binocs-cli incident [command]
+  binocs incident [flags]
+  binocs incident [command]
 
 Aliases:
   incident, incidents
@@ -196,7 +196,7 @@ Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 
-Use "binocs-cli incident [command] --help" for more information about a command.
+Use "binocs incident [command] --help" for more information about a command.
 ```
 
 ## binocs incident view
@@ -211,7 +211,7 @@ Use "binocs-cli incident [command] --help" for more information about a command.
 Login to binocs using your Access ID and Secret Key. 
 
 Usage:
-  binocs-cli login [flags]
+  binocs login [flags]
 
 Aliases:
   login, auth
@@ -264,7 +264,7 @@ Global Flags:
 All software has versions. This is binocs's
 
 Usage:
-  binocs-cli version [flags]
+  binocs version [flags]
 
 Flags:
   -h, --help   help for version
