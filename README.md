@@ -18,6 +18,7 @@
 - [binocs help](#binocs-help)
 - [binocs incident](#binocs-incident)
 - [binocs incident view](#binocs-incident-view)
+- [binocs incident update](#binocs-incident-update)
 - [binocs login](#binocs-login)
 - [binocs logout](#binocs-logout)
 - [binocs channel](#binocs-channel)
@@ -42,18 +43,18 @@ and provides insight into current state and metrics history.
 Get notified via Slack, Telegram and SMS.
 
 Usage:
-  binocs [command]
+  binocs [command] [flags] [args]
 
 Available Commands:
   account     Manage your binocs account
   check       Manage your checks
-  help        Help about any command
-  incident    Manage incidents
+  help        Help about any command in the application
+  incident    Manage your incidents
   login       Login to binocs
   logout      Log out of binocs
   channel     Manage your notification channels
   status      Display binocs service status info
-  version     Print the version number of binocs
+  version     Print binocs client version
 
 Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
@@ -117,7 +118,9 @@ Global Flags:
 Deny future login attempts using this key.
 
 Usage:
-  binocs account invalidate-key [flags]
+  binocs account invalidate-key [arg] [flags]
+
+Arg: Access ID
 
 Flags:
       --id      The Access ID to invalidate
@@ -157,11 +160,11 @@ Global Flags:
 `binocs check --help`
 
 ```
-Manage your checks.
+Manage your checks
 
 Usage:
   binocs check [flags]
-  binocs check [command]
+  binocs check [command] [flags]
 
 Aliases:
   check, checks
@@ -211,7 +214,6 @@ Use "binocs check [command] --help" for more information about a command.
 
 ```
 Help provides help for any command in the application.
-Simply type binocs help [path to command] for full details.
 
 Usage:
   binocs help [command] [flags]
@@ -220,7 +222,7 @@ Flags:
   -h, --help   help for help
 
 Global Flags:
-      --config string   config file (default is $HOME/.binocs-cli.json)
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
 
@@ -229,23 +231,24 @@ Global Flags:
 `binocs incident --help`
 
 ```
-...
+Manage your incidents
 
 Usage:
   binocs incident [flags]
-  binocs incident [command]
+  binocs incident [command] [flags]
 
 Aliases:
   incident, incidents
 
 Available Commands:
   view
+  update
 
 Flags:
   -h, --help   help for incident
 
 Global Flags:
-      --config string   config file (default is $HOME/.binocs-cli.json)
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 
 Use "binocs incident [command] --help" for more information about a command.
@@ -254,6 +257,43 @@ Use "binocs incident [command] --help" for more information about a command.
 ## binocs incident view
 
 `binocs incident view --help`
+
+```
+View all info about any incident recorded by binocs.
+
+Usage:
+  binocs incident view [arg] [flags]
+
+Arg: an incident ID
+
+Flags:
+  -h, --help    Display help
+
+Global Flags:
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
+## binocs incident update
+
+`binocs incident update --help`
+
+```
+Update incident notes.
+
+Usage:
+  binocs incident update [arg] [flags]
+
+Arg: an incident ID
+
+Flags:
+  -n, --note    Set incident note to this value
+  -h, --help    Display help
+
+Global Flags:
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
 
 ## binocs login
 
@@ -326,12 +366,26 @@ Global Flags:
 
 `binocs status --help`
 
+```
+Display binocs service status info
+
+Usage:
+  binocs status [flags]
+
+Flags:
+  -h, --help   help for version
+
+Global Flags:
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
 ## binocs version
 
 `binocs version --help`
 
 ```
-All software has versions. This is binocs's
+Prints binocs client version
 
 Usage:
   binocs version [flags]
@@ -340,6 +394,6 @@ Flags:
   -h, --help   help for version
 
 Global Flags:
-      --config string   config file (default is $HOME/.binocs-cli.json)
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
