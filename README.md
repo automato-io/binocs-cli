@@ -9,12 +9,12 @@
 - [x] [binocs account generate-key](#binocs-account-generate-key)
 - [x] [binocs account invalidate-key](#binocs-account-invalidate-key)
 - [x] [binocs account update](#binocs-account-update)
-- [x] [binocs check](#binocs-check)
-- [ ] [binocs check add](#binocs-check-add)
-- [ ] [binocs check delete](#binocs-check-delete)
-- [ ] [binocs check inspect](#binocs-check-inspect)
-- [ ] [binocs check list](#binocs-check-list)
-- [ ] [binocs check update](#binocs-check-update)
+- [ ] [binocs check](#binocs-check)
+- [x] [binocs check add](#binocs-check-add)
+- [x] [binocs check delete](#binocs-check-delete)
+- [x] [binocs check inspect](#binocs-check-inspect)
+- [x] [binocs check list](#binocs-check-list)
+- [x] [binocs check update](#binocs-check-update)
 - [x] [binocs help](#binocs-help)
 - [x] [binocs incident](#binocs-incident)
 - [x] [binocs incident view](#binocs-incident-view)
@@ -22,7 +22,7 @@
 - [x] [binocs login](#binocs-login)
 - [x] [binocs logout](#binocs-logout)
 - [ ] [binocs channel](#binocs-channel)
-- [ ] [binocs channel add](#binocs-channel-add)
+- [x] [binocs channel add](#binocs-channel-add)
 - [ ] [binocs channel associate](#binocs-channel-associate)
 - [ ] [binocs channel disassociate](#binocs-channel-disassociate)
 - [ ] [binocs channel list](#binocs-channel-list)
@@ -57,9 +57,9 @@ Available Commands:
   version     Print binocs client version
 
 Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -h, --help            help for binocs-cli
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -h, --help            Display help
+  -v, --verbose         Verbose output
 
 Use "binocs [command] --help" for more information about a command.
 ```
@@ -83,11 +83,11 @@ Available Commands:
   update            Update your binocs account
 
 Flags:
-  -h, --help   help for account
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 
 Use "binocs account [command] --help" for more information about a command.
 ```
@@ -103,11 +103,11 @@ Usage:
   binocs account generate-key [flags]
 
 Flags:
-  -h, --help    Display help
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ### binocs account invalidate-key
@@ -127,8 +127,8 @@ Flags:
   -h, --help    Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ### binocs account update
@@ -151,8 +151,8 @@ Flags:
   -h, --help                               Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ## binocs check
@@ -179,13 +179,13 @@ Available Commands:
   update
 
 Flags:
-  -h, --help            help for check
+  -h, --help            Display help
   -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
   -s, --status string   List only "up" or "down" checks, default "all"
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 
 Use "binocs check [command] --help" for more information about a command.
 ```
@@ -194,21 +194,123 @@ Use "binocs check [command] --help" for more information about a command.
 
 `binocs check add --help`
 
+```
+Add a check and start reporting on it
+
+Usage:
+  binocs check add [flags]
+
+Flags:
+  -n, --name string                        Check alias
+  -u, --URL string                         URL to check
+  -m, --method string                      HTTP method (GET, POST, ...)
+  -i, --interval int                       How often we check the URL, in seconds (default 30)
+  -t, --target float                       Response time in miliseconds for Apdex = 1.0 (default 0.7)
+  -r, --regions all                        From where we check the URL, choose all or any combination of `us-east-1`, `eu-central-1`, ... (default [all])
+      --up_codes 2xx                       What are the Up HTTP response codes, e.g. 2xx or `200-302`, or `200,301` (default "200-302")
+      --up_confirmations_threshold int     How many subsequent Up responses before triggering notifications (default 2)
+      --down_confirmations_threshold int   How many subsequent Down responses before triggering notifications (default 2)
+      --channels email                     Where you want to receive notifications for this check, email, `slack` or both? (default [email,slack])
+  -h, --help                               Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
+
 ### binocs check delete
 
 `binocs check delete --help`
+
+```
+Delete a check
+
+Usage:
+  binocs check delete [flags] [arg]
+
+Arg: a check ID
+
+Flags:
+  -h, --help            Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
 
 ## binocs check inspect
 
 `binocs check inspect --help`
 
+```
+View detailed info about check's status and history
+
+Usage:
+  binocs check inspect [flags] [arg]
+
+Aliases:
+  inspect, view, show
+
+Arg: a check ID
+
+Flags:
+  -h, --help            Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
+
 ## binocs check list
 
 `binocs check list --help`
 
+```
+List all checks with status and basic metrics info
+
+Usage:
+  binocs check list [flags]
+
+Aliases:
+  list, ls
+
+Flags:
+  -h, --help            Display help
+  -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
+  -s, --status string   List only "up" or "down" checks, default "all"
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
+
 ## binocs check update
 
 `binocs check update --help`
+
+```
+Update a check and continue reporting on it
+
+Usage:
+  binocs check update [flags] [arg]
+
+Flags:
+  -n, --name string                        Check alias
+  -u, --URL string                         URL to check
+  -m, --method string                      HTTP method (GET, POST, ...)
+  -i, --interval int                       How often we check the URL, in seconds (default 30)
+  -t, --target float                       Response time in miliseconds for Apdex = 1.0 (default 0.7)
+  -r, --regions all                        From where we check the URL, choose all or any combination of `us-east-1`, `eu-central-1`, ... (default [all])
+      --up_codes 2xx                       What are the Up HTTP response codes, e.g. 2xx or `200-302`, or `200,301` (default "200-302")
+      --up_confirmations_threshold int     How many subsequent Up responses before triggering notifications (default 2)
+      --down_confirmations_threshold int   How many subsequent Down responses before triggering notifications (default 2)
+      --channels email                     Where you want to receive notifications for this check, email, `slack` or both? (default [email,slack])
+  -h, --help                               Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
 
 ## binocs help
 
@@ -221,11 +323,11 @@ Usage:
   binocs help [command] [flags]
 
 Flags:
-  -h, --help   help for help
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ## binocs incident
@@ -249,11 +351,11 @@ Available Commands:
   update
 
 Flags:
-  -h, --help   help for incident
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 
 Use "binocs incident [command] --help" for more information about a command.
 ```
@@ -274,8 +376,8 @@ Flags:
   -h, --help    Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ## binocs incident update
@@ -295,8 +397,8 @@ Flags:
   -h, --help    Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ## binocs login
@@ -313,11 +415,11 @@ Aliases:
   login, auth
 
 Flags:
-  -h, --help   help for login
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ## binocs logout
@@ -331,11 +433,11 @@ Usage:
   binocs logout [flags]
 
 Flags:
-  -h, --help   help for logout
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ## binocs channel
@@ -377,11 +479,11 @@ Usage:
   binocs status [flags]
 
 Flags:
-  -h, --help   help for version
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
 
 ## binocs version
@@ -395,9 +497,9 @@ Usage:
   binocs version [flags]
 
 Flags:
-  -h, --help   help for version
+  -h, --help            Display help
 
 Global Flags:
-  -c, --config string   config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         verbose output
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
 ```
