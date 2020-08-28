@@ -5,31 +5,31 @@
 ## ToC
 
 - [x] [binocs](#binocs)
-- [ ] [binocs account](#binocs-account)
-- [binocs account generate-key](#binocs-account-generate-key)
-- [binocs account invalidate-key](#binocs-account-invalidate-key)
-- [binocs account update](#binocs-account-update)
-- [binocs check](#binocs-check)
-- [binocs check add](#binocs-check-add)
-- [binocs check delete](#binocs-check-delete)
-- [binocs check inspect](#binocs-check-inspect)
-- [binocs check list](#binocs-check-list)
-- [binocs check update](#binocs-check-update)
-- [binocs help](#binocs-help)
-- [binocs incident](#binocs-incident)
-- [binocs incident view](#binocs-incident-view)
-- [binocs incident update](#binocs-incident-update)
-- [binocs login](#binocs-login)
-- [binocs logout](#binocs-logout)
-- [binocs channel](#binocs-channel)
-- [binocs channel add](#binocs-channel-add)
-- [binocs channel associate](#binocs-channel-associate)
-- [binocs channel disassociate](#binocs-channel-disassociate)
-- [binocs channel list](#binocs-channel-list)
-- [binocs channel remove](#binocs-channel-remove)
-- [binocs channel update](#binocs-channel-update)
-- [binocs status](#binocs-status)
-- [binocs version](#binocs-version)
+- [x] [binocs account](#binocs-account)
+- [x] [binocs account generate-key](#binocs-account-generate-key)
+- [x] [binocs account invalidate-key](#binocs-account-invalidate-key)
+- [x] [binocs account update](#binocs-account-update)
+- [x] [binocs check](#binocs-check)
+- [ ] [binocs check add](#binocs-check-add)
+- [ ] [binocs check delete](#binocs-check-delete)
+- [ ] [binocs check inspect](#binocs-check-inspect)
+- [ ] [binocs check list](#binocs-check-list)
+- [ ] [binocs check update](#binocs-check-update)
+- [x] [binocs help](#binocs-help)
+- [x] [binocs incident](#binocs-incident)
+- [x] [binocs incident view](#binocs-incident-view)
+- [x] [binocs incident update](#binocs-incident-update)
+- [x] [binocs login](#binocs-login)
+- [x] [binocs logout](#binocs-logout)
+- [ ] [binocs channel](#binocs-channel)
+- [ ] [binocs channel add](#binocs-channel-add)
+- [ ] [binocs channel associate](#binocs-channel-associate)
+- [ ] [binocs channel disassociate](#binocs-channel-disassociate)
+- [ ] [binocs channel list](#binocs-channel-list)
+- [ ] [binocs channel remove](#binocs-channel-remove)
+- [ ] [binocs channel update](#binocs-channel-update)
+- [x] [binocs status](#binocs-status)
+- [x] [binocs version](#binocs-version)
 
 ### binocs
 
@@ -59,7 +59,6 @@ Available Commands:
 Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -h, --help            help for binocs-cli
-  -t, --toggle          Help message for toggle
   -v, --verbose         verbose output
 
 Use "binocs [command] --help" for more information about a command.
@@ -76,6 +75,7 @@ Display information about your binocs account.
 
 Usage:
   binocs account [flags]
+  binocs account [command] [flags]
 
 Available Commands:
   generate-key      Generate new Access ID and Secret Key
@@ -160,14 +160,16 @@ Global Flags:
 `binocs check --help`
 
 ```
-Manage your checks
+Manage your checks. Use a subcommand, or inspect a check, if a valid check _id_ is given as the argument.
 
 Usage:
-  binocs check [flags]
+  binocs check [flags] [arg]
   binocs check [command] [flags]
 
 Aliases:
   check, checks
+
+Arg: a check ID
 
 Available Commands:
   add
@@ -234,8 +236,10 @@ Global Flags:
 Manage your incidents
 
 Usage:
-  binocs incident [flags]
+  binocs incident [flags] [arg]
   binocs incident [command] [flags]
+
+Arg: an incident ID
 
 Aliases:
   incident, incidents
