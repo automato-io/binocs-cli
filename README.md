@@ -6,6 +6,8 @@
 
 - [binocs](#binocs)
 - [binocs account](#binocs-account)
+- [binocs account generate-key](#binocs-account-generate-key)
+- [binocs account invalidate-key](#binocs-account-invalidate-key)
 - [binocs account update](#binocs-account-update)
 - [binocs check](#binocs-check)
 - [binocs check add](#binocs-check-add)
@@ -52,7 +54,7 @@ Available Commands:
   version     Print the version number of binocs
 
 Flags:
-      --config string   config file (default is $HOME/.binocs-cli.json)
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
   -h, --help            help for binocs-cli
   -t, --toggle          Help message for toggle
   -v, --verbose         verbose output
@@ -65,13 +67,17 @@ Use "binocs [command] --help" for more information about a command.
 `binocs account --help`
 
 ```
-Display information about your binocs user account.
+Display information about your binocs account.
+
+(name, email, password-***, billing address, timezone)
 
 Usage:
   binocs account [flags]
 
 Available Commands:
-  update     Manage your binocs account
+  generate-key      Generate new Access ID and Secret Key
+  invalidate-key    Deny future login attempts using this key
+  update            Update your binocs account
 
 Flags:
   -h, --help   help for account
@@ -83,17 +89,61 @@ Global Flags:
 Use "binocs account [command] --help" for more information about a command.
 ```
 
+### binocs account generate-key
+
+`binocs account generate-key --help`
+
+```
+Generate new Access ID and Secret Key.
+
+Usage:
+  binocs account generate-key [flags]
+
+Flags:
+  -h, --help    Display help
+
+Global Flags:
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
+### binocs account invalidate-key
+
+`binocs account invalidate-key --help`
+
+```
+Deny future login attempts using this key.
+
+Usage:
+  binocs account invalidate-key [flags]
+
+Flags:
+      --id      The Access ID to invalidate
+  -h, --help    Display help
+
+Global Flags:
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
 ### binocs account update
 
 `binocs account update --help`
 
 ```
+Update any of the following parameters of your account: 
+email, password, name, billing-address, timezone
+
 Usage:
   binocs account update [flags]
 
 Flags:
-  -e, --example string                        Example
-  -h, --help                               help for add
+      --email string                       Email address, also used as the username
+      --password string                    Account password (min. 8 chars)
+      --name string                        Account name (Optional)
+      --billing-address                    We use it on the invoices only
+      --timezone                           Display all times in this timezone, defaults to UTC (London)
+  -h, --help                               Display help
 
 Global Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
