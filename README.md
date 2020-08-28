@@ -19,6 +19,7 @@
 - [binocs incident](#binocs-incident)
 - [binocs incident view](#binocs-incident-view)
 - [binocs login](#binocs-login)
+- [binocs logout](#binocs-logout)
 - [binocs channel](#binocs-channel)
 - [binocs channel add](#binocs-channel-add)
 - [binocs channel associate](#binocs-channel-associate)
@@ -49,6 +50,7 @@ Available Commands:
   help        Help about any command
   incident    Manage incidents
   login       Login to binocs
+  logout      Log out of binocs
   channel     Manage your notification channels
   status      Display binocs service status info
   version     Print the version number of binocs
@@ -268,6 +270,24 @@ Aliases:
 
 Flags:
   -h, --help   help for login
+
+Global Flags:
+  -c, --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
+## binocs logout
+
+`binocs logout --help`
+
+```
+Logs you out of the binocs account on this machine.
+
+Usage:
+  binocs logout [flags]
+
+Flags:
+  -h, --help   help for logout
 
 Global Flags:
   -c, --config string   config file (default is $HOME/.binocs-cli.json)
