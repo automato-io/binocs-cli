@@ -4,8 +4,8 @@
 
 ## ToC
 
-- [binocs](#binocs)
-- [binocs account](#binocs-account)
+- [x] [binocs](#binocs)
+- [ ] [binocs account](#binocs-account)
 - [binocs account generate-key](#binocs-account-generate-key)
 - [binocs account invalidate-key](#binocs-account-invalidate-key)
 - [binocs account update](#binocs-account-update)
