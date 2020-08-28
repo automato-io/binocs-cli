@@ -9,7 +9,7 @@
 - [x] [binocs account generate-key](#binocs-account-generate-key)
 - [x] [binocs account invalidate-key](#binocs-account-invalidate-key)
 - [x] [binocs account update](#binocs-account-update)
-- [ ] [binocs check](#binocs-check)
+- [x] [binocs check](#binocs-check)
 - [x] [binocs check add](#binocs-check-add)
 - [x] [binocs check delete](#binocs-check-delete)
 - [x] [binocs check inspect](#binocs-check-inspect)
@@ -21,13 +21,14 @@
 - [x] [binocs incident update](#binocs-incident-update)
 - [x] [binocs login](#binocs-login)
 - [x] [binocs logout](#binocs-logout)
-- [ ] [binocs channel](#binocs-channel)
+- [x] [binocs channel](#binocs-channel)
 - [x] [binocs channel add](#binocs-channel-add)
 - [ ] [binocs channel associate](#binocs-channel-associate)
 - [ ] [binocs channel disassociate](#binocs-channel-disassociate)
-- [ ] [binocs channel list](#binocs-channel-list)
-- [ ] [binocs channel remove](#binocs-channel-remove)
-- [ ] [binocs channel update](#binocs-channel-update)
+- [x] [binocs channel list](#binocs-channel-list)
+- [x] [binocs channel remove](#binocs-channel-remove)
+- [x] [binocs channel update](#binocs-channel-update)
+- [x] [binocs channel view](#binocs-channel-view)
 - [x] [binocs status](#binocs-status)
 - [x] [binocs version](#binocs-version)
 
@@ -275,9 +276,10 @@ Aliases:
   list, ls
 
 Flags:
-  -h, --help            Display help
-  -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
-  -s, --status string   List only "up" or "down" checks, default "all"
+      --channel string    List only checks associated with this channel
+  -h, --help              Display help
+  -r, --region string     Display MRT, UPTIME and APDEX from the specified region only
+  -s, --status string     List only "up" or "down" checks, default "all"
 
 Global Flags:
   -c, --config string   Config file (default is $HOME/.binocs-cli.json)
@@ -444,9 +446,62 @@ Global Flags:
 
 `binocs channel --help`
 
+```
+Manage your notification channels. Use a subcommand, or inspect a channel, if a valid channel _id_ is given as the argument.
+
+Usage:
+  binocs channel [flags] [arg]
+  binocs channel [command] [flags]
+
+Aliases:
+  channel, channels
+
+Arg: a channel ID
+
+Available Commands:
+  add
+  associate
+  disassociate
+  list
+  remove
+  update
+  view
+
+Flags:
+  -h, --help            Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+
+Use "binocs channel [command] --help" for more information about a command.
+```
+
 ## binocs channel add
 
 `binocs channel add --help`
+
+```
+Add a channel. Remember to associate channel with your checks using:
+  binocs channel associate
+
+Usage:
+  binocs channel add [flags]
+
+Flags:
+      --type string      Type, one of: sms, slack, telegram, email
+      --alias string     Optional name of the channel
+      --handle string    Depending on the value of the --type flag
+            - email - one or more comma-separated e-mail addresses, each address' first use requires e-mail opt-in
+            - sms - a phone number
+            - slack - a Slack handle URL
+            - telegram - @todo
+  -h, --help             Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
 
 ## binocs channel associate
 
@@ -460,13 +515,93 @@ Global Flags:
 
 `binocs channel list --help`
 
+```
+List all channels with stats
+
+Usage:
+  binocs channels list [flags]
+
+Aliases:
+  list, ls
+
+Flags:
+      --check string    List only channels associated with this check
+  -h, --help            Display help
+  -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
+  -s, --status string   List only "up" or "down" checks, default "all"
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
+
 ## binocs channel remove
 
 `binocs channel remove --help`
 
+```
+Delete a channel. This also diassociates this channel from all checks. You will stop receiving alerts via this channel once you delete it using this command.
+
+Usage:
+  binocs channel delete [flags] [arg]
+
+Arg: a channel ID
+
+Flags:
+  -h, --help            Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
+
 ## binocs channel update
 
 `binocs channel update --help`
+
+```
+Update a channel
+
+Usage:
+  binocs channel update [flags] [arg]
+
+Flags:
+      --type string      Type, one of: sms, slack, telegram, email
+      --alias string     Optional name of the channel
+      --handle string    Depending on the value of the --type flag
+            - email - one or more comma-separated e-mail addresses, each address' first use requires e-mail opt-in
+            - sms - a phone number
+            - slack - a Slack handle URL
+            - telegram - @todo
+  -h, --help             Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
+
+## binocs channel view
+
+`binocs channel view --help`
+
+```
+View detailed info about channel
+
+Usage:
+  binocs channel view [flags] [arg]
+
+Aliases:
+  view, inspect, show
+
+Arg: a channel ID
+
+Flags:
+  -h, --help            Display help
+
+Global Flags:
+  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         Verbose output
+```
 
 ## binocs status
 
