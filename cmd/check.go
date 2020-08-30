@@ -131,9 +131,6 @@ func init() {
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
 
-	checkCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME and APDEX from the specified region only")
-	checkCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
-
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check alias")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "URL", "u", "", "URL to check")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
@@ -145,6 +142,9 @@ func init() {
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
 	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
 	checkAddCmd.Flags().SortFlags = false
+
+	checkListCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME and APDEX from the specified region only")
+	checkListCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check alias")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "URL", "u", "", "URL to check")
@@ -159,7 +159,6 @@ func init() {
 	checkUpdateCmd.Flags().SortFlags = false
 }
 
-// @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Manage your checks",
@@ -185,7 +184,8 @@ If an argument is provided without any command, assume "binocs checks inspect <a
 }
 
 var checkAddCmd = &cobra.Command{
-	Use: "add",
+	Use:  "add",
+	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		checkAddOrUpdate("add", "")
 	},
@@ -194,11 +194,13 @@ var checkAddCmd = &cobra.Command{
 var checkInspectCmd = &cobra.Command{
 	Use:     "inspect",
 	Aliases: []string{"view", "show"},
-	Run: func(cmd *cobra.Command, args []string) {
+	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			fmt.Println("RTFM")
-			os.Exit(1)
+			return fmt.Errorf("please provide the identifier of the check you wish to inspect")
 		}
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -223,9 +225,11 @@ Check from: ` + strings.Join(respJSON.Regions, ", ") + `
 	},
 }
 
+// @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkListCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
+	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		urlValues1 := url.Values{}
 		urlValues2 := url.Values{
@@ -323,11 +327,13 @@ var checkListCmd = &cobra.Command{
 
 var checkUpdateCmd = &cobra.Command{
 	Use: "update",
-	Run: func(cmd *cobra.Command, args []string) {
+	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			fmt.Println("RTFM")
-			os.Exit(1)
+			return fmt.Errorf("please provide the identifier of the check you wish to update")
 		}
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		checkAddOrUpdate("update", args[0])
 	},
 }
