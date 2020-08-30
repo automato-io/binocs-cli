@@ -158,7 +158,7 @@ Global Flags:
 
 ## binocs check
 
-[ ] done
+[x] done
 
 `binocs check --help`
 
