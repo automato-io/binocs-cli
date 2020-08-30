@@ -23,6 +23,7 @@ import (
 // Check comes from the API as a JSON, or from user input as `check add` flags
 type Check struct {
 	ID                         int      `json:"id,omitempty"`
+	Ident                      string   `json:"ident,omitempty"`
 	Name                       string   `json:"name,omitempty"`
 	URL                        string   `json:"url,omitempty"`
 	Method                     string   `json:"method,omitempty"`
@@ -198,8 +199,8 @@ var checkCmd = &cobra.Command{
 		}
 
 		var tableData [][]string
-		for i, v := range respJSON {
-			metricsData, err := util.BinocsAPI("/checks/"+strconv.Itoa(v.ID)+"/metrics?"+urlValues2.Encode(), http.MethodGet, []byte{})
+		for _, v := range respJSON {
+			metricsData, err := util.BinocsAPI("/checks/"+v.Ident+"/metrics?"+urlValues2.Encode(), http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -214,7 +215,7 @@ var checkCmd = &cobra.Command{
 				metrics.Uptime = "100"
 			}
 
-			apdexData, err := util.BinocsAPI("/checks/"+strconv.Itoa(v.ID)+"/apdex?"+urlValues2.Encode(), http.MethodGet, []byte{})
+			apdexData, err := util.BinocsAPI("/checks/"+v.Ident+"/apdex?"+urlValues2.Encode(), http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -243,12 +244,12 @@ var checkCmd = &cobra.Command{
 				apdexChart = "n/a"
 			}
 			tableRow := []string{
-				strconv.Itoa(i + 1), v.Name, v.URL, v.Method, statusName[v.LastStatus] + " " + outputDurationWithDays(v.LastStatusDuration), v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+				v.Ident, v.Name, v.URL, v.Method, statusName[v.LastStatus] + " " + outputDurationWithDays(v.LastStatusDuration), v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 			}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"#", "NAME", "URL", "METHOD", "STATUS", "HTTP CODE", "INTERVAL", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX 24 h"})
+		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP CODE", "INTERVAL", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX 24 h"})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
@@ -261,9 +262,8 @@ var checkCmd = &cobra.Command{
 
 var checkAddCmd = &cobra.Command{
 	Use: "add",
-
 	Run: func(cmd *cobra.Command, args []string) {
-		checkAddOrUpdate("add", 0)
+		checkAddOrUpdate("add", "")
 	},
 }
 
@@ -273,9 +273,6 @@ var checkInspectCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("RTFM")
-			os.Exit(1)
-		} else if _, err := strconv.Atoi(args[0]); err != nil {
-			fmt.Println("only reference by id allowed atm")
 			os.Exit(1)
 		}
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
@@ -308,12 +305,8 @@ var checkUpdateCmd = &cobra.Command{
 		if len(args) == 0 {
 			fmt.Println("RTFM")
 			os.Exit(1)
-		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
-			checkAddOrUpdate("update", checkID)
-		} else {
-			fmt.Println("only reference by id allowed atm")
-			os.Exit(1)
 		}
+		checkAddOrUpdate("update", args[0])
 	},
 }
 
@@ -435,7 +428,7 @@ func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
 }
 
 // mode = add|update
-func checkAddOrUpdate(mode string, checkID int) {
+func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode != "add" && mode != "update" {
 		fmt.Println("Unknown mode: " + mode)
 		os.Exit(1)
@@ -718,7 +711,7 @@ func checkAddOrUpdate(mode string, checkID int) {
 		reqMethod = http.MethodPost
 	}
 	if mode == "update" {
-		reqURL = "/checks/" + strconv.Itoa(checkID)
+		reqURL = "/checks/" + checkIdent
 		reqMethod = http.MethodPut
 	}
 	// @todo verbose print postData

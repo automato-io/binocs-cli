@@ -161,7 +161,7 @@ Global Flags:
 `binocs check --help`
 
 ```
-Manage your checks. Use a subcommand, or inspect a check, if a valid check _id_ is given as the argument.
+Manage your checks. Use a subcommand, or inspect a check, if a valid check _identifier_ is given as the argument.
 
 Usage:
   binocs check [flags] [arg]
@@ -170,7 +170,7 @@ Usage:
 Aliases:
   check, checks
 
-Arg: a check ID
+Arg: a check identifier
 
 Available Commands:
   add
@@ -196,7 +196,7 @@ Use "binocs check [command] --help" for more information about a command.
 `binocs check add --help`
 
 ```
-Add a check and start reporting on it
+Add a check and start reporting on it. Check identifier is returned upon successful add operation.
 
 Usage:
   binocs check add [flags]
@@ -229,7 +229,7 @@ Delete a check
 Usage:
   binocs check delete [flags] [arg]
 
-Arg: a check ID
+Arg: a check identifier
 
 Flags:
   -h, --help            Display help
@@ -252,7 +252,7 @@ Usage:
 Aliases:
   inspect, view, show
 
-Arg: a check ID
+Arg: a check identifier
 
 Flags:
   -h, --help            Display help
