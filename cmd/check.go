@@ -127,6 +127,7 @@ func init() {
 	rootCmd.AddCommand(checkCmd)
 	checkCmd.AddCommand(checkAddCmd)
 	checkCmd.AddCommand(checkInspectCmd)
+	checkCmd.AddCommand(checkListCmd)
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
 
@@ -160,11 +161,71 @@ func init() {
 
 // @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkCmd = &cobra.Command{
-	Use:     "check",
-	Short:   "Manage your checks",
-	Long:    `...`,
+	Use:   "check",
+	Short: "Manage your checks",
+	Long: `
+Manage your checks. A command (one of "add", "delete", "inspect", "list" or "update") is optional.
+
+If neither command nor argument are provided, assume "binocs checks list".
+	
+If an argument is provided without any command, assume "binocs checks inspect <arg>".
+`,
 	Aliases: []string{"checks"},
 	Example: "",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Run(checkListCmd, args)
+		} else if len(args) == 1 && true { // @todo true ~ check id validity regex
+			cmd.Run(checkInspectCmd, args)
+		} else {
+			fmt.Println("Unsupported command/arguments combination, please see --help")
+			os.Exit(1)
+		}
+	},
+}
+
+var checkAddCmd = &cobra.Command{
+	Use: "add",
+	Run: func(cmd *cobra.Command, args []string) {
+		checkAddOrUpdate("add", "")
+	},
+}
+
+var checkInspectCmd = &cobra.Command{
+	Use:     "inspect",
+	Aliases: []string{"view", "show"},
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			fmt.Println("RTFM")
+			os.Exit(1)
+		}
+		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var respJSON Check
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		tpl := `Name: ` + respJSON.Name + `
+URL: ` + respJSON.URL + `
+Method: ` + respJSON.Method + `
+Status: ` + respJSON.LastStatusCode + `
+Interval: ` + strconv.Itoa(respJSON.Interval) + ` s
+Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
+Check from: ` + strings.Join(respJSON.Regions, ", ") + `
+`
+		fmt.Print(tpl)
+	},
+}
+
+var checkListCmd = &cobra.Command{
+	Use:     "list",
+	Aliases: []string{"ls"},
 	Run: func(cmd *cobra.Command, args []string) {
 		urlValues1 := url.Values{}
 		urlValues2 := url.Values{
@@ -257,45 +318,6 @@ var checkCmd = &cobra.Command{
 			table.Append(v)
 		}
 		table.Render()
-	},
-}
-
-var checkAddCmd = &cobra.Command{
-	Use: "add",
-	Run: func(cmd *cobra.Command, args []string) {
-		checkAddOrUpdate("add", "")
-	},
-}
-
-var checkInspectCmd = &cobra.Command{
-	Use:     "inspect",
-	Aliases: []string{"view", "show"},
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("RTFM")
-			os.Exit(1)
-		}
-		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var respJSON Check
-		err = json.Unmarshal(respData, &respJSON)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		tpl := `Name: ` + respJSON.Name + `
-URL: ` + respJSON.URL + `
-Method: ` + respJSON.Method + `
-Status: ` + respJSON.LastStatusCode + `
-Interval: ` + strconv.Itoa(respJSON.Interval) + ` s
-Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
-Check from: ` + strings.Join(respJSON.Regions, ", ") + `
-`
-		fmt.Print(tpl)
 	},
 }
 

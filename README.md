@@ -58,7 +58,7 @@ Available Commands:
   version     Print binocs client version
 
 Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -h, --help            Display help
   -v, --verbose         Verbose output
 
@@ -87,7 +87,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 
 Use "binocs account [command] --help" for more information about a command.
@@ -107,7 +107,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -128,7 +128,7 @@ Flags:
   -h, --help    Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -152,25 +152,30 @@ Flags:
   -h, --help                               Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
 ## binocs check
 
+[ ] done
+
 `binocs check --help`
 
 ```
-Manage your checks. Use a subcommand, or inspect a check, if a valid check _identifier_ is given as the argument.
+Manage your checks. A command (one of "add", "delete", "inspect", "list" or "update") is optional.
+
+If neither command nor argument are provided, assume `binocs checks list`.
+
+If an argument is provided without any command, assume `binocs checks inspect <arg>`.
 
 Usage:
-  binocs check [flags] [arg]
-  binocs check [command] [flags]
+  binocs check [command] [flags] [arg]
 
 Aliases:
   check, checks
 
-Arg: a check identifier
+Arg: a 7 characters long check identifier
 
 Available Commands:
   add
@@ -181,11 +186,9 @@ Available Commands:
 
 Flags:
   -h, --help            Display help
-  -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
-  -s, --status string   List only "up" or "down" checks, default "all"
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 
 Use "binocs check [command] --help" for more information about a command.
@@ -215,7 +218,7 @@ Flags:
   -h, --help                               Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -229,13 +232,13 @@ Delete a check
 Usage:
   binocs check delete [flags] [arg]
 
-Arg: a check identifier
+Arg: a 7 characters long check identifier
 
 Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -244,7 +247,7 @@ Global Flags:
 `binocs check inspect --help`
 
 ```
-View detailed info about check's status and history
+View detailed info about check's status and history.
 
 Usage:
   binocs check inspect [flags] [arg]
@@ -252,13 +255,15 @@ Usage:
 Aliases:
   inspect, view, show
 
-Arg: a check identifier
+Arg: a 7 characters long check identifier
 
 Flags:
   -h, --help            Display help
+  -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
+  -s, --status string   List only "up" or "down" checks, default "all"
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -282,7 +287,7 @@ Flags:
   -s, --status string     List only "up" or "down" checks, default "all"
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -310,7 +315,7 @@ Flags:
   -h, --help                               Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -328,7 +333,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -356,7 +361,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 
 Use "binocs incident [command] --help" for more information about a command.
@@ -378,7 +383,7 @@ Flags:
   -h, --help    Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -399,7 +404,7 @@ Flags:
   -h, --help    Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -420,7 +425,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -438,7 +443,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -471,7 +476,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 
 Use "binocs channel [command] --help" for more information about a command.
@@ -499,7 +504,7 @@ Flags:
   -h, --help             Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -531,7 +536,7 @@ Flags:
   -s, --status string   List only "up" or "down" checks, default "all"
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -551,7 +556,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -576,7 +581,7 @@ Flags:
   -h, --help             Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -599,7 +604,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -617,7 +622,7 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
@@ -635,6 +640,6 @@ Flags:
   -h, --help            Display help
 
 Global Flags:
-  -c, --config string   Config file (default is $HOME/.binocs-cli.json)
+      --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
