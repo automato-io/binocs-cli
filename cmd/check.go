@@ -193,7 +193,7 @@ var checkAddCmd = &cobra.Command{
 
 var checkInspectCmd = &cobra.Command{
 	Use:     "inspect",
-	Aliases: []string{"view", "show"},
+	Aliases: []string{"view", "show", "info"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("please provide the identifier of the check you wish to inspect")
