@@ -132,7 +132,7 @@ func init() {
 	checkCmd.AddCommand(checkDeleteCmd)
 
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check alias")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "URL", "u", "", "URL to check")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 30, "How often we check the URL, in seconds")
 	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 0.7, "Response time in miliseconds for Apdex = 1.0")
@@ -147,7 +147,7 @@ func init() {
 	checkListCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check alias")
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "URL", "u", "", "URL to check")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "url", "u", "", "URL to check")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "How often we check the URL, in seconds")
 	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "Response time in miliseconds for Apdex = 1.0")

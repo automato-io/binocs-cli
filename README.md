@@ -210,7 +210,7 @@ Usage:
 
 Flags:
   -n, --name string                        Check alias
-  -u, --URL string                         URL to check
+  -u, --url string                         URL to check
   -m, --method string                      HTTP method (GET, POST, ...)
   -i, --interval int                       How often we check the URL, in seconds (default 30)
   -t, --target float                       Response time in miliseconds for Apdex = 1.0 (default 0.7)
@@ -307,7 +307,7 @@ Usage:
 
 Flags:
   -n, --name string                        Check alias
-  -u, --URL string                         URL to check
+  -u, --url string                         URL to check
   -m, --method string                      HTTP method (GET, POST, ...)
   -i, --interval int                       How often we check the URL, in seconds (default 30)
   -t, --target float                       Response time in miliseconds for Apdex = 1.0 (default 0.7)
