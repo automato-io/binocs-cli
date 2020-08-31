@@ -131,12 +131,13 @@ func init() {
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
 
-	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check alias")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check name")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "GET", "HTTP method (GET, POST, ...)")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "How often we check the URL, in seconds")
-	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "Response time in miliseconds for Apdex = 1.0")
-	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "GET", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "How often binocs checks the URL, in seconds")
+	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "Response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
+	// @todo fix help text - how to list all regions
+	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "From where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
@@ -146,12 +147,13 @@ func init() {
 	checkListCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME and APDEX from the specified region only")
 	checkListCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
 
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check alias")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check name")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "url", "u", "", "URL to check")
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "How often we check the URL, in seconds")
-	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "Response time in miliseconds for Apdex = 1.0")
-	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "Response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
+	// @todo fix help text - how to list all regions
+	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, "From where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "How many subsequent Up responses before triggering notifications")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "How many subsequent Down responses before triggering notifications")
@@ -523,7 +525,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				return nil
 			}
 			prompt := promptui.Prompt{
-				Label:    "Check alias (optional)",
+				Label:    "Check name (optional)",
 				Validate: validate,
 			}
 			flagName, err = prompt.Run()
@@ -598,7 +600,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				return nil
 			}
 			prompt := promptui.Prompt{
-				Label:    "Check interval in seconds (default: 60 s, must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
+				Label:    "Interval in seconds (default: 60 s, must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
 				Validate: validate,
 			}
 			flagIntervalString, err := prompt.Run()
@@ -618,12 +620,12 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			validate := func(input string) error {
 				var inputFloat, _ = strconv.ParseFloat(input, 64)
 				if inputFloat < supportedTargetMinimum || inputFloat > supportedTargetMaximum {
-					return errors.New("Target must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum))
+					return errors.New("Target Response Time must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum))
 				}
 				return nil
 			}
 			prompt := promptui.Prompt{
-				Label:    "Response time in seconds (default: 1.20 s, must be a value between 0.010 and 10.000)",
+				Label:    "Target Response Time in seconds (default: 1.20 s, must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum) + ")",
 				Validate: validate,
 			}
 			flagTargetString, err := prompt.Run()
@@ -635,9 +637,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	// @todo we cannot use the Prompt library here because of its lack of multi-select support,
-	// we choose the default "all" regions unless user specifies regions via the -r option; https://github.com/manifoldco/promptui/issues/72
-
+	// note: we cannot use the Prompt library here because of its lack of multi-select support,
+	// we don't prompt, we choose the default "all" regions unless user specifies regions via the -r option; https://github.com/manifoldco/promptui/issues/72
 	if mode == "update" && len(flagRegions) == 0 {
 		// pass
 	} else {
@@ -674,7 +675,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				return nil
 			}
 			prompt := promptui.Prompt{
-				Label:    "How many subsequent Up responses before triggering notifications",
+				Label:    "Up Confirmations Threshold (default: 2, must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum) + ")",
 				Validate: validate,
 			}
 			flagUpConfirmationsThresholdString, err := prompt.Run()
