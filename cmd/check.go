@@ -102,7 +102,7 @@ const (
 	supportedTargetMaximum                 = 10.0
 	validNamePattern                       = `^[a-zA-Z0-9_\ \-\.]{0,25}$`
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
-	validUpCodePattern                     = `^([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx)))$`
+	validUpCodePattern                     = `^([,]?([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))+$`
 	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
 	supportedConfirmationsThresholdMinimum = 1
@@ -138,7 +138,7 @@ func init() {
 	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "Response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
 	// @todo fix help text - how to list all regions
 	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "From where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "What are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
 	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
@@ -154,7 +154,7 @@ func init() {
 	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "Response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
 	// @todo fix help text - how to list all regions
 	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, "From where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "What are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "How many subsequent Up responses before triggering notifications")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "How many subsequent Down responses before triggering notifications")
 	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagChannels, "channels", "", []string{}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
@@ -539,7 +539,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" && flagURL == "" {
 		// pass
 	} else {
-		// check if URL is url, empty not OK
+		// check if URL is url, empty not allowed
 		match, err = regexp.MatchString(validURLPattern, flagURL)
 		if err != nil {
 			fmt.Println(err)
@@ -569,7 +569,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" && flagMethod == "" {
 		// pass
 	} else {
-		// check if Method is one from a set, empty not OK
+		// check if Method is one from a set, empty not allowed
 		match, err = regexp.MatchString(validMethodPattern, flagMethod)
 		if err != nil {
 			fmt.Println(err)
@@ -659,8 +659,35 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	// @todo check if UpCodes matches format, empty not allowed
-	fmt.Println(flagUpCodes)
+	if mode == "update" && flagUpCodes == "" {
+		// pass
+	} else {
+		// check UpCodes matches format, empty not allowed
+		match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if match == false {
+			validate := func(input string) error {
+				match, err = regexp.MatchString(validUpCodePattern, input)
+				if err != nil {
+					return errors.New("Invalid input")
+				} else if match == false {
+					return errors.New("Invalid input value")
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "What are the good (\"UP\") HTTP response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\" (default: \"200-302\" s)",
+				Validate: validate,
+			}
+			flagURL, err = prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+	}
 
 	if mode == "update" && flagUpConfirmationsThreshold == 0 {
 		// pass
