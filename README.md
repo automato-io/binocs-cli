@@ -158,7 +158,7 @@ Global Flags:
 
 ## binocs check
 
-- [x] done
+- [x] implemented
 
 `binocs check --help`
 
@@ -196,10 +196,14 @@ Use "binocs check [command] --help" for more information about a command.
 
 ## binocs check add
 
+- [ ] implemented
+
 `binocs check add --help`
 
 ```
 Add a check and start reporting on it. Check identifier is returned upon successful add operation.
+
+This command is interactive and asks user for parameters that were not provided as flags. See the flags overview below.
 
 Usage:
   binocs check add [flags]
