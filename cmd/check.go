@@ -133,9 +133,9 @@ func init() {
 
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check alias")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP method (GET, POST, ...)")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 30, "How often we check the URL, in seconds")
-	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 0.7, "Response time in miliseconds for Apdex = 1.0")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "GET", "HTTP method (GET, POST, ...)")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "How often we check the URL, in seconds")
+	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "Response time in miliseconds for Apdex = 1.0")
 	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "From where we check the URL, choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "What are the Up HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
@@ -598,7 +598,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				return nil
 			}
 			prompt := promptui.Prompt{
-				Label:    "Check interval in seconds",
+				Label:    "Check interval in seconds (default: 60 s, must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
 				Validate: validate,
 			}
 			flagIntervalString, err := prompt.Run()
@@ -623,7 +623,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				return nil
 			}
 			prompt := promptui.Prompt{
-				Label:    "Response time in seconds",
+				Label:    "Response time in seconds (default: 1.20 s, must be a value between 0.010 and 10.000)",
 				Validate: validate,
 			}
 			flagTargetString, err := prompt.Run()
