@@ -755,15 +755,21 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		os.Exit(1)
 	}
 	if check.ID > 0 {
-		var checkIdent string
+		var checkDescription string
 		if len(check.Name) > 0 {
-			checkIdent = check.Name + " (" + check.URL + ")"
+			checkDescription = check.Name + " (" + check.URL + ")"
 		} else {
-			checkIdent = check.URL
+			checkDescription = check.URL
 		}
 		// @todo updated | created
-		tpl = checkIdent + ` updated successfully
+		if mode == "add" {
+			tpl = "[" + check.Ident + "] " + checkDescription + ` updated successfully
 `
+		}
+		if mode == "update" {
+			tpl = "[" + check.Ident + "] " + checkDescription + ` added successfully
+`
+		}
 	} else {
 		// @todo updated | created
 		fmt.Println("Error updating check")
