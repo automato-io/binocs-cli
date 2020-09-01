@@ -440,9 +440,9 @@ func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
 		} else if v < 0.250 {
 			dot = "▂"
 		} else if v < 0.375 {
-			dot = "▃ "
+			dot = "▃"
 		} else if v < 0.500 {
-			dot = "▄ "
+			dot = "▄"
 		} else if v < 0.625 {
 			dot = "▅"
 		} else if v < 0.750 {
