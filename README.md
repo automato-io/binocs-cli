@@ -242,7 +242,7 @@ Flags:
   -i, --interval int                       How often we check the URL, in seconds (default 30)
   -t, --target float                       Response time in miliseconds for Apdex = 1.0 (default 0.7)
   -r, --regions all                        From where we check the URL, choose all or any combination of `us-east-1`, `eu-central-1`, ... (default [all])
-      --up_codes 2xx                       What are the Up HTTP response codes, e.g. 2xx or `200-302`, or `200,301` (default "200-302")
+      --up_codes string                    What are the Up HTTP response codes, e.g. 2xx or `200-302`, or `200,301` (default "200-302")
       --up_confirmations_threshold int     How many subsequent Up responses before triggering notifications (default 2)
       --down_confirmations_threshold int   How many subsequent Down responses before triggering notifications (default 2)
       --channels email                     Where you want to receive notifications for this check, email, `slack` or both? (default [email,slack])
