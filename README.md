@@ -303,7 +303,7 @@ Global Flags:
 
 ## binocs check list
 
-- [ ] implemented
+- [x] implemented
 
 `binocs check list --help`
 
@@ -317,7 +317,6 @@ Aliases:
   list, ls
 
 Flags:
-      --channel string    List only checks associated with this channel
   -h, --help              Display help
   -r, --region string     Display MRT, UPTIME and APDEX from the specified region only
   -s, --status string     List only "up" or "down" checks, default "all"
