@@ -223,7 +223,7 @@ Use "binocs check [command] --help" for more information about a command.
 
 ## binocs check add
 
-- [ ] implemented
+- [x] implemented
 
 `binocs check add --help`
 
@@ -254,6 +254,8 @@ Global Flags:
 
 ### binocs check delete
 
+- [x] implemented
+
 `binocs check delete --help`
 
 ```
@@ -273,6 +275,8 @@ Global Flags:
 ```
 
 ## binocs check inspect
+
+- [ ] implemented
 
 `binocs check inspect --help`
 
@@ -299,6 +303,8 @@ Global Flags:
 
 ## binocs check list
 
+- [ ] implemented
+
 `binocs check list --help`
 
 ```
@@ -322,6 +328,8 @@ Global Flags:
 ```
 
 ## binocs check update
+
+- [ ] implemented
 
 `binocs check update --help`
 
