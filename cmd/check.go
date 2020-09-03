@@ -63,6 +63,7 @@ type RegionsResponse struct {
 
 // `check ls` flags
 var (
+	flagPeriod string
 	flagRegion string
 	flagStatus string
 )
@@ -105,6 +106,7 @@ const (
 	validUpCodePattern                     = `^([,]?([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))+$`
 	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
+	validPeriodPattern                     = `^hour|day|month$`
 	supportedConfirmationsThresholdMinimum = 1
 	supportedConfirmationsThresholdMaximum = 10
 )
@@ -143,7 +145,8 @@ func init() {
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
 	checkAddCmd.Flags().SortFlags = false
 
-	checkListCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME and APDEX from the specified region only")
+	checkListCmd.Flags().StringVarP(&flagPeriod, "period", "p", "day", "Display MRT, UPTIME, APDEX values and APDEX chart for specified period")
+	checkListCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
 	checkListCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check name")
@@ -235,9 +238,23 @@ var checkListCmd = &cobra.Command{
 		urlValues2 := url.Values{
 			"period": []string{"day"},
 		}
+		apdexPeriodTableTitle := "1 DAY"
+
+		match, err := regexp.MatchString(validPeriodPattern, flagPeriod)
+		if err == nil && match == true {
+			urlValues2.Set("period", flagPeriod)
+			switch flagPeriod {
+			case "hour":
+				apdexPeriodTableTitle = "1 HOUR"
+			case "day":
+				apdexPeriodTableTitle = "1 DAY"
+			case "month":
+				apdexPeriodTableTitle = "1 MONTH"
+			}
+		}
 
 		// @todo check against currently supported GET /regions
-		match, err := regexp.MatchString(validRegionPattern, flagRegion)
+		match, err = regexp.MatchString(validRegionPattern, flagRegion)
 		if len(flagRegion) > 0 && match == false {
 			fmt.Println("Invalid region provided")
 			os.Exit(1)
@@ -314,7 +331,7 @@ var checkListCmd = &cobra.Command{
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP CODE", "INTERVAL", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX 24 h"})
+		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP CODE", "INTERVAL", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
