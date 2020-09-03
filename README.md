@@ -328,7 +328,7 @@ Global Flags:
 
 ## binocs check update
 
-- [ ] implemented
+- [x] implemented
 
 `binocs check update --help`
 
