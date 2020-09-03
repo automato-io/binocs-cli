@@ -664,6 +664,8 @@ Global Flags:
 
 ## binocs version
 
+- [x] implemented
+
 `binocs version --help`
 
 ```
