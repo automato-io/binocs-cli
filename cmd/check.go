@@ -141,7 +141,6 @@ func init() {
 	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "What are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
-	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagChannels, "channels", "", []string{"email", "slack"}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
 	checkAddCmd.Flags().SortFlags = false
 
 	checkListCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME and APDEX from the specified region only")
@@ -157,7 +156,6 @@ func init() {
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "What are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "How many subsequent Up responses before triggering notifications")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "How many subsequent Down responses before triggering notifications")
-	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagChannels, "channels", "", []string{}, "Where you want to receive notifications for this check, `email`, `slack` or both?")
 	checkUpdateCmd.Flags().SortFlags = false
 }
 
