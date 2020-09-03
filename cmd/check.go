@@ -340,34 +340,46 @@ var checkUpdateCmd = &cobra.Command{
 
 var checkDeleteCmd = &cobra.Command{
 	Use:     "delete",
-	Aliases: []string{"del"},
-	Run: func(cmd *cobra.Command, args []string) {
+	Aliases: []string{"del", "rm"},
+	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			fmt.Println("RTFM")
-			os.Exit(1)
-		} else if checkID, err := strconv.Atoi(args[0]); err == nil {
-			// @todo load ident and display in Label
-			prompt := promptui.Prompt{
-				Label:     "Delete Check",
-				IsConfirm: true,
-			}
-			_, err := prompt.Run()
-			if err != nil {
-				fmt.Println("Aborting")
-				os.Exit(0)
-			}
-			_, err = util.BinocsAPI("/checks/"+strconv.Itoa(checkID), http.MethodDelete, []byte{})
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			tpl := `Check successfully deleted
-`
-			fmt.Print(tpl)
-		} else {
-			fmt.Println("only reference by id allowed atm")
+			return fmt.Errorf("please provide the identifier of the check you wish to delete")
+		}
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
+		if err != nil {
+			// @todo verbose error
+			fmt.Println(err)
 			os.Exit(1)
 		}
+		var respJSON Check
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			// @todo verbose error
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		prompt := promptui.Prompt{
+			Label:     "Delete " + respJSON.Name + " (" + respJSON.URL + ")?",
+			IsConfirm: true,
+		}
+		_, err = prompt.Run()
+		if err != nil {
+			fmt.Println("Aborting")
+			os.Exit(0)
+		}
+		_, err = util.BinocsAPI("/checks/"+args[0], http.MethodDelete, []byte{})
+		if err != nil {
+			// @todo verbose error
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		tpl := `Check successfully deleted
+`
+		fmt.Print(tpl)
 	},
 }
 
