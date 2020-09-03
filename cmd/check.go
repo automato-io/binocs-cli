@@ -79,7 +79,6 @@ var (
 	checkAddFlagUpCodes                    string
 	checkAddFlagUpConfirmationsThreshold   int
 	checkAddFlagDownConfirmationsThreshold int
-	checkAddFlagChannels                   []string
 )
 
 // `check update` flags
@@ -93,7 +92,6 @@ var (
 	checkUpdateFlagUpCodes                    string
 	checkUpdateFlagUpConfirmationsThreshold   int
 	checkUpdateFlagDownConfirmationsThreshold int
-	checkUpdateFlagChannels                   []string
 )
 
 const (
@@ -505,7 +503,6 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		flagUpCodes                    string
 		flagUpConfirmationsThreshold   int
 		flagDownConfirmationsThreshold int
-		flagChannels                   []string
 	)
 
 	switch mode {
@@ -519,7 +516,6 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		flagUpCodes = checkAddFlagUpCodes
 		flagUpConfirmationsThreshold = checkAddFlagUpConfirmationsThreshold
 		flagDownConfirmationsThreshold = checkAddFlagDownConfirmationsThreshold
-		flagChannels = checkAddFlagChannels
 	case "update":
 		flagName = checkUpdateFlagName
 		flagURL = checkUpdateFlagURL
@@ -530,7 +526,6 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		flagUpCodes = checkUpdateFlagUpCodes
 		flagUpConfirmationsThreshold = checkUpdateFlagUpConfirmationsThreshold
 		flagDownConfirmationsThreshold = checkUpdateFlagDownConfirmationsThreshold
-		flagChannels = checkUpdateFlagChannels
 	}
 
 	if mode == "update" && flagName == "" {
@@ -764,11 +759,6 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			flagDownConfirmationsThreshold, _ = strconv.Atoi(flagDownConfirmationsThresholdString)
 		}
-	}
-
-	// @todo check if Channels are one or more from a list of values, empty allowed
-	if false {
-		fmt.Println(flagChannels)
 	}
 
 	// all clear, we can call the API and confirm adding new check!
