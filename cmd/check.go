@@ -789,19 +789,23 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		} else {
 			checkDescription = check.URL
 		}
-		// @todo updated | created
 		if mode == "add" {
-			tpl = "[" + check.Ident + "] " + checkDescription + ` updated successfully
-`
-		}
-		if mode == "update" {
 			tpl = "[" + check.Ident + "] " + checkDescription + ` added successfully
 `
 		}
+		if mode == "update" {
+			tpl = "[" + check.Ident + "] " + checkDescription + ` updated successfully
+`
+		}
 	} else {
-		// @todo updated | created
-		fmt.Println("Error updating check")
-		os.Exit(1)
+		if mode == "add" {
+			fmt.Println("Error adding check")
+			os.Exit(1)
+		}
+		if mode == "update" {
+			fmt.Println("Error updating check")
+			os.Exit(1)
+		}
 	}
 	fmt.Print(tpl)
 }
