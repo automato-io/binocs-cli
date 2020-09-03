@@ -773,7 +773,13 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		UpConfirmationsThreshold:   flagUpConfirmationsThreshold,
 		DownConfirmationsThreshold: flagDownConfirmationsThreshold,
 	}
+	// @hack check flags
 	postData, err := json.Marshal(check)
+	if bytes.Equal(postData, []byte("{}")) {
+		fmt.Printf("provide at least one parameter that you want to update\n")
+		os.Exit(1)
+	}
+
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
