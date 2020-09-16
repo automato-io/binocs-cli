@@ -446,6 +446,8 @@ Global Flags:
 
 ## binocs login
 
+- [x] implemented
+
 `binocs login --help`
 
 ```
