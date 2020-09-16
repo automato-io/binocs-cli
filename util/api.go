@@ -45,7 +45,7 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 		BinocsAPIGetAccessToken(viper.Get("access_key_id").(string), viper.Get("secret_access_key").(string))
 		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
 		if respStatusCode == http.StatusUnauthorized {
-			return []byte{}, fmt.Errorf("access denied; please use `binocs login` to log in")
+			return []byte{}, fmt.Errorf("Login to your binocs account using `binocs login`")
 		}
 	}
 	return respBody, nil
