@@ -65,7 +65,6 @@ var loginCmd = &cobra.Command{
 
 		tpl := `Credentials OK
 You are authenticated as dev@automato.io
-_Type binocs -help for documentation_
 `
 		fmt.Print(tpl)
 	},
