@@ -471,6 +471,8 @@ Global Flags:
 
 ## binocs logout
 
+- [x] implemented
+
 `binocs logout --help`
 
 ```
