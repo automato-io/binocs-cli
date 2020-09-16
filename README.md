@@ -357,6 +357,8 @@ Global Flags:
 
 ## binocs help
 
+- [x] implemented
+
 `binocs help --help`
 
 ```
