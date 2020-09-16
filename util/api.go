@@ -53,12 +53,6 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 
 // BinocsAPIGetAccessToken attempts to get an access token via API and stores it
 func BinocsAPIGetAccessToken(accessKeyID, secretAccessKey string) {
-	home, err := homedir.Dir()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
 	postData := []byte("{\"access_key_id\": \"" + accessKeyID + "\", \"secret_access_key\": \"" + secretAccessKey + "\"}")
 	respData, err := BinocsAPI("/authenticate", http.MethodPost, postData)
 	if err != nil {
@@ -71,25 +65,34 @@ func BinocsAPIGetAccessToken(accessKeyID, secretAccessKey string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	err = storeAccessToken(home, &respJSON)
+	err = storeAccessToken(&respJSON)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
-func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int, error) {
+// ResetAccessToken removes the auth.json file that holds access_token
+func ResetAccessToken() error {
 	home, err := homedir.Dir()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	if _, err = os.Stat(home + "/" + storageDir + "/" + jwtFile); os.IsNotExist(err) {
+		return nil
+	}
+	return os.Remove(home + "/" + storageDir + "/" + jwtFile)
+}
+
+func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int, error) {
 	req, err := http.NewRequest(method, url.String(), bytes.NewReader(data))
 	if err != nil {
 		return []byte{}, 0, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	accessToken, err := loadAccessToken(home)
+	accessToken, err := loadAccessToken()
 	if err != nil {
 		return []byte{}, 0, err
 	} else if len(accessToken) > 0 {
@@ -108,7 +111,13 @@ func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int
 	return respBody, resp.StatusCode, nil
 }
 
-func loadAccessToken(home string) (string, error) {
+func loadAccessToken() (string, error) {
+	home, err := homedir.Dir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	data, err := ioutil.ReadFile(home + "/" + storageDir + "/" + jwtFile)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -124,8 +133,13 @@ func loadAccessToken(home string) (string, error) {
 	return accessTokenData.AccessToken, nil
 }
 
-func storeAccessToken(home string, d *AuthResponse) error {
-	var err error
+func storeAccessToken(d *AuthResponse) error {
+	home, err := homedir.Dir()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	if _, err = os.Stat(home + "/" + storageDir + "/" + jwtFile); os.IsNotExist(err) {
 		err = os.MkdirAll(home+"/"+storageDir, 0755)
 		if err != nil {

@@ -22,6 +22,32 @@ const (
 
 func init() {
 	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(logoutCmd)
+}
+
+var logoutCmd = &cobra.Command{
+	Use:     "logout",
+	Short:   "Logout from binocs",
+	Long:    "Logs you out of the binocs account on this machine",
+	Aliases: []string{},
+	Run: func(cmd *cobra.Command, args []string) {
+		var err error
+		viper.Set("access_key_id", "")
+		viper.Set("secret_access_key", "")
+		err = viper.WriteConfigAs(viper.ConfigFileUsed())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = util.ResetAccessToken()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		tpl := `You were successfully logged out
+`
+		fmt.Print(tpl)
+	},
 }
 
 var loginCmd = &cobra.Command{
