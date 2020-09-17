@@ -68,6 +68,12 @@ var (
 	flagStatus string
 )
 
+// `check inspect` flags
+var (
+	checkInspectFlagPeriod string
+	checkInspectFlagRegion string
+)
+
 // `check add` flags
 var (
 	checkAddFlagName                       string
@@ -143,6 +149,9 @@ func init() {
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
 	checkAddCmd.Flags().SortFlags = false
 
+	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "Display values and charts for specified period")
+	checkInspectCmd.Flags().StringVarP(&checkInspectFlagRegion, "region", "r", "", "Display values and charts from the specified region only")
+
 	checkListCmd.Flags().StringVarP(&flagPeriod, "period", "p", "day", "Display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checkListCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
 	checkListCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
@@ -202,6 +211,24 @@ var checkInspectCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
+		urlValues := url.Values{
+			"period": []string{"day"},
+		}
+		periodTableTitle := "1 DAY"
+
+		match, err := regexp.MatchString(validPeriodPattern, checkInspectFlagPeriod)
+		if err == nil && match == true {
+			urlValues.Set("period", checkInspectFlagPeriod)
+			switch checkInspectFlagPeriod {
+			case "hour":
+				periodTableTitle = "1 HOUR"
+			case "day":
+				periodTableTitle = "1 DAY"
+			case "month":
+				periodTableTitle = "1 MONTH"
+			}
+		}
+
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -214,15 +241,36 @@ var checkInspectCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		tpl := `Name: ` + respJSON.Name + `
+		metrics, err := fetchMetrics(respJSON.Ident, urlValues)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Table "main"
+
+		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
 URL: ` + respJSON.URL + `
 Method: ` + respJSON.Method + `
-Status: ` + respJSON.LastStatusCode + `
-Interval: ` + strconv.Itoa(respJSON.Interval) + ` s
+HTTP Status Code: ` + respJSON.LastStatusCode
+
+		tableMainMetricsCellContent := `Uptime: ` + formatUptime(metrics.Uptime) + `
+Apdex: ` + formatApdex(metrics.Apdex) + `
+` + statusName[respJSON.LastStatus] + " for " + outputDurationWithDays(respJSON.LastStatusDuration) + `
+Mean Response Time: ` + formatMRT(metrics.MRT)
+
+		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + `s 
 Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
-Check from: ` + strings.Join(respJSON.Regions, ", ") + `
-`
-		fmt.Print(tpl)
+UP HTTP Codes: ` + respJSON.UpCodes + `
+Confirmations thresholds: UP: ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN: ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + ` 
+Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
+
+		tableMain := tablewriter.NewWriter(os.Stdout)
+		tableMain.SetHeader([]string{"CHECK", "METRICS (" + periodTableTitle + ")", "SETTINGS"})
+		tableMain.SetAutoWrapText(false)
+		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
+		tableMain.Append([]string{tableMainCheckCellContent, tableMainMetricsCellContent, tableMainSettingsCellContent})
+		tableMain.Render()
 	},
 }
 
@@ -280,19 +328,10 @@ var checkListCmd = &cobra.Command{
 
 		var tableData [][]string
 		for _, v := range respJSON {
-			metricsData, err := util.BinocsAPI("/checks/"+v.Ident+"/metrics?"+urlValues2.Encode(), http.MethodGet, []byte{})
+			metrics, err := fetchMetrics(v.Ident, urlValues2)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			}
-			var metrics MetricsResponse
-			err = json.Unmarshal(metricsData, &metrics)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			if metrics.Uptime == "100.00" {
-				metrics.Uptime = "100"
 			}
 
 			apdexData, err := util.BinocsAPI("/checks/"+v.Ident+"/apdex?"+urlValues2.Encode(), http.MethodGet, []byte{})
@@ -310,18 +349,11 @@ var checkListCmd = &cobra.Command{
 
 			apdexChart := drawCompactApdexChart(apdex, 3)
 
-			tableValueMRT := metrics.MRT + " s"
-			if metrics.MRT == "" {
-				tableValueMRT = "n/a"
-			}
-			tableValueUptime := fmt.Sprintf("%v %%", metrics.Uptime)
-			if metrics.Uptime == "" {
-				tableValueUptime = "n/a"
-			}
-			tableValueApdex := metrics.Apdex
+			tableValueMRT := formatMRT(metrics.MRT)
+			tableValueUptime := formatUptime(metrics.Uptime)
+			tableValueApdex := formatApdex(metrics.Apdex)
 			if metrics.Apdex == "" {
-				tableValueApdex = "n/a"
-				apdexChart = "n/a"
+				apdexChart = ""
 			}
 			tableRow := []string{
 				v.Ident, v.Name, v.URL, v.Method, statusName[v.LastStatus] + " " + outputDurationWithDays(v.LastStatusDuration), v.LastStatusCode, strconv.Itoa(v.Interval) + " s", fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
@@ -396,6 +428,43 @@ var checkDeleteCmd = &cobra.Command{
 `
 		fmt.Print(tpl)
 	},
+}
+
+func fetchMetrics(ident string, urlValues url.Values) (MetricsResponse, error) {
+	var metrics MetricsResponse
+	metricsData, err := util.BinocsAPI("/checks/"+ident+"/metrics?"+urlValues.Encode(), http.MethodGet, []byte{})
+	if err != nil {
+		return metrics, err
+	}
+	err = json.Unmarshal(metricsData, &metrics)
+	if err != nil {
+		return metrics, err
+	}
+	if metrics.Uptime == "100.00" {
+		metrics.Uptime = "100"
+	}
+	return metrics, nil
+}
+
+func formatMRT(mrt string) string {
+	if mrt == "" {
+		return "n/a"
+	}
+	return mrt + " s"
+}
+
+func formatUptime(uptime string) string {
+	if uptime == "" {
+		return "n/a"
+	}
+	return fmt.Sprintf("%v %%", uptime)
+}
+
+func formatApdex(apdex string) string {
+	if apdex == "" {
+		return "n/a"
+	}
+	return apdex
 }
 
 func loadSupportedRegions() {
