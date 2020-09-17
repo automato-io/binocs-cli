@@ -252,11 +252,11 @@ var checkInspectCmd = &cobra.Command{
 		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
 URL: ` + respJSON.URL + `
 Method: ` + respJSON.Method + `
-HTTP Status Code: ` + respJSON.LastStatusCode
+HTTP Status Code: ` + respJSON.LastStatusCode + `
+` + statusName[respJSON.LastStatus] + " for " + outputDurationWithDays(respJSON.LastStatusDuration)
 
 		tableMainMetricsCellContent := `Uptime: ` + formatUptime(metrics.Uptime) + `
 Apdex: ` + formatApdex(metrics.Apdex) + `
-` + statusName[respJSON.LastStatus] + " for " + outputDurationWithDays(respJSON.LastStatusDuration) + `
 Mean Response Time: ` + formatMRT(metrics.MRT)
 
 		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + `s 
