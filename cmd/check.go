@@ -307,7 +307,7 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 			os.Exit(1)
 		}
 
-		responseCodesChart := drawResponseCodesChart(responseCodes, 1, "      ")
+		responseCodesChart := drawResponseCodesChart(responseCodes, "      ")
 		tableResponseCodes.Append([]string{"HTTP RESPONSE CODES"})
 		tableResponseCodes.Append([]string{responseCodesChart})
 
@@ -326,7 +326,7 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 			os.Exit(1)
 		}
 
-		apdexChart := drawApdexChart(apdex, 1, "")
+		apdexChart := drawApdexChart(apdex, "")
 		tableResponseCodes.Append([]string{"APDEX TREND"})
 		tableResponseCodes.Append([]string{apdexChart})
 
@@ -412,7 +412,7 @@ var checkListCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			apdexChart := drawCompactApdexChart(apdex, 3)
+			apdexChart := drawCompactApdexChart(apdex)
 
 			tableValueMRT := formatMRT(metrics.MRT)
 			tableValueUptime := formatUptime(metrics.Uptime)
@@ -574,40 +574,24 @@ func outputDurationWithDays(d string) string {
 	return d
 }
 
-func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
-	// @todo fix block
-	var compressed []float64
-	var compressStack []float64
-	for i, v := range apdex {
-		vf, _ := strconv.ParseFloat(v.Apdex, 32)
-		compressStack = append(compressStack, vf)
-		i = i + 1
-		if i%compress == 0 || i == len(apdex) {
-			var sum float64
-			for _, f := range compressStack {
-				sum = sum + f
-			}
-			compressed = append(compressed, sum/float64(len(compressStack)))
-			compressStack = []float64{}
-		}
-	}
-
+func drawCompactApdexChart(apdex []ApdexResponse) string {
 	var chart string
-	for _, v := range compressed {
+	for _, v := range apdex {
+		var vf, _ = strconv.ParseFloat(v.Apdex, 32)
 		var dot string
-		if v < 0.125 {
+		if vf < 0.125 {
 			dot = "▁"
-		} else if v < 0.250 {
+		} else if vf < 0.250 {
 			dot = "▂"
-		} else if v < 0.375 {
+		} else if vf < 0.375 {
 			dot = "▃"
-		} else if v < 0.500 {
+		} else if vf < 0.500 {
 			dot = "▄"
-		} else if v < 0.625 {
+		} else if vf < 0.625 {
 			dot = "▅"
-		} else if v < 0.750 {
+		} else if vf < 0.750 {
 			dot = "▆"
-		} else if v < 0.875 {
+		} else if vf < 0.875 {
 			dot = "▇"
 		} else {
 			dot = "█"
@@ -624,31 +608,16 @@ func getApdexChartRowRange(i, numRows int) string {
 	return fmt.Sprintf("%.1f - %.1f", down, up)
 }
 
-func drawApdexChart(apdex []ApdexResponse, compress int, leftMargin string) string {
-	var compressed []float64
-	var compressStack []float64
-	for i, v := range apdex {
-		vf, _ := strconv.ParseFloat(v.Apdex, 32)
-		compressStack = append(compressStack, vf)
-		i = i + 1
-		if i%compress == 0 || i == len(apdex) {
-			var sum float64
-			for _, f := range compressStack {
-				sum = sum + f
-			}
-			compressed = append(compressed, sum/float64(len(compressStack)))
-			compressStack = []float64{}
-		}
-	}
-
+func drawApdexChart(apdex []ApdexResponse, leftMargin string) string {
 	const numRows = 5
 	var rows [numRows][]string
 	var chart string
-	for _, v := range compressed {
+	for _, v := range apdex {
+		var vf, _ = strconv.ParseFloat(v.Apdex, 32)
 		for i := 0; i < numRows; i++ {
-			if v > (float64(i)+1.0)/float64(numRows) {
+			if vf > (float64(i)+1.0)/float64(numRows) {
 				rows[i] = append(rows[i], "░")
-			} else if v <= (float64(i)+1.0)/float64(numRows) && v > float64(i)/float64(numRows) {
+			} else if vf <= (float64(i)+1.0)/float64(numRows) && vf > float64(i)/float64(numRows) {
 				rows[i] = append(rows[i], "●")
 			} else {
 				rows[i] = append(rows[i], " ")
@@ -662,7 +631,7 @@ func drawApdexChart(apdex []ApdexResponse, compress int, leftMargin string) stri
 	return chart
 }
 
-func drawResponseCodesChart(responseCodes []ResponseCodesResponse, compress int, leftMargin string) string {
+func drawResponseCodesChart(responseCodes []ResponseCodesResponse, leftMargin string) string {
 	var rows [4][]string
 	var chart string
 	for _, v := range responseCodes {
