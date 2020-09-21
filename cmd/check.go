@@ -137,6 +137,13 @@ var supportedHTTPMethods = map[string]bool{
 	http.MethodTrace:   false,
 }
 
+var aggregateMetricsDataPoints = map[string]int{
+	periodHour:  60,
+	periodDay:   96,
+	periodWeek:  84,
+	periodMonth: 120,
+}
+
 var supportedRegions = []string{}
 
 func init() {
@@ -309,7 +316,7 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 			os.Exit(1)
 		}
 
-		responseCodesChart := drawResponseCodesChart(responseCodes, "      ")
+		responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "      ")
 		tableResponseCodes.Append([]string{"HTTP RESPONSE CODES"})
 		tableResponseCodes.Append([]string{responseCodesChart})
 
@@ -328,7 +335,7 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 			os.Exit(1)
 		}
 
-		apdexChart := drawApdexChart(apdex, "")
+		apdexChart := drawApdexChart(apdex, aggregateMetricsDataPoints[urlValues.Get("period")], "")
 		tableResponseCodes.Append([]string{"APDEX TREND"})
 		tableResponseCodes.Append([]string{apdexChart})
 
@@ -612,56 +619,66 @@ func getApdexChartRowRange(i, numRows int) string {
 	return fmt.Sprintf("%.1f - %.1f", down, up)
 }
 
-func drawApdexChart(apdex []ApdexResponse, leftMargin string) string {
+func drawApdexChart(apdex []ApdexResponse, dataPoints int, leftMargin string) string {
 	const numRows = 5
-	var rows [numRows][]string
+	var rows [numRows]string
 	var chart string
 	for _, v := range apdex {
 		var vf, _ = strconv.ParseFloat(v.Apdex, 32)
 		for i := 0; i < numRows; i++ {
 			if vf > (float64(i)+1.0)/float64(numRows) {
-				rows[i] = append(rows[i], "░")
+				rows[i] = rows[i] + "░"
 			} else if vf <= (float64(i)+1.0)/float64(numRows) && vf > float64(i)/float64(numRows) {
-				rows[i] = append(rows[i], "●")
+				rows[i] = rows[i] + "●"
 			} else {
-				rows[i] = append(rows[i], " ")
+				rows[i] = rows[i] + " "
 			}
 		}
 	}
+	if len(apdex) < dataPoints {
+		for i := range rows {
+			rows[i] = strings.Repeat(" ", dataPoints-len(apdex)) + rows[i]
+		}
+	}
 	for i := 0; i < numRows; i++ {
-		chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + strings.Join(rows[i], "") + "\n" + chart
+		chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + rows[i] + "\n" + chart
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
 }
 
-func drawResponseCodesChart(responseCodes []ResponseCodesResponse, leftMargin string) string {
-	var rows [4][]string
+func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints int, leftMargin string) string {
+	var rows [4]string
 	var chart string
 	for _, v := range responseCodes {
 		if v.Xx2 > 0 {
-			rows[0] = append(rows[0], "●")
+			rows[0] = rows[0] + "●"
 		} else {
-			rows[0] = append(rows[0], " ")
+			rows[0] = rows[0] + " "
 		}
 		if v.Xx3 > 0 {
-			rows[1] = append(rows[1], "●")
+			rows[1] = rows[1] + "●"
 		} else {
-			rows[1] = append(rows[1], " ")
+			rows[1] = rows[1] + " "
 		}
 		if v.Xx4 > 0 {
-			rows[2] = append(rows[2], "●")
+			rows[2] = rows[2] + "●"
 		} else {
-			rows[2] = append(rows[2], " ")
+			rows[2] = rows[2] + " "
 		}
 		if v.Xx5 > 0 {
-			rows[3] = append(rows[3], "●")
+			rows[3] = rows[3] + "●"
 		} else {
-			rows[3] = append(rows[3], " ")
+			rows[3] = rows[3] + " "
+		}
+	}
+	if len(responseCodes) < dataPoints {
+		for i := range rows {
+			rows[i] = strings.Repeat(" ", dataPoints-len(responseCodes)) + rows[i]
 		}
 	}
 	for i := 0; i < 4; i++ {
-		chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + strings.Join(rows[i], "") + "\n"
+		chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + rows[i] + "\n"
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
