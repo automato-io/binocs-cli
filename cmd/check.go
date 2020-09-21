@@ -120,7 +120,7 @@ const (
 	validUpCodePattern                     = `^([,]?([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))+$`
 	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
-	validPeriodPattern                     = `^hour|day|month$`
+	validPeriodPattern                     = `^hour|day|week|month$`
 	supportedConfirmationsThresholdMinimum = 1
 	supportedConfirmationsThresholdMaximum = 10
 )
@@ -234,6 +234,8 @@ var checkInspectCmd = &cobra.Command{
 				periodTableTitle = "1 HOUR"
 			case "day":
 				periodTableTitle = "1 DAY"
+			case "week":
+				periodTableTitle = "1 WEEK"
 			case "month":
 				periodTableTitle = "1 MONTH"
 			}
@@ -359,6 +361,8 @@ var checkListCmd = &cobra.Command{
 				apdexPeriodTableTitle = "1 HOUR"
 			case "day":
 				apdexPeriodTableTitle = "1 DAY"
+			case "week":
+				apdexPeriodTableTitle = "1 WEEK"
 			case "month":
 				apdexPeriodTableTitle = "1 MONTH"
 			}
