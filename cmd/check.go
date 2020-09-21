@@ -268,9 +268,64 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHECK", "METRICS (" + periodTableTitle + ")", "SETTINGS"})
 		tableMain.SetAutoWrapText(false)
+		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
 		tableMain.Append([]string{tableMainCheckCellContent, tableMainMetricsCellContent, tableMainSettingsCellContent})
 		tableMain.Render()
+
+		fmt.Println()
+
+		// Combined table
+
+		tableResponseCodes := tablewriter.NewWriter(os.Stdout)
+		tableResponseCodes.SetAutoWrapText(false)
+		tableResponseCodes.SetRowLine(true)
+		tableResponseCodes.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
+
+		// Sub-table "http response codes"
+
+		chartResponseCodesLeftMargin := "      "
+		chartResponseCodes := chartResponseCodesLeftMargin + `2xx ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●             ●●●●●●● ●●  ● ● ●●●●●●●●●●●●●●●●●●●
+` + chartResponseCodesLeftMargin + `3xx                                                                                                   
+` + chartResponseCodesLeftMargin + `4xx                                                                       ●  ●● ● ●                   
+` + chartResponseCodesLeftMargin + `5xx                                                   ●●●●●●●●●●●●●                                   `
+
+		tableResponseCodes.Append([]string{"HTTP RESPONSE CODES"})
+		tableResponseCodes.Append([]string{chartResponseCodes})
+
+		// Sub-table "apdex trend"
+
+		apdexData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/apdex?"+urlValues.Encode(), http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		apdex := make([]ApdexResponse, 0)
+		decoder := json.NewDecoder(bytes.NewBuffer(apdexData))
+		err = decoder.Decode(&apdex)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// apdexChart := drawCompactApdexChart(apdex, 3)
+
+		// 		chartApdexMargin := chartApdexTrendLeftMargin + `2xx ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●             ●●●●●●● ●●  ● ● ●●●●●●●●●●●●●●●●●●●
+		// ` + chartApdexTrendLeftMargin + `3xx
+		// ` + chartApdexTrendLeftMargin + `4xx                                                                       ●  ●● ● ●
+		// ` + chartApdexTrendLeftMargin + `5xx                                                   ●●●●●●●●●●●●●                                   `
+
+		chartApdexMargin := drawApdexChart(apdex, 1, "")
+
+		tableResponseCodes.Append([]string{"APDEX TREND"})
+		tableResponseCodes.Append([]string{chartApdexMargin})
+
+		// tableResponseCodes.Append([]string{"RESPONSE CODES HEATMAP"})
+		// tableResponseCodes.Append([]string{"..."})
+		// tableResponseCodes.Append([]string{"time series"})
+
+		tableResponseCodes.Render()
+
 	},
 }
 
@@ -510,6 +565,7 @@ func outputDurationWithDays(d string) string {
 }
 
 func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
+	// @todo fix block
 	var compressed []float64
 	var compressStack []float64
 	for i, v := range apdex {
@@ -548,6 +604,52 @@ func drawCompactApdexChart(apdex []ApdexResponse, compress int) string {
 		}
 		chart = chart + dot
 	}
+	return chart
+}
+
+func getApdexChartRowRange(i, numRows int) string {
+	var up, down float64
+	up = (float64(i) + 1.0) / float64(numRows)
+	down = float64(i) / float64(numRows)
+	return fmt.Sprintf("%.1f - %.1f", down, up)
+}
+
+func drawApdexChart(apdex []ApdexResponse, compress int, leftMargin string) string {
+	var compressed []float64
+	var compressStack []float64
+	for i, v := range apdex {
+		vf, _ := strconv.ParseFloat(v.Apdex, 32)
+		compressStack = append(compressStack, vf)
+		i = i + 1
+		if i%compress == 0 || i == len(apdex) {
+			var sum float64
+			for _, f := range compressStack {
+				sum = sum + f
+			}
+			compressed = append(compressed, sum/float64(len(compressStack)))
+			compressStack = []float64{}
+		}
+	}
+
+	const numRows = 5
+	var rows [numRows][]string
+
+	var chart string
+	for _, v := range compressed {
+		for i := 0; i < numRows; i++ {
+			if v > (float64(i)+1.0)/float64(numRows) {
+				rows[i] = append(rows[i], "░")
+			} else if v <= (float64(i)+1.0)/float64(numRows) && v > float64(i)/float64(numRows) {
+				rows[i] = append(rows[i], "●")
+			} else {
+				rows[i] = append(rows[i], " ")
+			}
+		}
+	}
+	for i := 0; i < numRows; i++ {
+		chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + strings.Join(rows[i], "") + "\n" + chart
+	}
+	chart = strings.TrimSuffix(chart, "\n")
 	return chart
 }
 
