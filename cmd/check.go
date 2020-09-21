@@ -56,6 +56,16 @@ type ApdexResponse struct {
 	To    string `json:"to"`
 }
 
+// ResponseCodesResponse comes from the API as a JSON
+type ResponseCodesResponse struct {
+	Xx2  int    `json:"2xx"`
+	Xx3  int    `json:"3xx"`
+	Xx4  int    `json:"4xx"`
+	Xx5  int    `json:"5xx"`
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
 // RegionsResponse comes from the API as a JSON
 type RegionsResponse struct {
 	Regions []string `json:"regions"`
@@ -284,14 +294,22 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 
 		// Sub-table "http response codes"
 
-		chartResponseCodesLeftMargin := "      "
-		chartResponseCodes := chartResponseCodesLeftMargin + `2xx ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●             ●●●●●●● ●●  ● ● ●●●●●●●●●●●●●●●●●●●
-` + chartResponseCodesLeftMargin + `3xx                                                                                                   
-` + chartResponseCodesLeftMargin + `4xx                                                                       ●  ●● ● ●                   
-` + chartResponseCodesLeftMargin + `5xx                                                   ●●●●●●●●●●●●●                                   `
+		responseCodesData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/response-codes?"+urlValues.Encode(), http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		responseCodes := make([]ResponseCodesResponse, 0)
+		decoder := json.NewDecoder(bytes.NewBuffer(responseCodesData))
+		err = decoder.Decode(&responseCodes)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
+		responseCodesChart := drawResponseCodesChart(responseCodes, 1, "      ")
 		tableResponseCodes.Append([]string{"HTTP RESPONSE CODES"})
-		tableResponseCodes.Append([]string{chartResponseCodes})
+		tableResponseCodes.Append([]string{responseCodesChart})
 
 		// Sub-table "apdex trend"
 
@@ -301,24 +319,16 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 			os.Exit(1)
 		}
 		apdex := make([]ApdexResponse, 0)
-		decoder := json.NewDecoder(bytes.NewBuffer(apdexData))
+		decoder = json.NewDecoder(bytes.NewBuffer(apdexData))
 		err = decoder.Decode(&apdex)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		// apdexChart := drawCompactApdexChart(apdex, 3)
-
-		// 		chartApdexMargin := chartApdexTrendLeftMargin + `2xx ●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●             ●●●●●●● ●●  ● ● ●●●●●●●●●●●●●●●●●●●
-		// ` + chartApdexTrendLeftMargin + `3xx
-		// ` + chartApdexTrendLeftMargin + `4xx                                                                       ●  ●● ● ●
-		// ` + chartApdexTrendLeftMargin + `5xx                                                   ●●●●●●●●●●●●●                                   `
-
-		chartApdexMargin := drawApdexChart(apdex, 1, "")
-
+		apdexChart := drawApdexChart(apdex, 1, "")
 		tableResponseCodes.Append([]string{"APDEX TREND"})
-		tableResponseCodes.Append([]string{chartApdexMargin})
+		tableResponseCodes.Append([]string{apdexChart})
 
 		// tableResponseCodes.Append([]string{"RESPONSE CODES HEATMAP"})
 		// tableResponseCodes.Append([]string{"..."})
@@ -633,7 +643,6 @@ func drawApdexChart(apdex []ApdexResponse, compress int, leftMargin string) stri
 
 	const numRows = 5
 	var rows [numRows][]string
-
 	var chart string
 	for _, v := range compressed {
 		for i := 0; i < numRows; i++ {
@@ -648,6 +657,38 @@ func drawApdexChart(apdex []ApdexResponse, compress int, leftMargin string) stri
 	}
 	for i := 0; i < numRows; i++ {
 		chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + strings.Join(rows[i], "") + "\n" + chart
+	}
+	chart = strings.TrimSuffix(chart, "\n")
+	return chart
+}
+
+func drawResponseCodesChart(responseCodes []ResponseCodesResponse, compress int, leftMargin string) string {
+	var rows [4][]string
+	var chart string
+	for _, v := range responseCodes {
+		if v.Xx2 > 0 {
+			rows[0] = append(rows[0], "●")
+		} else {
+			rows[0] = append(rows[0], " ")
+		}
+		if v.Xx3 > 0 {
+			rows[1] = append(rows[1], "●")
+		} else {
+			rows[1] = append(rows[1], " ")
+		}
+		if v.Xx4 > 0 {
+			rows[2] = append(rows[2], "●")
+		} else {
+			rows[2] = append(rows[2], " ")
+		}
+		if v.Xx5 > 0 {
+			rows[3] = append(rows[3], "●")
+		} else {
+			rows[3] = append(rows[3], " ")
+		}
+	}
+	for i := 0; i < 4; i++ {
+		chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + strings.Join(rows[i], "") + "\n"
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
