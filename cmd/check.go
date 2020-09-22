@@ -372,6 +372,11 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 		tableCharts.Append([]string{"RESPONSE TIME HEATMAP"})
 		tableCharts.Append([]string{responseTimeHeatmapChart})
 
+		// Timeline
+
+		timeline := drawTimeline(urlValues.Get("period"), aggregateMetricsDataPoints[urlValues.Get("period")], "                ")
+		tableCharts.Append([]string{timeline})
+
 		tableCharts.Render()
 	},
 }
@@ -794,6 +799,55 @@ func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapRespo
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
+}
+
+func drawTimeline(period string, dataPoints int, leftMargin string) string {
+	var timeline [2]string
+	var now = time.Now()
+	switch period {
+	case periodHour:
+		for i := 0; i < 15; i++ {
+			if i == 0 {
+				timeline[0] = fmt.Sprintf("%02v", now.Minute())
+			} else {
+				now = now.Add(time.Duration(-4) * time.Minute)
+				timeline[0] = fmt.Sprintf("%02v", now.Minute()) + `  ` + timeline[0]
+			}
+		}
+	case periodDay:
+		for i := 0; i < 16; i++ {
+			if i == 0 {
+				now = now.Truncate(time.Duration(15) * time.Minute)
+				timeline[0] = fmt.Sprintf("%02v:%02v", now.Hour(), now.Minute())
+			} else {
+				now = now.Add(time.Duration(-90) * time.Minute)
+				timeline[0] = fmt.Sprintf("%02v:%02v", now.Hour(), now.Minute()) + ` ` + timeline[0]
+			}
+		}
+	case periodWeek:
+		for i := 0; i < 14; i++ {
+			if i == 0 {
+				now = now.Truncate(time.Duration(2) * time.Hour)
+				timeline[0] = fmt.Sprintf("%02v:%02v", now.Hour(), now.Minute())
+			} else {
+				now = now.Add(time.Duration(-12) * time.Hour)
+				timeline[0] = fmt.Sprintf("%02v:%02v", now.Hour(), now.Minute()) + ` ` + timeline[0]
+			}
+		}
+	case periodMonth:
+		for i := 0; i < 30; i++ {
+			if i == 0 {
+				timeline[0] = fmt.Sprintf("%02v.", now.Day())
+			} else {
+				now = now.Add(time.Duration(-24) * time.Hour)
+				timeline[0] = fmt.Sprintf("%02v.", now.Day()) + ` ` + timeline[0]
+			}
+		}
+	}
+	if len(timeline[0]) < dataPoints {
+		timeline[0] = strings.Repeat(" ", dataPoints-len(timeline[0])) + timeline[0]
+	}
+	return leftMargin + timeline[0]
 }
 
 // mode = add|update
