@@ -833,6 +833,14 @@ func drawTimeline(period string, dataPoints int, leftMargin string) string {
 				now = now.Add(time.Duration(-12) * time.Hour)
 				timeline[0] = fmt.Sprintf("%02v:%02v", now.Hour(), now.Minute()) + ` ` + timeline[0]
 			}
+			// second line
+			if now.Hour() < 12 {
+				var gap = 9
+				if len(timeline[0]) < 12 {
+					gap = gap - (12 - len(timeline[0]))
+				}
+				timeline[1] = fmt.Sprintf("%s", now.Format("Mon")) + strings.Repeat(" ", gap) + timeline[1]
+			}
 		}
 	case periodMonth:
 		for i := 0; i < 30; i++ {
@@ -842,10 +850,21 @@ func drawTimeline(period string, dataPoints int, leftMargin string) string {
 				now = now.Add(time.Duration(-24) * time.Hour)
 				timeline[0] = fmt.Sprintf("%02v.", now.Day()) + ` ` + timeline[0]
 			}
+			// second line
+			if now.Day() == 1 {
+				var gap = len(timeline[0]) - len(now.Format("Jan"))
+				timeline[1] = fmt.Sprintf("%s", now.Format("Jan")) + strings.Repeat(" ", gap) + timeline[1]
+			}
 		}
 	}
 	if len(timeline[0]) < dataPoints {
 		timeline[0] = strings.Repeat(" ", dataPoints-len(timeline[0])) + timeline[0]
+		if len(timeline[1]) > 0 {
+			timeline[1] = strings.Repeat(" ", len(timeline[0])-len(timeline[1])) + timeline[1]
+		}
+	}
+	if len(timeline[1]) > 0 {
+		return leftMargin + timeline[0] + "\n" + leftMargin + timeline[1]
 	}
 	return leftMargin + timeline[0]
 }
