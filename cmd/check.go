@@ -66,6 +66,20 @@ type ResponseCodesResponse struct {
 	To   string `json:"to"`
 }
 
+// ResponseTimeHeatmapResponse comes from the API as a JSON
+type ResponseTimeHeatmapResponse struct {
+	Rt0  int    `json:"rt0"`
+	Rt1  int    `json:"rt1"`
+	Rt2  int    `json:"rt2"`
+	Rt3  int    `json:"rt3"`
+	Rt4  int    `json:"rt4"`
+	Rt5  int    `json:"rt5"`
+	Rt6  int    `json:"rt6"`
+	Rt7  int    `json:"rt7"`
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
 // RegionsResponse comes from the API as a JSON
 type RegionsResponse struct {
 	Regions []string `json:"regions"`
@@ -296,10 +310,10 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 
 		// Combined table
 
-		tableResponseCodes := tablewriter.NewWriter(os.Stdout)
-		tableResponseCodes.SetAutoWrapText(false)
-		tableResponseCodes.SetRowLine(true)
-		tableResponseCodes.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
+		tableCharts := tablewriter.NewWriter(os.Stdout)
+		tableCharts.SetAutoWrapText(false)
+		tableCharts.SetRowLine(true)
+		tableCharts.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
 
 		// Sub-table "http response codes"
 
@@ -316,9 +330,9 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 			os.Exit(1)
 		}
 
-		responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "      ")
-		tableResponseCodes.Append([]string{"HTTP RESPONSE CODES"})
-		tableResponseCodes.Append([]string{responseCodesChart})
+		responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "            ")
+		tableCharts.Append([]string{"HTTP RESPONSE CODES"})
+		tableCharts.Append([]string{responseCodesChart})
 
 		// Sub-table "apdex trend"
 
@@ -335,16 +349,30 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 			os.Exit(1)
 		}
 
-		apdexChart := drawApdexChart(apdex, aggregateMetricsDataPoints[urlValues.Get("period")], "")
-		tableResponseCodes.Append([]string{"APDEX TREND"})
-		tableResponseCodes.Append([]string{apdexChart})
+		apdexChart := drawApdexChart(apdex, aggregateMetricsDataPoints[urlValues.Get("period")], "      ")
+		tableCharts.Append([]string{"APDEX TREND"})
+		tableCharts.Append([]string{apdexChart})
 
-		// tableResponseCodes.Append([]string{"RESPONSE CODES HEATMAP"})
-		// tableResponseCodes.Append([]string{"..."})
-		// tableResponseCodes.Append([]string{"time series"})
+		// Sub-table "response times heatmap"
 
-		tableResponseCodes.Render()
+		responseTimeHeatmapData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/response-time-heatmap?"+urlValues.Encode(), http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		responseTimeHeatmap := make([]ResponseTimeHeatmapResponse, 0)
+		decoder = json.NewDecoder(bytes.NewBuffer(responseTimeHeatmapData))
+		err = decoder.Decode(&responseTimeHeatmap)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
+		responseTimeHeatmapChart := drawResponseTimeHeatmapChart(responseTimeHeatmap, aggregateMetricsDataPoints[urlValues.Get("period")], "")
+		tableCharts.Append([]string{"RESPONSE TIME HEATMAP"})
+		tableCharts.Append([]string{responseTimeHeatmapChart})
+
+		tableCharts.Render()
 	},
 }
 
@@ -679,6 +707,90 @@ func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints in
 	}
 	for i := 0; i < 4; i++ {
 		chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + rows[i] + "\n"
+	}
+	chart = strings.TrimSuffix(chart, "\n")
+	return chart
+}
+
+func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapResponse, dataPoints int, leftMargin string) string {
+	var rowTitles = [8]string{
+		"   error / 8+ s",
+		"  4.00 - 8.00 s",
+		"  2.00 - 4.00 s",
+		"  1.00 - 2.00 s",
+		" 0.500 - 1.00 s",
+		"0.250 - 0.500 s",
+		"0.125 - 0.250 s",
+		"0.000 - 0.125 s",
+	}
+	var heatmapMaximum int
+	for _, v := range responseTimeHeatmap {
+		if v.Rt0 > heatmapMaximum {
+			heatmapMaximum = v.Rt0
+		}
+		if v.Rt1 > heatmapMaximum {
+			heatmapMaximum = v.Rt1
+		}
+		if v.Rt2 > heatmapMaximum {
+			heatmapMaximum = v.Rt2
+		}
+		if v.Rt3 > heatmapMaximum {
+			heatmapMaximum = v.Rt3
+		}
+		if v.Rt4 > heatmapMaximum {
+			heatmapMaximum = v.Rt4
+		}
+		if v.Rt5 > heatmapMaximum {
+			heatmapMaximum = v.Rt5
+		}
+		if v.Rt6 > heatmapMaximum {
+			heatmapMaximum = v.Rt6
+		}
+		if v.Rt7 > heatmapMaximum {
+			heatmapMaximum = v.Rt7
+		}
+	}
+	var palette = [5]string{" ", "░", "▒", "▓", "█"}
+	var paletteStep = float32(len(palette) - 1)
+	var thresholds = [4]float32{
+		1.0,
+		float32(heatmapMaximum) / paletteStep,
+		2.0 * float32(heatmapMaximum) / paletteStep,
+		3.0 * float32(heatmapMaximum) / paletteStep,
+	}
+	var rows [8]string
+	var chart string
+	drawHeatmapPixel := func(row string, rt int) string {
+		vfrt := float32(rt)
+		if vfrt >= thresholds[3] {
+			return row + palette[4]
+		} else if vfrt >= thresholds[2] {
+			return row + palette[3]
+		} else if vfrt >= thresholds[1] {
+			return row + palette[2]
+		} else if vfrt >= thresholds[0] {
+			return row + palette[1]
+		} else {
+			return row + palette[0]
+		}
+	}
+	for _, v := range responseTimeHeatmap {
+		rows[0] = drawHeatmapPixel(rows[0], v.Rt7)
+		rows[1] = drawHeatmapPixel(rows[1], v.Rt6)
+		rows[2] = drawHeatmapPixel(rows[2], v.Rt5)
+		rows[3] = drawHeatmapPixel(rows[3], v.Rt4)
+		rows[4] = drawHeatmapPixel(rows[4], v.Rt3)
+		rows[5] = drawHeatmapPixel(rows[5], v.Rt2)
+		rows[6] = drawHeatmapPixel(rows[6], v.Rt1)
+		rows[7] = drawHeatmapPixel(rows[7], v.Rt0)
+	}
+	if len(responseTimeHeatmap) < dataPoints {
+		for i := range rows {
+			rows[i] = strings.Repeat(" ", dataPoints-len(responseTimeHeatmap)) + rows[i]
+		}
+	}
+	for i := 0; i < len(rows); i++ {
+		chart = chart + leftMargin + rowTitles[i] + " " + rows[i] + "\n"
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
