@@ -706,20 +706,6 @@ func drawCompactApdexChart(apdex []ApdexResponse) string {
 	return chart
 }
 
-func reverse(s string) string {
-	n := 0
-	rune := make([]rune, len(s))
-	for _, r := range s {
-		rune[n] = r
-		n++
-	}
-	rune = rune[0:n]
-	for i := 0; i < n/2; i++ {
-		rune[i], rune[n-1-i] = rune[n-1-i], rune[i]
-	}
-	return string(rune)
-}
-
 func getApdexChartRowRange(i, numRows int) string {
 	var up, down float64
 	up = (float64(i) + 1.0) / float64(numRows)
@@ -1292,4 +1278,18 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 	fmt.Print(tpl)
+}
+
+func reverse(s string) string {
+	n := 0
+	rune := make([]rune, len(s))
+	for _, r := range s {
+		rune[n] = r
+		n++
+	}
+	rune = rune[0:n]
+	for i := 0; i < n/2; i++ {
+		rune[i], rune[n-1-i] = rune[n-1-i], rune[i]
+	}
+	return string(rune)
 }
