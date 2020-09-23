@@ -636,29 +636,80 @@ func outputDurationWithDays(d string) string {
 
 func drawCompactApdexChart(apdex []ApdexResponse) string {
 	var chart string
-	for _, v := range apdex {
-		var vf, _ = strconv.ParseFloat(v.Apdex, 32)
-		var dot string
-		if vf < 0.125 {
-			dot = "▁"
-		} else if vf < 0.250 {
-			dot = "▂"
-		} else if vf < 0.375 {
-			dot = "▃"
-		} else if vf < 0.500 {
-			dot = "▄"
-		} else if vf < 0.625 {
-			dot = "▅"
-		} else if vf < 0.750 {
-			dot = "▆"
-		} else if vf < 0.875 {
-			dot = "▇"
-		} else {
-			dot = "█"
-		}
-		chart = chart + dot
+	var alphabet = map[string]string{
+		"00": " ",
+		"01": "⢀",
+		"02": "⢠",
+		"03": "⢰",
+		"04": "⢸",
+		"10": "⡀",
+		"11": "⣀",
+		"12": "⣠",
+		"13": "⣰",
+		"14": "⣸",
+		"20": "⡄",
+		"21": "⣄",
+		"22": "⣤",
+		"23": "⣴",
+		"24": "⣼",
+		"30": "⡆",
+		"31": "⣆",
+		"32": "⣦",
+		"33": "⣶",
+		"34": "⣾",
+		"40": "⡇",
+		"41": "⣇",
+		"42": "⣧",
+		"43": "⣷",
+		"44": "⣿",
 	}
+	var reverseApdex []ApdexResponse
+	for _, v := range apdex {
+		reverseApdex = append([]ApdexResponse{v}, reverseApdex...)
+	}
+	var assignChar = func(left, right float64) string {
+		const steps = 5
+		var leftDots, rightDots string
+		for j := 1; j < 1+steps; j++ {
+			if left <= float64(j)/steps {
+				leftDots = strconv.Itoa(j - 1)
+				break
+			}
+		}
+		for k := 1; k < 1+steps; k++ {
+			if right <= float64(k)/steps {
+				rightDots = strconv.Itoa(k - 1)
+				break
+			}
+		}
+		return alphabet[rightDots+leftDots]
+	}
+	for i, v := range reverseApdex {
+		if i%2 == 1 { // even
+			left, _ := strconv.ParseFloat(reverseApdex[i-1].Apdex, 32)
+			right, _ := strconv.ParseFloat(v.Apdex, 32)
+			chart = chart + assignChar(left, right)
+		} else if len(reverseApdex) == i+1 { // last
+			left, _ := strconv.ParseFloat(v.Apdex, 32)
+			chart = chart + assignChar(left, 0.0)
+		}
+	}
+	chart = reverse(chart)
 	return chart
+}
+
+func reverse(s string) string {
+	n := 0
+	rune := make([]rune, len(s))
+	for _, r := range s {
+		rune[n] = r
+		n++
+	}
+	rune = rune[0:n]
+	for i := 0; i < n/2; i++ {
+		rune[i], rune[n-1-i] = rune[n-1-i], rune[i]
+	}
+	return string(rune)
 }
 
 func getApdexChartRowRange(i, numRows int) string {
