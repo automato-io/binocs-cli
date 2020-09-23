@@ -278,6 +278,8 @@ var checkInspectCmd = &cobra.Command{
 			}
 		}
 
+		spin.Start()
+		spin.Suffix = " loading check " + args[0]
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -290,6 +292,7 @@ var checkInspectCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		spin.Suffix = " loading check metrics for " + args[0]
 		metrics, err := fetchMetrics(respJSON.Ident, urlValues)
 		if err != nil {
 			fmt.Println(err)
@@ -320,9 +323,6 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
 		tableMain.Append([]string{tableMainCheckCellContent, tableMainMetricsCellContent, tableMainSettingsCellContent})
-		tableMain.Render()
-
-		fmt.Println()
 
 		// Combined table
 
@@ -393,6 +393,9 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 		timeline := drawTimeline(urlValues.Get("period"), aggregateMetricsDataPoints[urlValues.Get("period")], "                ")
 		tableCharts.Append([]string{timeline})
 
+		spin.Stop()
+		tableMain.Render()
+		fmt.Println()
 		tableCharts.Render()
 	},
 }
@@ -438,6 +441,9 @@ var checkListCmd = &cobra.Command{
 			urlValues1.Set("status", checkListFlagStatus)
 		}
 
+		spin.Start()
+		spin.Suffix = " loading checks..."
+
 		respData, err := util.BinocsAPI("/checks?"+urlValues1.Encode(), http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -453,6 +459,7 @@ var checkListCmd = &cobra.Command{
 
 		var tableData [][]string
 		for _, v := range respJSON {
+			spin.Suffix = " loading metrics for " + v.Ident + " - " + v.Name
 			metrics, err := fetchMetrics(v.Ident, urlValues2)
 			if err != nil {
 				fmt.Println(err)
@@ -493,6 +500,7 @@ var checkListCmd = &cobra.Command{
 		for _, v := range tableData {
 			table.Append(v)
 		}
+		spin.Stop()
 		table.Render()
 	},
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -54,6 +55,8 @@ var supportedPeriods = map[string]time.Duration{
 var Verbose bool
 
 var cfgFile string
+
+var spin = spinner.New(spinner.CharSets[7], 100*time.Millisecond)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
