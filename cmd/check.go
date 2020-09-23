@@ -311,7 +311,7 @@ HTTP Status Code: ` + respJSON.LastStatusCode + `
 Apdex: ` + formatApdex(metrics.Apdex) + `
 Mean Response Time: ` + formatMRT(metrics.MRT)
 
-		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + `s 
+		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + ` s 
 Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
 UP HTTP Codes: ` + respJSON.UpCodes + `
 Confirmations thresholds: UP: ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN: ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + ` 
