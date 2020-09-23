@@ -85,11 +85,18 @@ type RegionsResponse struct {
 	Regions []string `json:"regions"`
 }
 
+// `check` flags
+var (
+	checkFlagPeriod string
+	checkFlagRegion string
+	checkFlagStatus string
+)
+
 // `check ls` flags
 var (
-	flagPeriod string
-	flagRegion string
-	flagStatus string
+	checkListFlagPeriod string
+	checkListFlagRegion string
+	checkListFlagStatus string
 )
 
 // `check inspect` flags
@@ -168,6 +175,10 @@ func init() {
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
 
+	checkCmd.Flags().StringVarP(&checkFlagPeriod, "period", "p", "day", "Display values and charts for specified period")
+	checkCmd.Flags().StringVarP(&checkFlagRegion, "region", "r", "", "Display values and charts from the specified region only")
+	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
+
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check name")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "GET", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
@@ -183,9 +194,9 @@ func init() {
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "Display values and charts for specified period")
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagRegion, "region", "r", "", "Display values and charts from the specified region only")
 
-	checkListCmd.Flags().StringVarP(&flagPeriod, "period", "p", "day", "Display MRT, UPTIME, APDEX values and APDEX chart for specified period")
-	checkListCmd.Flags().StringVarP(&flagRegion, "region", "r", "", "Display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
-	checkListCmd.Flags().StringVarP(&flagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
+	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "Display MRT, UPTIME, APDEX values and APDEX chart for specified period")
+	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "Display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
+	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check name")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "url", "u", "", "URL to check")
@@ -214,8 +225,13 @@ If an argument is provided without any command, assume "binocs checks inspect <a
 	Example: "",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
+			checkListFlagPeriod = checkFlagPeriod
+			checkListFlagRegion = checkFlagRegion
+			checkListFlagStatus = checkFlagStatus
 			cmd.Run(checkListCmd, args)
 		} else if len(args) == 1 && true { // @todo true ~ check id validity regex
+			checkInspectFlagPeriod = checkFlagPeriod
+			checkInspectFlagRegion = checkFlagRegion
 			cmd.Run(checkInspectCmd, args)
 		} else {
 			fmt.Println("Unsupported command/arguments combination, please see --help")
@@ -393,10 +409,10 @@ var checkListCmd = &cobra.Command{
 		}
 		apdexPeriodTableTitle := "1 DAY"
 
-		match, err := regexp.MatchString(validPeriodPattern, flagPeriod)
+		match, err := regexp.MatchString(validPeriodPattern, checkListFlagPeriod)
 		if err == nil && match == true {
-			urlValues2.Set("period", flagPeriod)
-			switch flagPeriod {
+			urlValues2.Set("period", checkListFlagPeriod)
+			switch checkListFlagPeriod {
 			case "hour":
 				apdexPeriodTableTitle = "1 HOUR"
 			case "day":
@@ -409,17 +425,17 @@ var checkListCmd = &cobra.Command{
 		}
 
 		// @todo check against currently supported GET /regions
-		match, err = regexp.MatchString(validRegionPattern, flagRegion)
-		if len(flagRegion) > 0 && match == false {
+		match, err = regexp.MatchString(validRegionPattern, checkListFlagRegion)
+		if len(checkListFlagRegion) > 0 && match == false {
 			fmt.Println("Invalid region provided")
 			os.Exit(1)
 		} else if err == nil && match == true {
-			urlValues2.Set("region", flagRegion)
+			urlValues2.Set("region", checkListFlagRegion)
 		}
 
-		flagStatus = strings.ToUpper(flagStatus)
-		if flagStatus == statusNameUp || flagStatus == statusNameDown {
-			urlValues1.Set("status", flagStatus)
+		checkListFlagStatus = strings.ToUpper(checkListFlagStatus)
+		if checkListFlagStatus == statusNameUp || checkListFlagStatus == statusNameDown {
+			urlValues1.Set("status", checkListFlagStatus)
 		}
 
 		respData, err := util.BinocsAPI("/checks?"+urlValues1.Encode(), http.MethodGet, []byte{})
