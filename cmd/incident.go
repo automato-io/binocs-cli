@@ -23,6 +23,7 @@ type Incident struct {
 	CheckURL      string `json:"check_url"`
 	Opened        string `json:"opened"`
 	Closed        string `json:"closed"`
+	Duration      string `json:"duration"`
 	ResponseCodes string `json:"response_codes"`
 }
 
@@ -34,7 +35,7 @@ func init() {
 var incidentCmd = &cobra.Command{
 	Use:     "incident",
 	Short:   "Manage incidents",
-	Long:    `...`,
+	Long:    ``,
 	Aliases: []string{"incidents"},
 	Run: func(cmd *cobra.Command, args []string) {
 		respData, err := util.BinocsAPI("/incidents", http.MethodGet, []byte{})
@@ -53,12 +54,13 @@ var incidentCmd = &cobra.Command{
 		var tableData [][]string
 		for _, v := range respJSON {
 			tableRow := []string{
-				strconv.Itoa(v.ID), v.CheckName, v.CheckURL, v.IncidentState, v.Opened, v.Closed, v.ResponseCodes, v.IncidentNote,
+				strconv.Itoa(v.ID), v.CheckName, v.CheckURL, v.IncidentState, v.Opened, v.Closed, util.OutputDurationWithDays(v.Duration), v.ResponseCodes, v.IncidentNote,
 			}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "CHECK", "URL", "STATE", "OPENED", "CLOSED", "RESPONSE CODES", "NOTE"})
+		table.SetAutoWrapText(false)
+		table.SetHeader([]string{"ID", "CHECK", "URL", "STATE", "OPENED", "CLOSED", "DURATION", "RESPONSE CODES", "NOTE"})
 		for _, v := range tableData {
 			table.Append(v)
 		}
@@ -68,8 +70,15 @@ var incidentCmd = &cobra.Command{
 
 var incidentInspectCmd = &cobra.Command{
 	Use:     "inspect",
-	Aliases: []string{"view", "show"},
+	Short:   "View info about incident",
+	Aliases: []string{"view", "show", "info"},
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("please provide the identifier of the incident you want to inspect")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-
+		spin.Start()
 	},
 }
