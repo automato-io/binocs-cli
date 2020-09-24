@@ -553,7 +553,7 @@ var checkDeleteCmd = &cobra.Command{
 		}
 
 		prompt := promptui.Prompt{
-			Label:     "Delete " + respJSON.Name + " (" + respJSON.URL + ")?",
+			Label:     "Delete " + respJSON.Name + " (" + respJSON.URL + ")",
 			IsConfirm: true,
 		}
 		_, err = prompt.Run()
