@@ -593,21 +593,21 @@ func fetchMetrics(ident string, urlValues url.Values) (MetricsResponse, error) {
 
 func formatMRT(mrt string) string {
 	if mrt == "" {
-		return "n/a"
+		return "-"
 	}
 	return mrt + " s"
 }
 
 func formatUptime(uptime string) string {
 	if uptime == "" {
-		return "n/a"
+		return "-"
 	}
 	return fmt.Sprintf("%v %%", uptime)
 }
 
 func formatApdex(apdex string) string {
 	if apdex == "" {
-		return "n/a"
+		return "-"
 	}
 	return apdex
 }
