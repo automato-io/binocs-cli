@@ -502,6 +502,7 @@ var checkListCmd = &cobra.Command{
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
+		table.SetAutoWrapText(false)
 		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP CODE", "INTERVAL", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
