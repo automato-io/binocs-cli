@@ -42,6 +42,14 @@ type Check struct {
 	Updated                    string   `json:"updated,omitempty"`
 }
 
+// Identity method returns "Name (URL)" or "URL"
+func (c Check) Identity() string {
+	if len(c.Name) > 0 {
+		return c.Name + " (" + c.URL + ")"
+	}
+	return c.Name
+}
+
 // MetricsResponse comes from the API as a JSON
 type MetricsResponse struct {
 	Apdex  string `json:"apdex"`
@@ -462,7 +470,7 @@ var checkListCmd = &cobra.Command{
 
 		var tableData [][]string
 		for _, v := range respJSON {
-			spin.Suffix = " loading metrics for " + v.Ident + " - " + v.Name
+			spin.Suffix = " loading metrics for " + v.Identity()
 			metrics, err := fetchMetrics(v.Ident, urlValues2)
 			if err != nil {
 				fmt.Println(err)
