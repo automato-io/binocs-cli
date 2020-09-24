@@ -347,7 +347,8 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 		}
 
 		responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "            ")
-		tableCharts.Append([]string{"HTTP RESPONSE CODES"})
+		responseCodesChartTitle := drawChartTitle("HTTP RESPONSE CODES", responseCodesChart, periodTableTitle)
+		tableCharts.Append([]string{responseCodesChartTitle})
 		tableCharts.Append([]string{responseCodesChart})
 
 		// Sub-table "apdex trend"
@@ -366,7 +367,8 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 		}
 
 		apdexChart := drawApdexChart(apdex, aggregateMetricsDataPoints[urlValues.Get("period")], "      ")
-		tableCharts.Append([]string{"APDEX TREND"})
+		apdexChartTitle := drawChartTitle("APDEX TREND", apdexChart, periodTableTitle)
+		tableCharts.Append([]string{apdexChartTitle})
 		tableCharts.Append([]string{apdexChart})
 
 		// Sub-table "response times heatmap"
@@ -385,7 +387,8 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 		}
 
 		responseTimeHeatmapChart := drawResponseTimeHeatmapChart(responseTimeHeatmap, aggregateMetricsDataPoints[urlValues.Get("period")], "")
-		tableCharts.Append([]string{"RESPONSE TIME HEATMAP"})
+		responseTimeHeatmapChartTitle := drawChartTitle("RESPONSE TIME HEATMAP", responseTimeHeatmapChart, periodTableTitle)
+		tableCharts.Append([]string{responseTimeHeatmapChartTitle})
 		tableCharts.Append([]string{responseTimeHeatmapChart})
 
 		// Timeline
@@ -860,6 +863,23 @@ func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapRespo
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
+}
+
+func drawChartTitle(title string, chart string, periodTitle string) string {
+	var chartRunes = []rune(chart)
+	var chartLineLen = 0
+	var newline = '\n'
+	for i, r := range chartRunes {
+		if r == newline {
+			chartLineLen = i
+			break
+		}
+	}
+	spacerLen := chartLineLen - len(title) - len(periodTitle)
+	if len(title)+len(periodTitle)+1 < chartLineLen {
+		title = title + strings.Repeat(" ", spacerLen) + periodTitle
+	}
+	return title
 }
 
 func drawTimeline(period string, dataPoints int, leftMargin string) string {
