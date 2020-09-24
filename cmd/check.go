@@ -849,15 +849,17 @@ func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapRespo
 			return row + palette[0]
 		}
 	}
-	for _, v := range responseTimeHeatmap {
-		rows[0] = drawHeatmapPixel(rows[0], v.Rt7)
-		rows[1] = drawHeatmapPixel(rows[1], v.Rt6)
-		rows[2] = drawHeatmapPixel(rows[2], v.Rt5)
-		rows[3] = drawHeatmapPixel(rows[3], v.Rt4)
-		rows[4] = drawHeatmapPixel(rows[4], v.Rt3)
-		rows[5] = drawHeatmapPixel(rows[5], v.Rt2)
-		rows[6] = drawHeatmapPixel(rows[6], v.Rt1)
-		rows[7] = drawHeatmapPixel(rows[7], v.Rt0)
+	if heatmapMaximum > 0 {
+		for _, v := range responseTimeHeatmap {
+			rows[0] = drawHeatmapPixel(rows[0], v.Rt7)
+			rows[1] = drawHeatmapPixel(rows[1], v.Rt6)
+			rows[2] = drawHeatmapPixel(rows[2], v.Rt5)
+			rows[3] = drawHeatmapPixel(rows[3], v.Rt4)
+			rows[4] = drawHeatmapPixel(rows[4], v.Rt3)
+			rows[5] = drawHeatmapPixel(rows[5], v.Rt2)
+			rows[6] = drawHeatmapPixel(rows[6], v.Rt1)
+			rows[7] = drawHeatmapPixel(rows[7], v.Rt0)
+		}
 	}
 	if len(responseTimeHeatmap) < dataPoints {
 		for i := range rows {
