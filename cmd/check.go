@@ -258,6 +258,7 @@ var checkAddCmd = &cobra.Command{
 
 var checkInspectCmd = &cobra.Command{
 	Use:     "inspect",
+	Short:   "View check's status and metrics",
 	Aliases: []string{"view", "show", "info"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
@@ -412,6 +413,7 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 // @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkListCmd = &cobra.Command{
 	Use:     "list",
+	Short:   "List all checks with status and metrics overview",
 	Aliases: []string{"ls"},
 	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {

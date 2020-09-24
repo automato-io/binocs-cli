@@ -276,29 +276,27 @@ Global Flags:
 
 ## binocs check inspect
 
-- [ ] implemented
+- [x] implemented
 
 `binocs check inspect --help`
 
 ```
-View detailed info about check's status and history.
+View check's status and metrics
 
 Usage:
-  binocs check inspect [flags] [arg]
+  binocs-cli check inspect [flags]
 
 Aliases:
-  inspect, view, show
-
-Arg: a 7 characters long check identifier
+  inspect, view, show, info
 
 Flags:
-  -h, --help            Display help
-  -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
-  -s, --status string   List only "up" or "down" checks, default "all"
+  -h, --help            help for inspect
+  -p, --period string   Display values and charts for specified period (default "day")
+  -r, --region string   Display values and charts from the specified region only
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs check list
@@ -308,22 +306,23 @@ Global Flags:
 `binocs check list --help`
 
 ```
-List all checks with status and basic metrics info
+List all checks with status and metrics overview
 
 Usage:
-  binocs check list [flags]
+  binocs-cli check list [flags]
 
 Aliases:
   list, ls
 
 Flags:
-  -h, --help              Display help
-  -r, --region string     Display MRT, UPTIME and APDEX from the specified region only
-  -s, --status string     List only "up" or "down" checks, default "all"
+  -h, --help            help for list
+  -p, --period string   Display MRT, UPTIME, APDEX values and APDEX chart for specified period (default "day")
+  -r, --region string   Display MRT, UPTIME, APDEX values and APDEX chart from the specified region only
+  -s, --status string   List only "up" or "down" checks, default "all"
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs check update
