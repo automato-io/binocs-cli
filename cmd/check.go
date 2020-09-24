@@ -653,39 +653,39 @@ func outputDurationWithDays(d string) string {
 }
 
 func drawCompactApdexChart(apdex []ApdexResponse) string {
-	var chart string
-	var alphabet = map[string]string{
-		"00": " ",
-		"01": "⢀",
-		"02": "⢠",
-		"03": "⢰",
-		"04": "⢸",
-		"10": "⡀",
-		"11": "⣀",
-		"12": "⣠",
-		"13": "⣰",
-		"14": "⣸",
-		"20": "⡄",
-		"21": "⣄",
-		"22": "⣤",
-		"23": "⣴",
-		"24": "⣼",
-		"30": "⡆",
-		"31": "⣆",
-		"32": "⣦",
-		"33": "⣶",
-		"34": "⣾",
-		"40": "⡇",
-		"41": "⣇",
-		"42": "⣧",
-		"43": "⣷",
-		"44": "⣿",
+	var chart []rune
+	var alphabet = map[string]rune{
+		"00": ' ',
+		"01": '⢀',
+		"02": '⢠',
+		"03": '⢰',
+		"04": '⢸',
+		"10": '⡀',
+		"11": '⣀',
+		"12": '⣠',
+		"13": '⣰',
+		"14": '⣸',
+		"20": '⡄',
+		"21": '⣄',
+		"22": '⣤',
+		"23": '⣴',
+		"24": '⣼',
+		"30": '⡆',
+		"31": '⣆',
+		"32": '⣦',
+		"33": '⣶',
+		"34": '⣾',
+		"40": '⡇',
+		"41": '⣇',
+		"42": '⣧',
+		"43": '⣷',
+		"44": '⣿',
 	}
 	var reverseApdex []ApdexResponse
 	for _, v := range apdex {
 		reverseApdex = append([]ApdexResponse{v}, reverseApdex...)
 	}
-	var assignChar = func(left, right float64) string {
+	var assignChar = func(left, right float64) rune {
 		const steps = 5
 		var leftDots, rightDots string
 		for j := 1; j < 1+steps; j++ {
@@ -706,14 +706,13 @@ func drawCompactApdexChart(apdex []ApdexResponse) string {
 		if i%2 == 1 { // even
 			left, _ := strconv.ParseFloat(reverseApdex[i-1].Apdex, 32)
 			right, _ := strconv.ParseFloat(v.Apdex, 32)
-			chart = chart + assignChar(left, right)
+			chart = append(chart, assignChar(left, right)) // chart + assignChar(left, right)
 		} else if len(reverseApdex) == i+1 { // last
 			left, _ := strconv.ParseFloat(v.Apdex, 32)
-			chart = chart + assignChar(left, 0.0)
+			chart = append(chart, assignChar(left, 0.0))
 		}
 	}
-	chart = reverse(chart)
-	return chart
+	return reverse(string(chart))
 }
 
 func getApdexChartRowRange(i, numRows int) string {
