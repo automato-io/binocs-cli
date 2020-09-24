@@ -27,9 +27,18 @@ type Incident struct {
 	ResponseCodes string `json:"response_codes"`
 }
 
+// `incident update` flags
+var (
+	incidentUpdateFlagNote string
+)
+
 func init() {
 	rootCmd.AddCommand(incidentCmd)
 	incidentCmd.AddCommand(incidentInspectCmd)
+	incidentCmd.AddCommand(incidentListCmd)
+	incidentCmd.AddCommand(incidentUpdateCmd)
+
+	incidentUpdateCmd.Flags().StringVarP(&incidentUpdateFlagNote, "note", "n", "", "Incident note")
 }
 
 var incidentCmd = &cobra.Command{
@@ -38,6 +47,44 @@ var incidentCmd = &cobra.Command{
 	Long:    ``,
 	Aliases: []string{"incidents"},
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Run(incidentListCmd, args)
+		} else if len(args) == 1 && true { // @todo true ~ incident id validity regex
+			cmd.Run(incidentInspectCmd, args)
+		} else {
+			fmt.Println("Unsupported command/arguments combination, please see --help")
+			os.Exit(1)
+		}
+	},
+}
+
+var incidentInspectCmd = &cobra.Command{
+	Use:     "inspect",
+	Short:   "View info about incident",
+	Aliases: []string{"view", "show", "info"},
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return fmt.Errorf("please provide the identifier of the incident you want to inspect")
+		}
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		spin.Start()
+		spin.Stop()
+	},
+}
+
+var incidentListCmd = &cobra.Command{
+	Use:     "list",
+	Short:   "View info about incident",
+	Aliases: []string{"ls"},
+	Args: func(cmd *cobra.Command, args []string) error {
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		spin.Start()
+		spin.Suffix = " loading incidents..."
+
 		respData, err := util.BinocsAPI("/incidents", http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -64,14 +111,14 @@ var incidentCmd = &cobra.Command{
 		for _, v := range tableData {
 			table.Append(v)
 		}
+		spin.Stop()
 		table.Render()
 	},
 }
 
-var incidentInspectCmd = &cobra.Command{
-	Use:     "inspect",
-	Short:   "View info about incident",
-	Aliases: []string{"view", "show", "info"},
+var incidentUpdateCmd = &cobra.Command{
+	Use: "update",
+	// Short:   "View info about incident",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return fmt.Errorf("please provide the identifier of the incident you want to inspect")
@@ -79,6 +126,6 @@ var incidentInspectCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		spin.Start()
+
 	},
 }

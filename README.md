@@ -44,7 +44,8 @@ x
 - [x] [binocs check update](#binocs-check-update)
 - [x] [binocs help](#binocs-help)
 - [x] [binocs incident](#binocs-incident)
-- [x] [binocs incident view](#binocs-incident-view)
+- [x] [binocs incident inspect](#binocs-incident-inspect)
+- [x] [binocs incident list](#binocs-incident-list)
 - [x] [binocs incident update](#binocs-incident-update)
 - [x] [binocs login](#binocs-login)
 - [x] [binocs logout](#binocs-logout)
@@ -284,10 +285,12 @@ Global Flags:
 View check's status and metrics
 
 Usage:
-  binocs-cli check inspect [flags]
+  binocs-cli check inspect [arg] [flags]
 
 Aliases:
   inspect, view, show, info
+
+Arg: an incident ID
 
 Flags:
   -h, --help            help for inspect
@@ -376,22 +379,28 @@ Global Flags:
 
 ## binocs incident
 
+- [ ] implemented
+
 `binocs incident --help`
 
 ```
-Manage your incidents
+Manage your incidents. A command (one of "inspect", "list" or "update") is optional.
+
+If neither command nor argument are provided, assume `binocs incidents list`.
+
+If an argument is provided without any command, assume `binocs incidents inspect <arg>`.
 
 Usage:
-  binocs incident [flags] [arg]
-  binocs incident [command] [flags]
+  binocs incident [command] [flags] [arg]
 
-Arg: an incident ID
+Arg: a 10 characters long incident identifier
 
 Aliases:
   incident, incidents
 
 Available Commands:
-  view
+  inspect
+  list
   update
 
 Flags:
@@ -404,32 +413,62 @@ Global Flags:
 Use "binocs incident [command] --help" for more information about a command.
 ```
 
-## binocs incident view
+## binocs incident inspect
 
-`binocs incident view --help`
+- [ ] implemented
+
+`binocs incident inspect --help`
 
 ```
-View all info about any incident recorded by binocs.
+View incident information, duration and error codes
 
 Usage:
-  binocs incident view [arg] [flags]
+  binocs incident inspect [arg] [flags]
+
+Aliases:
+  inspect, view, show, info
 
 Arg: an incident ID
 
 Flags:
-  -h, --help    Display help
+  -h, --help    help for inspect
 
 Global Flags:
       --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 ```
 
+## binocs incident list
+
+- [ ] implemented
+
+`binocs incident list --help`
+
+```
+List all incidents
+
+Usage:
+  binocs-cli incidents list [flags]
+
+Aliases:
+  list, ls
+
+Flags:
+  -h, --help            help for list
+
+Global Flags:
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
 ## binocs incident update
+
+- [ ] implemented
 
 `binocs incident update --help`
 
 ```
-Update incident notes.
+Update incident notes
 
 Usage:
   binocs incident update [arg] [flags]
