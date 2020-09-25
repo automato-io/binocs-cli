@@ -444,21 +444,21 @@ Global Flags:
 
 ## binocs incident list
 
-- [ ] implemented
+- [x] implemented
 
 `binocs incident list --help`
 
 ```
-List all incidents
+List all past incidents.
 
 Usage:
-  binocs-cli incidents list [flags]
+  binocs-cli incident list [flags]
 
 Aliases:
   list, ls
 
 Flags:
-  -h, --help            help for list
+  -h, --help   help for list
 
 Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
