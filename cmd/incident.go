@@ -28,6 +28,11 @@ type Incident struct {
 	ResponseCodes string `json:"response_codes"`
 }
 
+// `incident ls` flags
+var (
+	incidentListCheckNote string
+)
+
 // `incident update` flags
 var (
 	incidentUpdateFlagNote string
@@ -39,7 +44,10 @@ func init() {
 	incidentCmd.AddCommand(incidentListCmd)
 	incidentCmd.AddCommand(incidentUpdateCmd)
 
-	incidentUpdateCmd.Flags().StringVarP(&incidentUpdateFlagNote, "note", "n", "", "Incident note")
+	// @todo implement
+	incidentListCmd.Flags().StringVarP(&incidentListCheckNote, "check", "c", "", "list only incidents of this check")
+
+	incidentUpdateCmd.Flags().StringVarP(&incidentUpdateFlagNote, "note", "n", "", "incident note")
 }
 
 var incidentCmd = &cobra.Command{
