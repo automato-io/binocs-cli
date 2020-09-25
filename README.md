@@ -193,33 +193,35 @@ Global Flags:
 ```
 Manage your checks. A command (one of "add", "delete", "inspect", "list" or "update") is optional.
 
-If neither command nor argument are provided, assume `binocs checks list`.
+If neither command nor argument are provided, assume "binocs checks list".
 
-If an argument is provided without any command, assume `binocs checks inspect <arg>`.
+If an argument is provided without any command, assume "binocs checks inspect <arg>".
 
 Usage:
-  binocs check [command] [flags] [arg]
+  binocs-cli check [flags]
+  binocs-cli check [command]
 
 Aliases:
   check, checks
 
-Arg: a 7 characters long check identifier
-
 Available Commands:
-  add
-  delete
-  inspect
-  list
-  update
+  add         add a new endpoint that you want to check
+  delete      delete existing check and collected metrics
+  inspect     view check status and metrics
+  list        list all checks with status and metrics overview
+  update      update existing check attributes
 
 Flags:
-  -h, --help            Display help
+  -h, --help            help for check
+  -p, --period string   display values and charts for specified period (default "day")
+  -r, --region string   display values and charts from the specified region only
+  -s, --status string   list only "up" or "down" checks, default "all"
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 
-Use "binocs check [command] --help" for more information about a command.
+Use "binocs-cli check [command] --help" for more information about a command.
 ```
 
 ## binocs check add
@@ -234,23 +236,26 @@ Add a check and start reporting on it. Check identifier is returned upon success
 This command is interactive and asks user for parameters that were not provided as flags. See the flags overview below.
 
 Usage:
-  binocs check add [flags]
+  binocs-cli check add [flags]
+
+Aliases:
+  add, create
 
 Flags:
-  -n, --name string                        Check alias
+  -n, --name string                        check name
   -u, --url string                         URL to check
-  -m, --method string                      HTTP method (GET, HEAD, POST, PUT, DELETE)
-  -i, --interval int                       How often we check the URL, in seconds (default 30)
-  -t, --target float                       Response time in miliseconds for Apdex = 1.0 (default 0.7)
-  -r, --regions all                        From where we check the URL, choose all or any combination of `us-east-1`, `eu-central-1`, ... (default [all])
-      --up_codes string                    What are the Up HTTP response codes, e.g. 2xx or `200-302`, or `200,301` (default "200-302")
-      --up_confirmations_threshold int     How many subsequent Up responses before triggering notifications (default 2)
-      --down_confirmations_threshold int   How many subsequent Down responses before triggering notifications (default 2)
-  -h, --help                               Display help
+  -m, --method string                      HTTP method (GET, HEAD, POST, PUT, DELETE) (default "GET")
+  -i, --interval int                       how often binocs checks the URL, in seconds (default 60)
+  -t, --target float                       response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places (default 1.2)
+  -r, --regions all                        from where in the world we check the provided URL. Choose all or any combination of `us-east-1`, `eu-central-1`, ... (default [all])
+      --up_codes 2xx                       what are the good ("UP") HTTP response codes, e.g. 2xx or `200-302`, or `200,301` (default "200-302")
+      --up_confirmations_threshold int     how many subsequent Up responses before triggering notifications (default 2)
+      --down_confirmations_threshold int   how many subsequent Down responses before triggering notifications (default 2)
+  -h, --help                               help for add
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ### binocs check delete
@@ -260,19 +265,20 @@ Global Flags:
 `binocs check delete --help`
 
 ```
-Delete a check
+Delete existing check and collected metrics.
 
 Usage:
-  binocs check delete [flags] [arg]
+  binocs-cli check delete [flags]
 
-Arg: a 7 characters long check identifier
+Aliases:
+  delete, del, rm
 
 Flags:
-  -h, --help            Display help
+  -h, --help   help for delete
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs check inspect
@@ -282,20 +288,18 @@ Global Flags:
 `binocs check inspect --help`
 
 ```
-View check's status and metrics
+View check status and metrics.
 
 Usage:
-  binocs-cli check inspect [arg] [flags]
+  binocs-cli check inspect [flags]
 
 Aliases:
   inspect, view, show, info
 
-Arg: an incident ID
-
 Flags:
   -h, --help            help for inspect
-  -p, --period string   Display values and charts for specified period (default "day")
-  -r, --region string   Display values and charts from the specified region only
+  -p, --period string   display values and charts for specified period (default "day")
+  -r, --region string   display values and charts from the specified region only
 
 Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
@@ -309,7 +313,7 @@ Global Flags:
 `binocs check list --help`
 
 ```
-List all checks with status and metrics overview
+List all checks with status and metrics overview.
 
 Usage:
   binocs-cli check list [flags]
@@ -319,9 +323,9 @@ Aliases:
 
 Flags:
   -h, --help            help for list
-  -p, --period string   Display MRT, UPTIME, APDEX values and APDEX chart for specified period (default "day")
-  -r, --region string   Display MRT, UPTIME, APDEX values and APDEX chart from the specified region only
-  -s, --status string   List only "up" or "down" checks, default "all"
+  -p, --period string   display MRT, UPTIME, APDEX values and APDEX chart for specified period (default "day")
+  -r, --region string   display MRT, UPTIME, APDEX values and APDEX chart from the specified region only
+  -s, --status string   list only "up" or "down" checks, default "all"
 
 Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
@@ -335,26 +339,26 @@ Global Flags:
 `binocs check update --help`
 
 ```
-Update a check and continue reporting on it
+Update existing check attributes.
 
 Usage:
-  binocs check update [flags] [arg]
+  binocs-cli check update [flags]
 
 Flags:
-  -n, --name string                        Check alias
+  -n, --name string                        check name
   -u, --url string                         URL to check
   -m, --method string                      HTTP method (GET, HEAD, POST, PUT, DELETE)
-  -i, --interval int                       How often we check the URL, in seconds (default 30)
-  -t, --target float                       Response time in miliseconds for Apdex = 1.0 (default 0.7)
-  -r, --regions all                        From where we check the URL, choose all or any combination of `us-east-1`, `eu-central-1`, ... (default [all])
-      --up_codes 2xx                       What are the Up HTTP response codes, e.g. 2xx or `200-302`, or `200,301` (default "200-302")
-      --up_confirmations_threshold int     How many subsequent Up responses before triggering notifications (default 2)
-      --down_confirmations_threshold int   How many subsequent Down responses before triggering notifications (default 2)
-  -h, --help                               Display help
+  -i, --interval int                       how often we check the URL, in seconds
+  -t, --target float                       response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places
+  -r, --regions all                        from where in the world we check the provided URL. Choose all or any combination of `us-east-1`, `eu-central-1`, ...
+      --up_codes 2xx                       what are the good ("UP") HTTP response codes, e.g. 2xx or `200-302`, or `200,301`
+      --up_confirmations_threshold int     how many subsequent Up responses before triggering notifications
+      --down_confirmations_threshold int   how many subsequent Down responses before triggering notifications
+  -h, --help                               help for update
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs help

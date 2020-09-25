@@ -182,45 +182,45 @@ func init() {
 	checkCmd.AddCommand(checkUpdateCmd)
 	checkCmd.AddCommand(checkDeleteCmd)
 
-	checkCmd.Flags().StringVarP(&checkFlagPeriod, "period", "p", "day", "Display values and charts for specified period")
-	checkCmd.Flags().StringVarP(&checkFlagRegion, "region", "r", "", "Display values and charts from the specified region only")
-	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
+	checkCmd.Flags().StringVarP(&checkFlagPeriod, "period", "p", "day", "display values and charts for specified period")
+	checkCmd.Flags().StringVarP(&checkFlagRegion, "region", "r", "", "display values and charts from the specified region only")
+	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
 
-	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "Check name")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "check name")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "GET", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "How often binocs checks the URL, in seconds")
-	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "Response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "how often binocs checks the URL, in seconds")
+	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
 	// @todo fix help text - how to list all regions
-	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "From where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "What are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "How many subsequent Up responses before triggering notifications")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "How many subsequent Down responses before triggering notifications")
+	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "from where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent Up responses before triggering notifications")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent Down responses before triggering notifications")
 	checkAddCmd.Flags().SortFlags = false
 
-	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "Display values and charts for specified period")
-	checkInspectCmd.Flags().StringVarP(&checkInspectFlagRegion, "region", "r", "", "Display values and charts from the specified region only")
+	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "display values and charts for specified period")
+	checkInspectCmd.Flags().StringVarP(&checkInspectFlagRegion, "region", "r", "", "display values and charts from the specified region only")
 
-	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "Display MRT, UPTIME, APDEX values and APDEX chart for specified period")
-	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "Display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
-	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "List only \"up\" or \"down\" checks, default \"all\"")
+	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
+	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
+	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
 
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "Check name")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "check name")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "url", "u", "", "URL to check")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "How often we check the URL, in seconds")
-	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "Response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "how often we check the URL, in seconds")
+	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
 	// @todo fix help text - how to list all regions
-	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, "From where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "What are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "How many subsequent Up responses before triggering notifications")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "How many subsequent Down responses before triggering notifications")
+	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, "from where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent Up responses before triggering notifications")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent Down responses before triggering notifications")
 	checkUpdateCmd.Flags().SortFlags = false
 }
 
 var checkCmd = &cobra.Command{
 	Use:   "check",
-	Short: "Manage your checks",
+	Short: "manage your checks",
 	Long: `
 Manage your checks. A command (one of "add", "delete", "inspect", "list" or "update") is optional.
 
@@ -248,23 +248,28 @@ If an argument is provided without any command, assume "binocs checks inspect <a
 }
 
 var checkAddCmd = &cobra.Command{
-	Use:  "add",
-	Args: cobra.NoArgs,
+	Use:   "add",
+	Short: "add a new endpoint that you want to check",
+	Long: `
+Add a check and start reporting on it. Check identifier is returned upon successful add operation.
+
+This command is interactive and asks user for parameters that were not provided as flags. See the flags overview below.
+`,
+	Aliases: []string{"create"},
+	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		checkAddOrUpdate("add", "")
 	},
 }
 
 var checkInspectCmd = &cobra.Command{
-	Use:     "inspect",
-	Short:   "View check's status and metrics",
+	Use:   "inspect",
+	Short: "view check status and metrics",
+	Long: `
+View check status and metrics.
+`,
 	Aliases: []string{"view", "show", "info"},
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("please provide the identifier of the check you wish to inspect")
-		}
-		return nil
-	},
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		urlValues := url.Values{
 			"period": []string{"day"},
@@ -411,8 +416,11 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 
 // @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List all checks with status and metrics overview",
+	Use:   "list",
+	Short: "list all checks with status and metrics overview",
+	Long: `
+List all checks with status and metrics overview.
+`,
 	Aliases: []string{"ls"},
 	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -517,27 +525,25 @@ var checkListCmd = &cobra.Command{
 }
 
 var checkUpdateCmd = &cobra.Command{
-	Use: "update",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("please provide the identifier of the check you wish to update")
-		}
-		return nil
-	},
+	Use:   "update",
+	Short: "update existing check attributes",
+	Long: `
+Update existing check attributes.
+`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		checkAddOrUpdate("update", args[0])
 	},
 }
 
 var checkDeleteCmd = &cobra.Command{
-	Use:     "delete",
+	Use:   "delete",
+	Short: "delete existing check and collected metrics",
+	Long: `
+Delete existing check and collected metrics.
+`,
 	Aliases: []string{"del", "rm"},
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("please provide the identifier of the check you wish to delete")
-		}
-		return nil
-	},
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
