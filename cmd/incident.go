@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
+	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/olekukonko/tablewriter"
@@ -16,6 +16,7 @@ import (
 // Incident comes from the API as a JSON
 type Incident struct {
 	ID            int    `json:"id"`
+	Ident         string `json:"ident"`
 	CheckID       int    `json:"check_id"`
 	IncidentNote  string `json:"incident_note"`
 	IncidentState string `json:"incident_state"`
@@ -100,8 +101,14 @@ var incidentListCmd = &cobra.Command{
 
 		var tableData [][]string
 		for _, v := range respJSON {
+			// Mon Jan 2 15:04:05 -0700 MST 2006
+			opened, err := time.Parse("2006-01-02 15:04:05 -0700 MST", v.Opened)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 			tableRow := []string{
-				strconv.Itoa(v.ID), v.CheckName, v.CheckURL, v.IncidentState, v.Opened, v.Closed, util.OutputDurationWithDays(v.Duration), v.ResponseCodes, v.IncidentNote,
+				v.Ident, v.CheckName, v.CheckURL, v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), v.ResponseCodes, v.IncidentNote,
 			}
 			tableData = append(tableData, tableRow)
 		}
