@@ -60,15 +60,13 @@ var incidentCmd = &cobra.Command{
 }
 
 var incidentInspectCmd = &cobra.Command{
-	Use:     "inspect",
-	Short:   "View info about incident",
+	Use:   "inspect",
+	Short: "view incident details",
+	Long: `
+View incident details, notes and associated requests.
+`,
 	Aliases: []string{"view", "show", "info"},
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("please provide the identifier of the incident you want to inspect")
-		}
-		return nil
-	},
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Stop()
@@ -76,12 +74,13 @@ var incidentInspectCmd = &cobra.Command{
 }
 
 var incidentListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "View info about incident",
+	Use:   "list",
+	Short: "list all past incidents",
+	Long: `
+List all past incidents.
+`,
 	Aliases: []string{"ls"},
-	Args: func(cmd *cobra.Command, args []string) error {
-		return nil
-	},
+	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading incidents..."
