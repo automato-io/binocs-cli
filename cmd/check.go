@@ -292,6 +292,7 @@ View check status and metrics.
 		}
 
 		spin.Start()
+		spin.Suffix = " loading metrics..."
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
