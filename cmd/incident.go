@@ -77,7 +77,47 @@ View incident details, notes and associated requests.
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
+		spin.Suffix = " loading incident..."
+		respData, err := util.BinocsAPI("/incidents/"+args[0], http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var respJSON Incident
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Table "main"
+
+		tableMainIncidentCellContent := `State: ` + respJSON.IncidentState + `
+URL: ` + respJSON.CheckURL + `
+Response Codes: ` + respJSON.ResponseCodes + `
+
+Opened: ` + respJSON.Opened + `
+Closed: ` + respJSON.Closed + `
+Duration: ` + respJSON.Duration
+
+		tableMainNotesCellContent := respJSON.IncidentNote
+		if tableMainNotesCellContent == "" {
+			tableMainNotesCellContent = "-"
+		}
+
+		tableMain := tablewriter.NewWriter(os.Stdout)
+		tableMain.SetHeader([]string{"INCIDENT", "NOTES"})
+		tableMain.SetAutoWrapText(false)
+		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
+		tableMain.Append([]string{tableMainIncidentCellContent, tableMainNotesCellContent})
+
+		// Table "requests"
+
 		spin.Stop()
+		tableMain.Render()
+		// fmt.Println()
+		// tableRequests.Render()
 	},
 }
 
