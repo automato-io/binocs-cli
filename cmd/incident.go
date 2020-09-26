@@ -15,17 +15,38 @@ import (
 
 // Incident comes from the API as a JSON
 type Incident struct {
-	ID            int    `json:"id"`
-	Ident         string `json:"ident"`
-	CheckID       int    `json:"check_id"`
-	IncidentNote  string `json:"incident_note"`
-	IncidentState string `json:"incident_state"`
-	CheckName     string `json:"check_name"`
-	CheckURL      string `json:"check_url"`
-	Opened        string `json:"opened"`
-	Closed        string `json:"closed"`
-	Duration      string `json:"duration"`
-	ResponseCodes string `json:"response_codes"`
+	ID            int       `json:"id"`
+	Ident         string    `json:"ident"`
+	CheckID       int       `json:"check_id"`
+	IncidentNote  string    `json:"incident_note"`
+	IncidentState string    `json:"incident_state"`
+	CheckName     string    `json:"check_name"`
+	CheckURL      string    `json:"check_url"`
+	Opened        string    `json:"opened"`
+	Closed        string    `json:"closed"`
+	Duration      string    `json:"duration"`
+	ResponseCodes string    `json:"response_codes"`
+	Requests      []Request `json:"requests"`
+}
+
+// Request struct
+type Request struct {
+	Region             string    `json:"region"`
+	Status             int       `json:"status"`
+	RequestURL         string    `json:"request_url"`
+	RequestMethod      string    `json:"request_method"`
+	ResponseStatusCode string    `json:"response_status"`
+	Timings            Timings   `json:"timings"`
+	Timestamp          time.Time `json:"timestamp"`
+}
+
+// Timings struct
+type Timings struct {
+	DSNLookup  float64 `json:"dns_lookup"`
+	Connection float64 `json:"connection"`
+	TLS        float64 `json:"tls"`
+	Wait       float64 `json:"wait"`
+	Transfer   float64 `json:"transfer"`
 }
 
 // `incident ls` flags
@@ -114,10 +135,30 @@ Duration: ` + respJSON.Duration
 
 		// Table "requests"
 
+		tableRequests := tablewriter.NewWriter(os.Stdout)
+		if len(respJSON.Requests) > 0 {
+			tz := respJSON.Requests[0].Timestamp.Format("-07:00 MST")
+			tableRequests.SetHeader([]string{"CHECKED (" + tz + ")", "FROM", "RESPONSE CODE", "RESPONSE TIME", "DNS LOOKUP", "CONNECTION", "TLS", "WAITING", "TRANSFER"})
+			tableRequests.SetAutoWrapText(false)
+			tableRequests.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
+			for _, request := range respJSON.Requests {
+				responseTime := fmt.Sprintf("%.3f s", request.Timings.DSNLookup+request.Timings.Connection+request.Timings.TLS+request.Timings.Wait+request.Timings.Transfer)
+				timingsDNSLookup := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+				timingsConnection := fmt.Sprintf("%.3f s", request.Timings.Connection)
+				timingsTLS := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+				timingsWait := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+				timingsTransfer := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+				tableRequests.Append([]string{request.Timestamp.Format("2006-01-02 15:04:05"), request.Region, request.ResponseStatusCode, responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer})
+			}
+		}
+
 		spin.Stop()
 		tableMain.Render()
-		// fmt.Println()
-		// tableRequests.Render()
+		if len(respJSON.Requests) > 0 {
+			fmt.Println()
+			tableRequests.Render()
+		}
 	},
 }
 
