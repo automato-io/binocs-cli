@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
@@ -143,13 +144,23 @@ Duration: ` + respJSON.Duration
 			tableRequests.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
 			for _, request := range respJSON.Requests {
-				responseTime := fmt.Sprintf("%.3f s", request.Timings.DSNLookup+request.Timings.Connection+request.Timings.TLS+request.Timings.Wait+request.Timings.Transfer)
-				timingsDNSLookup := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
-				timingsConnection := fmt.Sprintf("%.3f s", request.Timings.Connection)
-				timingsTLS := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
-				timingsWait := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
-				timingsTransfer := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
-				tableRequests.Append([]string{request.Timestamp.Format("2006-01-02 15:04:05"), request.Region, request.ResponseStatusCode, responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer})
+				if strings.Contains(request.Timestamp.String(), "0001") {
+					placeholder := "~"
+					shortcut := request.RequestURL + " requests"
+					shortcut = strings.Repeat(placeholder, 2) + " " + shortcut
+					if len(shortcut) < 18 {
+						shortcut = shortcut + " " + strings.Repeat(placeholder, 19-len(shortcut)-1)
+					}
+					tableRequests.Append([]string{shortcut, strings.Repeat(placeholder, 7), request.ResponseStatusCode, strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7)})
+				} else {
+					responseTime := fmt.Sprintf("%.3f s", request.Timings.DSNLookup+request.Timings.Connection+request.Timings.TLS+request.Timings.Wait+request.Timings.Transfer)
+					timingsDNSLookup := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+					timingsConnection := fmt.Sprintf("%.3f s", request.Timings.Connection)
+					timingsTLS := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+					timingsWait := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+					timingsTransfer := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+					tableRequests.Append([]string{request.Timestamp.Format("2006-01-02 15:04:05"), request.Region, request.ResponseStatusCode, responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer})
+				}
 			}
 		}
 
