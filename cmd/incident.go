@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -52,12 +54,16 @@ type Timings struct {
 
 // `incident ls` flags
 var (
-	incidentListCheckNote string
+	incidentListFlagCheck string
 )
 
 // `incident update` flags
 var (
 	incidentUpdateFlagNote string
+)
+
+const (
+	validIncidentIdentPattern = `^[a-f0-9]{9}$`
 )
 
 func init() {
@@ -66,8 +72,7 @@ func init() {
 	incidentCmd.AddCommand(incidentListCmd)
 	incidentCmd.AddCommand(incidentUpdateCmd)
 
-	// @todo implement
-	incidentListCmd.Flags().StringVarP(&incidentListCheckNote, "check", "c", "", "list only incidents of this check")
+	incidentListCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
 
 	incidentUpdateCmd.Flags().StringVarP(&incidentUpdateFlagNote, "note", "n", "", "incident note")
 }
@@ -185,21 +190,22 @@ List all past incidents.
 		spin.Start()
 		spin.Suffix = " loading incidents..."
 
-		respData, err := util.BinocsAPI("/incidents", http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+		urlValues := url.Values{
+			"check": []string{""},
 		}
-		respJSON := make([]Incident, 0)
-		decoder := json.NewDecoder(bytes.NewBuffer(respData))
-		err = decoder.Decode(&respJSON)
+		match, err := regexp.MatchString(validIncidentIdentPattern, incidentListFlagCheck)
+		if err == nil && match == true {
+			urlValues.Set("check", incidentListFlagCheck)
+		}
+
+		incidents, err := fetchIncidents(urlValues)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		var tableData [][]string
-		for _, v := range respJSON {
+		for _, v := range incidents {
 			// Mon Jan 2 15:04:05 -0700 MST 2006
 			opened, err := time.Parse("2006-01-02 15:04:05 -0700 MST", v.Opened)
 			if err != nil {
@@ -234,4 +240,20 @@ var incidentUpdateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 	},
+}
+
+func fetchIncidents(urlValues url.Values) ([]Incident, error) {
+	var incidents []Incident
+	// @todo use incidentListFlagCheck as request parameter
+	respData, err := util.BinocsAPI("/incidents", http.MethodGet, []byte{})
+	if err != nil {
+		return incidents, err
+	}
+	incidents = make([]Incident, 0)
+	decoder := json.NewDecoder(bytes.NewBuffer(respData))
+	err = decoder.Decode(&incidents)
+	if err != nil {
+		return incidents, err
+	}
+	return incidents, nil
 }

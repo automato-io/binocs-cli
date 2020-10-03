@@ -92,6 +92,7 @@ func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int
 		return []byte{}, 0, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	// @todo cache and reuse access token between requests
 	accessToken, err := loadAccessToken()
 	if err != nil {
 		return []byte{}, 0, err
