@@ -63,7 +63,7 @@ var (
 )
 
 const (
-	validIncidentIdentPattern = `^[a-f0-9]{9}$`
+	validCheckIdentPattern = `^[a-f0-9]{7}$`
 )
 
 func init() {
@@ -193,11 +193,10 @@ List all past incidents.
 		urlValues := url.Values{
 			"check": []string{""},
 		}
-		match, err := regexp.MatchString(validIncidentIdentPattern, incidentListFlagCheck)
+		match, err := regexp.MatchString(validCheckIdentPattern, incidentListFlagCheck)
 		if err == nil && match == true {
 			urlValues.Set("check", incidentListFlagCheck)
 		}
-
 		incidents, err := fetchIncidents(urlValues)
 		if err != nil {
 			fmt.Println(err)
@@ -244,8 +243,7 @@ var incidentUpdateCmd = &cobra.Command{
 
 func fetchIncidents(urlValues url.Values) ([]Incident, error) {
 	var incidents []Incident
-	// @todo use incidentListFlagCheck as request parameter
-	respData, err := util.BinocsAPI("/incidents", http.MethodGet, []byte{})
+	respData, err := util.BinocsAPI("/incidents?"+urlValues.Encode(), http.MethodGet, []byte{})
 	if err != nil {
 		return incidents, err
 	}
