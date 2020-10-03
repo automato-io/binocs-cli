@@ -228,16 +228,14 @@ List all past incidents.
 }
 
 var incidentUpdateCmd = &cobra.Command{
-	Use: "update",
-	// Short:   "View info about incident",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return fmt.Errorf("please provide the identifier of the incident you want to inspect")
-		}
-		return nil
-	},
+	Use:   "update",
+	Short: "provide incident with a note",
+	Long: `
+Provide incident with a note. This note would be visible on incident page.
+`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
+		// @todo implement
 	},
 }
 
