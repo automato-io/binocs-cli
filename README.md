@@ -570,7 +570,6 @@ Use "binocs-cli channel [command] --help" for more information about a command.
 `binocs channel add --help`
 
 ```
-
 Add a new notification channel
 
 Usage:
@@ -592,11 +591,54 @@ Global Flags:
 
 ## binocs channel associate
 
+- [x] implemented
+
 `binocs channel associate --help`
+
+
+```
+Associate channel with one or more checks, either for "status", "http-code-change" or both types of notifications
+
+Usage:
+  binocs-cli channel associate [flags]
+
+Aliases:
+  associate, assoc
+
+Flags:
+  -c, --check string   check identifier, using multiple comma-separated identifiers is supported
+  -t, --type string    notification type, "status" or "http-code-change" or both, defaults to "http-code-change,status"
+  -h, --help           help for associate
+
+Global Flags:
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
 
 ## binocs channel disassociate
 
+- [x] implemented
+
 `binocs channel disassociate --help`
+
+```
+Disassociate channel from one or more checks, either for "status", "http-code-change" or both types of notifications
+
+Usage:
+  binocs-cli channel disassociate [flags]
+
+Aliases:
+  disassociate, disassoc
+
+Flags:
+  -c, --check string   check identifier, using multiple comma-separated identifiers is supported
+  -t, --type string    notification type, "status" or "http-code-change" or both, defaults to "http-code-change,status"
+  -h, --help           help for disassociate
+
+Global Flags:
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
 
 ## binocs channel list
 
