@@ -533,63 +533,61 @@ Global Flags:
 
 ## binocs channel
 
+- [x] implemented
+
 `binocs channel --help`
 
 ```
-Manage your notification channels. Use a subcommand, or inspect a channel, if a valid channel _id_ is given as the argument.
+Manage notification channels
 
 Usage:
-  binocs channel [flags] [arg]
-  binocs channel [command] [flags]
+  binocs-cli channel [flags]
+  binocs-cli channel [command]
 
 Aliases:
   channel, channels
 
-Arg: a channel ID
-
 Available Commands:
-  add
-  associate
-  disassociate
-  list
-  remove
-  update
-  view
+  add         add a new notification channel
+  inspect     view channel details
+  list        list all notification channels
+  update      update existing notification channel
 
 Flags:
-  -h, --help            Display help
+  -h, --help   help for channel
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 
-Use "binocs channel [command] --help" for more information about a command.
+Use "binocs-cli channel [command] --help" for more information about a command.
 ```
 
 ## binocs channel add
 
+- [x] implemented
+
 `binocs channel add --help`
 
 ```
-Add a channel. Remember to associate channel with your checks using:
-  binocs channel associate
+
+Add a new notification channel
 
 Usage:
-  binocs channel add [flags]
+  binocs-cli channel add [flags]
+
+Aliases:
+  add, create
 
 Flags:
-      --type string      Type, one of: sms, slack, telegram, email
-      --alias string     Optional name of the channel
-      --handle string    Depending on the value of the --type flag
-            - email - one or more comma-separated e-mail addresses, each address' first use requires e-mail opt-in
-            - sms - a phone number
-            - slack - a Slack handle URL
-            - telegram - @todo
-  -h, --help             Display help
+      --alias string    channel alias - how we're gonna refer to it; optional
+      --handle string   channel handle - e-mail address for E-mail, Slack URL for Slack
+  -h, --help            help for add
+  -t, --type string     channel type (E-mail, Slack, Telegram)
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs channel associate
@@ -646,27 +644,24 @@ Global Flags:
 
 ## binocs channel update
 
+- [x] implemented
+
 `binocs channel update --help`
 
 ```
-Update a channel
+Update existing notification channel.
 
 Usage:
-  binocs channel update [flags] [arg]
+  binocs-cli channel update [flags]
 
 Flags:
-      --type string      Type, one of: sms, slack, telegram, email
-      --alias string     Optional name of the channel
-      --handle string    Depending on the value of the --type flag
-            - email - one or more comma-separated e-mail addresses, each address' first use requires e-mail opt-in
-            - sms - a phone number
-            - slack - a Slack handle URL
-            - telegram - @todo
-  -h, --help             Display help
+      --alias string    channel alias - how we're gonna refer to it; optional
+      --handle string   channel handle - e-mail address for E-mail, Slack URL for Slack
+  -h, --help            help for update
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs channel view
