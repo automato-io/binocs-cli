@@ -54,7 +54,7 @@ x
 - [ ] [binocs channel associate](#binocs-channel-associate)
 - [ ] [binocs channel disassociate](#binocs-channel-disassociate)
 - [x] [binocs channel list](#binocs-channel-list)
-- [x] [binocs channel remove](#binocs-channel-remove)
+- [x] [binocs channel delete](#binocs-channel-delete)
 - [x] [binocs channel update](#binocs-channel-update)
 - [x] [binocs channel view](#binocs-channel-view)
 - [x] [binocs status](#binocs-status)
@@ -622,11 +622,11 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel remove
+## binocs channel delete
 
 - [x] implemented
 
-`binocs channel remove --help`
+`binocs channel delete --help`
 
 ```
 Delete a notification channel.
