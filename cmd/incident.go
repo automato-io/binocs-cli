@@ -190,9 +190,7 @@ List all past incidents.
 		spin.Start()
 		spin.Suffix = " loading incidents..."
 
-		urlValues := url.Values{
-			"check": []string{""},
-		}
+		urlValues := url.Values{}
 		match, err := regexp.MatchString(validCheckIdentPattern, incidentListFlagCheck)
 		if err == nil && match == true {
 			urlValues.Set("check", incidentListFlagCheck)

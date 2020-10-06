@@ -73,6 +73,8 @@ func init() {
 	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias - how we're gonna refer to it; optional")
 	// channelAddCmd.Flags().SortFlags = false
 
+	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels associated with a specific check")
+
 	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, Slack URL for Slack")
 	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagAlias, "alias", "", "", "channel alias - how we're gonna refer to it; optional")
 	// channelUpdateCmd.Flags().SortFlags = false
@@ -170,9 +172,7 @@ List all notification channels.
 		spin.Start()
 		spin.Suffix = " loading channels..."
 
-		urlValues := url.Values{
-			"check": []string{""},
-		}
+		urlValues := url.Values{}
 		match, err := regexp.MatchString(validCheckIdentPattern, channelListFlagCheck)
 		if err == nil && match == true {
 			urlValues.Set("check", channelListFlagCheck)
