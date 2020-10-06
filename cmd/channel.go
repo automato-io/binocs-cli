@@ -182,7 +182,7 @@ View channel details and associated checks.
 		// Table "main"
 		lastUsed := ""
 		if respJSON.UsedCount > 0 {
-			lastUsed = `, last time at ` + respJSON.LastUsed
+			lastUsed = `, last at ` + respJSON.LastUsed
 		}
 
 		// @todo show ID field in check and incident detail as well
@@ -190,7 +190,7 @@ View channel details and associated checks.
 Type: ` + respJSON.Type + `
 Alias: ` + respJSON.Alias + `
 Handle: ` + respJSON.Handle + `
-Used: ` + strconv.Itoa(respJSON.UsedCount) + ` times` + lastUsed + ``
+Used: ` + strconv.Itoa(respJSON.UsedCount) + `x` + lastUsed + ``
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHANNEL"})
