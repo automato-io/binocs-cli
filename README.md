@@ -600,26 +600,26 @@ Global Flags:
 
 ## binocs channel list
 
+- [x] implemented
+
 `binocs channel list --help`
 
 ```
-List all channels with stats
+List all notification channels.
 
 Usage:
-  binocs channels list [flags]
+  binocs-cli channel list [flags]
 
 Aliases:
   list, ls
 
 Flags:
-      --check string    List only channels associated with this check
-  -h, --help            Display help
-  -r, --region string   Display MRT, UPTIME and APDEX from the specified region only
-  -s, --status string   List only "up" or "down" checks, default "all"
+  -c, --check string   list only notification channels associated with a specific check
+  -h, --help           help for list
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs channel remove
