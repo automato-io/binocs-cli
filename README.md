@@ -624,22 +624,25 @@ Global Flags:
 
 ## binocs channel remove
 
+- [x] implemented
+
 `binocs channel remove --help`
 
 ```
-Delete a channel. This also diassociates this channel from all checks. You will stop receiving alerts via this channel once you delete it using this command.
+Delete a notification channel.
 
 Usage:
-  binocs channel delete [flags] [arg]
+  binocs-cli channel delete [flags]
 
-Arg: a channel ID
+Aliases:
+  delete, del, rm
 
 Flags:
-  -h, --help            Display help
+  -h, --help   help for delete
 
 Global Flags:
-      --config string   Config file (default is $HOME/.binocs-cli.json)
-  -v, --verbose         Verbose output
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
 ```
 
 ## binocs channel update

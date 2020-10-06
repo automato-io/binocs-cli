@@ -63,7 +63,7 @@ func init() {
 	channelCmd.AddCommand(channelAddCmd)
 	// channelCmd.AddCommand(channelAssociateCmd)
 	// channelCmd.AddCommand(channelDeassociateCmd)
-	// channelCmd.AddCommand(channelDeleteCmd)
+	channelCmd.AddCommand(channelDeleteCmd)
 	channelCmd.AddCommand(channelInspectCmd)
 	channelCmd.AddCommand(channelListCmd)
 	channelCmd.AddCommand(channelUpdateCmd)
@@ -109,6 +109,50 @@ Add a new notification channel
 	Args:    cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		channelAddOrUpdate("add", "")
+	},
+}
+
+var channelDeleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "delete a notification channel",
+	Long: `
+Delete a notification channel.
+`,
+	Aliases: []string{"del", "rm"},
+	Args:    cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		respData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
+		if err != nil {
+			// @todo verbose error
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var respJSON Channel
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			// @todo verbose error
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		prompt := promptui.Prompt{
+			Label:     "Delete " + respJSON.Type + " notification channel " + respJSON.Alias + " (" + respJSON.Handle + ")",
+			IsConfirm: true,
+		}
+		_, err = prompt.Run()
+		if err != nil {
+			fmt.Println("Aborting")
+			os.Exit(0)
+		}
+		_, err = util.BinocsAPI("/channels/"+args[0], http.MethodDelete, []byte{})
+		if err != nil {
+			// @todo verbose error
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		tpl := `Channel successfully deleted
+`
+		fmt.Print(tpl)
 	},
 }
 
