@@ -428,7 +428,7 @@ List all notification channels.
 		var tableData [][]string
 		for _, v := range channels {
 			tableRow := []string{
-				v.Ident, v.Type, v.Alias, v.Handle, strconv.Itoa(v.UsedCount), v.LastUsed,
+				v.Ident, v.Type, v.Alias, util.Ellipsis(v.Handle, 50), strconv.Itoa(v.UsedCount), v.LastUsed,
 			}
 			tableData = append(tableData, tableRow)
 		}

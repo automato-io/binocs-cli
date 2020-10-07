@@ -209,14 +209,18 @@ List all past incidents.
 				fmt.Println(err)
 				os.Exit(1)
 			}
+			responseCodesRegex := regexp.MustCompile(`\d{3}`)
+			responseCodesMatches := responseCodesRegex.FindAllString(v.ResponseCodes, -1)
+			responseCodes := strings.Join(responseCodesMatches, ", ")
 			tableRow := []string{
-				v.Ident, v.CheckName, v.CheckURL, v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), v.ResponseCodes, v.IncidentNote,
+				v.Ident, v.CheckName, util.Ellipsis(v.CheckURL, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), responseCodes, v.IncidentNote,
 			}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
 		table.SetHeader([]string{"ID", "CHECK", "URL", "STATE", "OPENED", "CLOSED", "DURATION", "RESPONSE CODES", "NOTE"})
+		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT})
 		for _, v := range tableData {
 			table.Append(v)
 		}
