@@ -86,18 +86,21 @@ func ResetAccessToken() error {
 	return os.Remove(home + "/" + storageDir + "/" + jwtFile)
 }
 
+var binocsAPIAccessToken string
+
 func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int, error) {
 	req, err := http.NewRequest(method, url.String(), bytes.NewReader(data))
 	if err != nil {
 		return []byte{}, 0, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	// @todo cache and reuse access token between requests
-	accessToken, err := loadAccessToken()
+	if binocsAPIAccessToken == "" {
+		binocsAPIAccessToken, err = loadAccessToken()
+	}
 	if err != nil {
 		return []byte{}, 0, err
-	} else if len(accessToken) > 0 {
-		req.Header.Set("Authorization", "bearer "+accessToken)
+	} else if len(binocsAPIAccessToken) > 0 {
+		req.Header.Set("Authorization", "bearer "+binocsAPIAccessToken)
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
