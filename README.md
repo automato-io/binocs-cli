@@ -708,6 +708,8 @@ Global Flags:
 
 ## binocs channel view
 
+- [x] implemented
+
 `binocs channel view --help`
 
 ```
