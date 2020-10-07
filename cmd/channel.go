@@ -29,13 +29,8 @@ type Channel struct {
 	LastUsed  string `json:"last_used,omitempty"`
 }
 
-// ChannelAssociation struct is used for assoc requests
-type ChannelAssociation struct {
-	NotificationType string `json:"notification_type"`
-}
-
-// ChannelDisassociation struct is used for disassoc requests
-type ChannelDisassociation struct {
+// ChannelAttachment struct is used to attach/detach a channel to/trom a check
+type ChannelAttachment struct {
 	NotificationType string `json:"notification_type"`
 }
 
@@ -51,16 +46,16 @@ var (
 	channelAddFlagType   string
 )
 
-// `channel associate` flags
+// `channel attach` flags
 var (
-	channelAssociateFlagCheck string
-	channelAssociateFlagType  string
+	channelAttachFlagCheck string
+	channelAttachFlagType  string
 )
 
-// `channel disassociate` flags
+// `channel detach` flags
 var (
-	channelDisassociateFlagCheck string
-	channelDisassociateFlagType  string
+	channelDetachFlagCheck string
+	channelDetachFlagType  string
 )
 
 // `channel update` flags
@@ -87,27 +82,27 @@ var validHandlePattern = map[string]string{
 func init() {
 	rootCmd.AddCommand(channelCmd)
 	channelCmd.AddCommand(channelAddCmd)
-	channelCmd.AddCommand(channelAssociateCmd)
-	channelCmd.AddCommand(channelDisassociateCmd)
+	channelCmd.AddCommand(channelAttachCmd)
+	channelCmd.AddCommand(channelDetachCmd)
 	channelCmd.AddCommand(channelDeleteCmd)
 	channelCmd.AddCommand(channelInspectCmd)
 	channelCmd.AddCommand(channelListCmd)
 	channelCmd.AddCommand(channelUpdateCmd)
 
-	channelAssociateCmd.Flags().StringVarP(&channelAssociateFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
-	channelAssociateCmd.Flags().StringVarP(&channelAssociateFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
-	channelAssociateCmd.Flags().SortFlags = false
+	channelAttachCmd.Flags().StringVarP(&channelAttachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
+	channelAttachCmd.Flags().StringVarP(&channelAttachFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
+	channelAttachCmd.Flags().SortFlags = false
 
-	channelDisassociateCmd.Flags().StringVarP(&channelDisassociateFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
-	channelDisassociateCmd.Flags().StringVarP(&channelDisassociateFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
-	channelDisassociateCmd.Flags().SortFlags = false
+	channelDetachCmd.Flags().StringVarP(&channelDetachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
+	channelDetachCmd.Flags().StringVarP(&channelDetachFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
+	channelDetachCmd.Flags().SortFlags = false
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
 	channelAddCmd.Flags().StringVarP(&channelAddFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, Slack URL for Slack")
 	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias - how we're gonna refer to it; optional")
 	channelAddCmd.Flags().SortFlags = false
 
-	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels associated with a specific check")
+	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
 	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, Slack URL for Slack")
 	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagAlias, "alias", "", "", "channel alias - how we're gonna refer to it; optional")
@@ -146,13 +141,13 @@ Add a new notification channel
 	},
 }
 
-var channelAssociateCmd = &cobra.Command{
-	Use:   "associate",
-	Short: "associate channel with one or more checks",
+var channelAttachCmd = &cobra.Command{
+	Use:   "attach",
+	Short: "attach channel to one or more checks",
 	Long: `
-Associate channel with one or more checks, either for "status", "http-code-change" or both types of notifications
+Attach channel to one or more checks, either for "status", "http-code-change" or both types of notifications
 `,
-	Aliases: []string{"assoc"},
+	Aliases: []string{"att"},
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
@@ -173,11 +168,11 @@ Associate channel with one or more checks, either for "status", "http-code-chang
 
 		// validate checks against pattern, single or slice, required
 		checkIdents := []string{}
-		if len(channelAssociateFlagCheck) == 0 {
-			fmt.Println("Set at least one check to associate with the channel")
+		if len(channelAttachFlagCheck) == 0 {
+			fmt.Println("Set at least one check to attach to the channel")
 			os.Exit(1)
 		}
-		checkIdents = strings.Split(channelAssociateFlagCheck, ",")
+		checkIdents = strings.Split(channelAttachFlagCheck, ",")
 		for _, c := range checkIdents {
 			match, err = regexp.MatchString(validCheckIdentPattern, c)
 			if err != nil {
@@ -191,10 +186,10 @@ Associate channel with one or more checks, either for "status", "http-code-chang
 
 		// validate types against pattern, single or slice, default all
 		notificationTypes := []string{}
-		if len(channelAssociateFlagType) == 0 {
+		if len(channelAttachFlagType) == 0 {
 			notificationTypes = supportedNotificationTypes
 		} else {
-			notificationTypes = strings.Split(channelAssociateFlagType, ",")
+			notificationTypes = strings.Split(channelAttachFlagType, ",")
 		}
 		for _, nt := range notificationTypes {
 			match, err = regexp.MatchString(validNotificationTypePattern, nt)
@@ -209,7 +204,7 @@ Associate channel with one or more checks, either for "status", "http-code-chang
 
 		for _, c := range checkIdents {
 			for _, nt := range notificationTypes {
-				postData, err := json.Marshal(ChannelAssociation{
+				postData, err := json.Marshal(ChannelAttachment{
 					NotificationType: nt,
 				})
 				if err != nil {
@@ -224,18 +219,17 @@ Associate channel with one or more checks, either for "status", "http-code-chang
 			}
 		}
 
-		fmt.Println("Successfully associated channel " + args[0] + " with " + strconv.Itoa(len(checkIdents)) + " checks")
+		fmt.Println("Successfully attached channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks")
 	},
 }
 
-var channelDisassociateCmd = &cobra.Command{
-	Use:   "disassociate",
-	Short: "disassociate channel from one or more checks",
+var channelDetachCmd = &cobra.Command{
+	Use:   "detach",
+	Short: "detach channel from one or more checks",
 	Long: `
-Disassociate channel from one or more checks, either for "status", "http-code-change" or both types of notifications
+Detach channel from one or more checks, either for "status", "http-code-change" or both types of notifications
 `,
-	Aliases: []string{"disassoc"},
-	Args:    cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var match bool
@@ -255,11 +249,11 @@ Disassociate channel from one or more checks, either for "status", "http-code-ch
 
 		// validate checks against pattern, single or slice, required
 		checkIdents := []string{}
-		if len(channelDisassociateFlagCheck) == 0 {
-			fmt.Println("Set at least one check to disassociate from the channel")
+		if len(channelDetachFlagCheck) == 0 {
+			fmt.Println("Set at least one check to detach from the channel")
 			os.Exit(1)
 		}
-		checkIdents = strings.Split(channelDisassociateFlagCheck, ",")
+		checkIdents = strings.Split(channelDetachFlagCheck, ",")
 		for _, c := range checkIdents {
 			match, err = regexp.MatchString(validCheckIdentPattern, c)
 			if err != nil {
@@ -273,10 +267,10 @@ Disassociate channel from one or more checks, either for "status", "http-code-ch
 
 		// validate types against pattern, single or slice, default all
 		notificationTypes := []string{}
-		if len(channelDisassociateFlagType) == 0 {
+		if len(channelDetachFlagType) == 0 {
 			notificationTypes = supportedNotificationTypes
 		} else {
-			notificationTypes = strings.Split(channelDisassociateFlagType, ",")
+			notificationTypes = strings.Split(channelDetachFlagType, ",")
 		}
 		for _, nt := range notificationTypes {
 			match, err = regexp.MatchString(validNotificationTypePattern, nt)
@@ -291,7 +285,7 @@ Disassociate channel from one or more checks, either for "status", "http-code-ch
 
 		for _, c := range checkIdents {
 			for _, nt := range notificationTypes {
-				deleteData, err := json.Marshal(ChannelDisassociation{
+				deleteData, err := json.Marshal(ChannelAttachment{
 					NotificationType: nt,
 				})
 				if err != nil {
@@ -306,7 +300,7 @@ Disassociate channel from one or more checks, either for "status", "http-code-ch
 			}
 		}
 
-		fmt.Println("Successfully disassociated channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
+		fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
 	},
 }
 
@@ -358,7 +352,7 @@ var channelInspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "view channel details",
 	Long: `
-View channel details and associated checks.
+View channel details and attached checks.
 `,
 	Aliases: []string{"view", "show", "info"},
 	Args:    cobra.ExactArgs(1),

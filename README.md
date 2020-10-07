@@ -51,8 +51,8 @@ x
 - [x] [binocs logout](#binocs-logout)
 - [x] [binocs channel](#binocs-channel)
 - [x] [binocs channel add](#binocs-channel-add)
-- [ ] [binocs channel associate](#binocs-channel-associate)
-- [ ] [binocs channel disassociate](#binocs-channel-disassociate)
+- [ ] [binocs channel attach](#binocs-channel-attach)
+- [ ] [binocs channel detach](#binocs-channel-detach)
 - [x] [binocs channel list](#binocs-channel-list)
 - [x] [binocs channel delete](#binocs-channel-delete)
 - [x] [binocs channel update](#binocs-channel-update)
@@ -589,51 +589,48 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel associate
+## binocs channel attach
 
 - [x] implemented
 
-`binocs channel associate --help`
+`binocs channel attach --help`
 
 
 ```
-Associate channel with one or more checks, either for "status", "http-code-change" or both types of notifications
+Attach channel to one or more checks, either for "status", "http-code-change" or both types of notifications
 
 Usage:
-  binocs-cli channel associate [flags]
+  binocs-cli channel attach [flags]
 
 Aliases:
-  associate, assoc
+  attach, att
 
 Flags:
   -c, --check string   check identifier, using multiple comma-separated identifiers is supported
   -t, --type string    notification type, "status" or "http-code-change" or both, defaults to "http-code-change,status"
-  -h, --help           help for associate
+  -h, --help           help for attach
 
 Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         verbose output
 ```
 
-## binocs channel disassociate
+## binocs channel detach
 
 - [x] implemented
 
-`binocs channel disassociate --help`
+`binocs channel detach --help`
 
 ```
-Disassociate channel from one or more checks, either for "status", "http-code-change" or both types of notifications
+Detach channel from one or more checks, either for "status", "http-code-change" or both types of notifications
 
 Usage:
-  binocs-cli channel disassociate [flags]
-
-Aliases:
-  disassociate, disassoc
+  binocs-cli channel detach [flags]
 
 Flags:
   -c, --check string   check identifier, using multiple comma-separated identifiers is supported
   -t, --type string    notification type, "status" or "http-code-change" or both, defaults to "http-code-change,status"
-  -h, --help           help for disassociate
+  -h, --help           help for detach
 
 Global Flags:
       --config string   config file (default is $HOME/.binocs-cli.json)
@@ -656,7 +653,7 @@ Aliases:
   list, ls
 
 Flags:
-  -c, --check string   list only notification channels associated with a specific check
+  -c, --check string   list only notification channels attached to a specific check
   -h, --help           help for list
 
 Global Flags:
