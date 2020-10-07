@@ -209,7 +209,7 @@ List all past incidents.
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			responseCodesRegex := regexp.MustCompile(`\d{3}`)
+			responseCodesRegex, _ := regexp.Compile(`\d{3}`)
 			responseCodesMatches := responseCodesRegex.FindAllString(v.ResponseCodes, -1)
 			responseCodes := strings.Join(responseCodesMatches, ", ")
 			tableRow := []string{
