@@ -305,7 +305,7 @@ View check status and metrics.
 			os.Exit(1)
 		}
 
-		metrics, err := fetchMetrics(respJSON.Ident, urlValues)
+		metrics, err := fetchMetrics(respJSON.Ident, &urlValues)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -476,45 +476,16 @@ List all checks with status and metrics overview.
 			os.Exit(1)
 		}
 
+		ch := make(chan []string)
 		var tableData [][]string
 		for _, v := range respJSON {
-			spin.Suffix = " loading metrics for " + v.Identity()
-
-			lastStatusCodeRegex, err := regexp.Compile(`\d{3}`)
-			lastStatusCodeMatches := lastStatusCodeRegex.FindString(v.LastStatusCode)
-
-			metrics, err := fetchMetrics(v.Ident, urlValues2)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-
-			apdexData, err := util.BinocsAPI("/checks/"+v.Ident+"/apdex?"+urlValues2.Encode(), http.MethodGet, []byte{})
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			apdex := make([]ApdexResponse, 0)
-			decoder := json.NewDecoder(bytes.NewBuffer(apdexData))
-			err = decoder.Decode(&apdex)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-
-			apdexChart := drawCompactApdexChart(apdex)
-
-			tableValueMRT := formatMRT(metrics.MRT)
-			tableValueUptime := formatUptime(metrics.Uptime)
-			tableValueApdex := formatApdex(metrics.Apdex)
-			if metrics.Apdex == "" {
-				apdexChart = ""
-			}
-			tableRow := []string{
-				v.Ident, v.Name, util.Ellipsis(v.URL, 40), v.Method, statusName[v.LastStatus] + " " + util.OutputDurationWithDays(v.LastStatusDuration), lastStatusCodeMatches, fmt.Sprintf("%.3f s", v.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
-			}
-			tableData = append(tableData, tableRow)
+			go makeCheckListRow(v, ch, &urlValues2)
 		}
+		for i := range respJSON {
+			spin.Suffix = " loading checks... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(respJSON)) + ")"
+			tableData = append(tableData, <-ch)
+		}
+
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
 		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
@@ -527,6 +498,40 @@ List all checks with status and metrics overview.
 		spin.Stop()
 		table.Render()
 	},
+}
+
+func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
+	lastStatusCodeRegex, err := regexp.Compile(`\d{3}`)
+	lastStatusCodeMatches := lastStatusCodeRegex.FindString(check.LastStatusCode)
+	metrics, err := fetchMetrics(check.Ident, urlValues)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	apdexData, err := util.BinocsAPI("/checks/"+check.Ident+"/apdex?"+urlValues.Encode(), http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	apdex := make([]ApdexResponse, 0)
+	decoder := json.NewDecoder(bytes.NewBuffer(apdexData))
+	err = decoder.Decode(&apdex)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	apdexChart := drawCompactApdexChart(apdex)
+	tableValueMRT := formatMRT(metrics.MRT)
+	tableValueUptime := formatUptime(metrics.Uptime)
+	tableValueApdex := formatApdex(metrics.Apdex)
+	if metrics.Apdex == "" {
+		apdexChart = ""
+	}
+	tableRow := []string{
+		check.Ident, check.Name, util.Ellipsis(check.URL, 40), check.Method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
+		lastStatusCodeMatches, fmt.Sprintf("%.3f s", check.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+	}
+	ch <- tableRow
 }
 
 var checkUpdateCmd = &cobra.Command{
@@ -585,7 +590,7 @@ Delete existing check and collected metrics.
 	},
 }
 
-func fetchMetrics(ident string, urlValues url.Values) (MetricsResponse, error) {
+func fetchMetrics(ident string, urlValues *url.Values) (MetricsResponse, error) {
 	var metrics MetricsResponse
 	metricsData, err := util.BinocsAPI("/checks/"+ident+"/metrics?"+urlValues.Encode(), http.MethodGet, []byte{})
 	if err != nil {
