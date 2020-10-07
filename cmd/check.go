@@ -482,7 +482,7 @@ List all checks with status and metrics overview.
 			go makeCheckListRow(v, ch, &urlValues2)
 		}
 		for i := range respJSON {
-			spin.Suffix = " loading checks... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(respJSON)) + ")"
+			spin.Suffix = " loading checks metrics... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(respJSON)) + ")"
 			tableData = append(tableData, <-ch)
 		}
 
