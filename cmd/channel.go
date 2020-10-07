@@ -211,7 +211,7 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				_, err = util.BinocsAPI("/channels/"+args[0]+"/assoc/"+c, http.MethodPost, postData)
+				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodPost, postData)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
@@ -292,7 +292,7 @@ Detach channel from one or more checks, either for "status", "http-code-change" 
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				_, err = util.BinocsAPI("/channels/"+args[0]+"/assoc/"+c, http.MethodDelete, deleteData)
+				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodDelete, deleteData)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
