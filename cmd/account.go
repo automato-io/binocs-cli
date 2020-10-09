@@ -99,7 +99,7 @@ var logoutCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		tpl := `You were successfully logged out
+		tpl := `You were successfully logged out of binocs
 `
 		fmt.Print(tpl)
 	},
