@@ -7,10 +7,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/spf13/viper"
-
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -21,32 +20,17 @@ const (
 )
 
 func init() {
+	rootCmd.AddCommand(accountCmd)
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(logoutCmd)
 }
 
-var logoutCmd = &cobra.Command{
-	Use:     "logout",
-	Short:   "Logout from binocs",
-	Long:    "Logs you out of the binocs account on this machine",
-	Aliases: []string{},
+var accountCmd = &cobra.Command{
+	Use:   "account",
+	Short: "Manage your binocs account",
+	Long:  `...`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var err error
-		viper.Set("access_key_id", "")
-		viper.Set("secret_access_key", "")
-		err = viper.WriteConfigAs(viper.ConfigFileUsed())
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		err = util.ResetAccessToken()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		tpl := `You were successfully logged out
-`
-		fmt.Print(tpl)
+		fmt.Println("manage account stuff")
 	},
 }
 
@@ -91,6 +75,31 @@ var loginCmd = &cobra.Command{
 
 		tpl := `Credentials OK
 You are authenticated as dev@automato.io
+`
+		fmt.Print(tpl)
+	},
+}
+
+var logoutCmd = &cobra.Command{
+	Use:     "logout",
+	Short:   "Logout from binocs",
+	Long:    "Logs you out of the binocs account on this machine",
+	Aliases: []string{},
+	Run: func(cmd *cobra.Command, args []string) {
+		var err error
+		viper.Set("access_key_id", "")
+		viper.Set("secret_access_key", "")
+		err = viper.WriteConfigAs(viper.ConfigFileUsed())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = util.ResetAccessToken()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		tpl := `You were successfully logged out
 `
 		fmt.Print(tpl)
 	},
