@@ -79,7 +79,7 @@ func init() {
 
 var incidentCmd = &cobra.Command{
 	Use:     "incident",
-	Short:   "Manage incidents",
+	Short:   "manage incidents",
 	Long:    ``,
 	Aliases: []string{"incidents"},
 	Run: func(cmd *cobra.Command, args []string) {

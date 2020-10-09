@@ -21,23 +21,39 @@ const (
 
 func init() {
 	rootCmd.AddCommand(accountCmd)
+	accountCmd.AddCommand(accountUpdateCmd)
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(logoutCmd)
 }
 
 var accountCmd = &cobra.Command{
 	Use:   "account",
-	Short: "Manage your binocs account",
-	Long:  `...`,
+	Short: "view account information",
+	Long: `
+View your account information
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("manage account stuff")
 	},
 }
 
+var accountUpdateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "update your binocs account",
+	Long: `
+Update your binocs account
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("update account")
+	},
+}
+
 var loginCmd = &cobra.Command{
-	Use:     "login",
-	Short:   "Login to binocs",
-	Long:    `Use your Access Key ID and Secret Access Key and login to binocs`,
+	Use:   "login",
+	Short: "login to binocs",
+	Long: `
+Use your Access Key ID and Secret Access Key and login to binocs
+`,
 	Aliases: []string{"auth"},
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
@@ -73,6 +89,7 @@ var loginCmd = &cobra.Command{
 
 		util.BinocsAPIGetAccessToken(accessKeyID, secretAccessKey)
 
+		// @todo load account
 		tpl := `Credentials OK
 You are authenticated as dev@automato.io
 `
@@ -81,9 +98,11 @@ You are authenticated as dev@automato.io
 }
 
 var logoutCmd = &cobra.Command{
-	Use:     "logout",
-	Short:   "Logout from binocs",
-	Long:    "Logs you out of the binocs account on this machine",
+	Use:   "logout",
+	Short: "logout",
+	Long: `
+Log out of the binocs account on this machine
+`,
 	Aliases: []string{},
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error

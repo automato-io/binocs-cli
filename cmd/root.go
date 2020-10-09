@@ -62,11 +62,13 @@ var spin = spinner.New(spinner.CharSets[7], 100*time.Millisecond)
 var rootCmd = &cobra.Command{
 	Use:   "binocs-cli",
 	Short: "monitoring tool for websites, applications and APIs",
-	Long: `binocs is a devops-oriented monitoring tool for websites, applications and APIs. 
+	Long: `
+binocs is a devops-oriented monitoring tool for websites, applications and APIs. 
 
 binocs continuously measures uptime and performance of http or tcp endpoints 
 and provides insight into current state and metrics history. 
-Get notified via Slack, Telegram and SMS.`,
+Get notified via Slack, Telegram and SMS.
+`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

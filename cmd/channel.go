@@ -111,7 +111,7 @@ func init() {
 
 var channelCmd = &cobra.Command{
 	Use:   "channel",
-	Short: "Manage notification channels",
+	Short: "manage notification channels",
 	Long: `
 Manage notification channels
 `,
