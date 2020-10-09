@@ -12,7 +12,7 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "print the Binocs version number",
+	Short: "Print the Binocs version number",
 	Long: `
 Print the Binocs version number
 `,

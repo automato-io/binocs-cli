@@ -79,7 +79,7 @@ func init() {
 
 var incidentCmd = &cobra.Command{
 	Use:     "incident",
-	Short:   "manage incidents",
+	Short:   "Manage incidents",
 	Long:    ``,
 	Aliases: []string{"incidents"},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -96,7 +96,7 @@ var incidentCmd = &cobra.Command{
 
 var incidentInspectCmd = &cobra.Command{
 	Use:   "inspect",
-	Short: "view incident details",
+	Short: "View incident details",
 	Long: `
 View incident details, notes and associated requests.
 `,
@@ -180,7 +180,7 @@ Duration: ` + respJSON.Duration
 
 var incidentListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list all past incidents",
+	Short: "List all past incidents",
 	Long: `
 List all past incidents.
 `,
@@ -231,7 +231,7 @@ List all past incidents.
 
 var incidentUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "provide incident with a note",
+	Short: "Provide incident with a note",
 	Long: `
 Provide incident with a note. This note would be visible on incident page.
 `,

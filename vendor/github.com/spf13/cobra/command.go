@@ -1049,7 +1049,7 @@ func (c *Command) InitDefaultHelpCmd() {
 	if c.helpCommand == nil {
 		c.helpCommand = &Command{
 			Use:   "help [command]",
-			Short: "Help about any command",
+			Short: "help about any command",
 			Long: `Help provides help for any command in the application.
 Simply type ` + c.Name() + ` help [path to command] for full details.`,
 

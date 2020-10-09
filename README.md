@@ -32,10 +32,10 @@ x
 ## ToC
 
 - [x] [binocs](#binocs)
-- [x] [binocs account](#binocs-account)
-- [x] [binocs account generate-key](#binocs-account-generate-key)
-- [x] [binocs account invalidate-key](#binocs-account-invalidate-key)
-- [x] [binocs account update](#binocs-account-update)
+- [x] [binocs user](#binocs-user)
+- [x] [binocs user generate-key](#binocs-user-generate-key)
+- [x] [binocs user invalidate-key](#binocs-user-invalidate-key)
+- [x] [binocs user update](#binocs-user-update)
 - [x] [binocs check](#binocs-check)
 - [x] [binocs check add](#binocs-check-add)
 - [x] [binocs check delete](#binocs-check-delete)
@@ -75,7 +75,7 @@ Usage:
   binocs [command] [flags] [args]
 
 Available Commands:
-  account     Manage your binocs account
+  user        Manage your binocs user
   check       Manage your checks
   help        Help about any command in the application
   incident    Manage your incidents
@@ -93,23 +93,25 @@ Flags:
 Use "binocs [command] --help" for more information about a command.
 ```
 
-### binocs account
+### binocs user
 
-`binocs account --help`
+- [ ] implemented
+
+`binocs user --help`
 
 ```
-Display information about your binocs account.
+Display information about your binocs user.
 
 (name, email, password-***, billing address, timezone)
 
 Usage:
-  binocs account [flags]
-  binocs account [command] [flags]
+  binocs user [flags]
+  binocs user [command] [flags]
 
 Available Commands:
   generate-key      Generate new Access ID and Secret Key
   invalidate-key    Deny future login attempts using this key
-  update            Update your binocs account
+  update            Update your binocs user
 
 Flags:
   -h, --help            Display help
@@ -118,18 +120,20 @@ Global Flags:
       --config string   Config file (default is $HOME/.binocs-cli.json)
   -v, --verbose         Verbose output
 
-Use "binocs account [command] --help" for more information about a command.
+Use "binocs user [command] --help" for more information about a command.
 ```
 
-### binocs account generate-key
+### binocs user generate-key
 
-`binocs account generate-key --help`
+- [ ] implemented
+
+`binocs user generate-key --help`
 
 ```
 Generate new Access ID and Secret Key.
 
 Usage:
-  binocs account generate-key [flags]
+  binocs user generate-key [flags]
 
 Flags:
   -h, --help            Display help
@@ -139,15 +143,17 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-### binocs account invalidate-key
+### binocs user invalidate-key
 
-`binocs account invalidate-key --help`
+- [ ] implemented
+
+`binocs user invalidate-key --help`
 
 ```
 Deny future login attempts using this key.
 
 Usage:
-  binocs account invalidate-key [arg] [flags]
+  binocs user invalidate-key [arg] [flags]
 
 Arg: Access ID
 
@@ -160,21 +166,23 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-### binocs account update
+### binocs user update
 
-`binocs account update --help`
+- [ ] implemented
+
+`binocs user update --help`
 
 ```
-Update any of the following parameters of your account: 
+Update any of the following parameters of your user: 
 email, password, name, billing-address, timezone
 
 Usage:
-  binocs account update [flags]
+  binocs user update [flags]
 
 Flags:
       --email string                       Email address, also used as the username
-      --password string                    Account password (min. 8 chars)
-      --name string                        Account name (Optional)
+      --password string                    user password (min. 8 chars)
+      --name string                        user name (Optional)
       --billing-address                    We use it on the invoices only
       --timezone                           Display all times in this timezone, defaults to UTC (London)
   -h, --help                               Display help
@@ -518,7 +526,7 @@ Global Flags:
 `binocs logout --help`
 
 ```
-Logs you out of the binocs account on this machine.
+Logs you out of the binocs user on this machine.
 
 Usage:
   binocs logout [flags]

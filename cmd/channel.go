@@ -111,7 +111,7 @@ func init() {
 
 var channelCmd = &cobra.Command{
 	Use:   "channel",
-	Short: "manage notification channels",
+	Short: "Manage notification channels",
 	Long: `
 Manage notification channels
 `,
@@ -130,7 +130,7 @@ Manage notification channels
 
 var channelAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "add a new notification channel",
+	Short: "Add a new notification channel",
 	Long: `
 Add a new notification channel
 `,
@@ -143,7 +143,7 @@ Add a new notification channel
 
 var channelAttachCmd = &cobra.Command{
 	Use:   "attach",
-	Short: "attach channel to one or more checks",
+	Short: "Attach channel to one or more checks",
 	Long: `
 Attach channel to one or more checks, either for "status", "http-code-change" or both types of notifications
 `,
@@ -225,7 +225,7 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 
 var channelDetachCmd = &cobra.Command{
 	Use:   "detach",
-	Short: "detach channel from one or more checks",
+	Short: "Detach channel from one or more checks",
 	Long: `
 Detach channel from one or more checks, either for "status", "http-code-change" or both types of notifications
 `,
@@ -306,7 +306,7 @@ Detach channel from one or more checks, either for "status", "http-code-change" 
 
 var channelDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "delete a notification channel",
+	Short: "Delete a notification channel",
 	Long: `
 Delete a notification channel.
 `,
@@ -350,7 +350,7 @@ Delete a notification channel.
 
 var channelInspectCmd = &cobra.Command{
 	Use:   "inspect",
-	Short: "view channel details",
+	Short: "View channel details",
 	Long: `
 View channel details and attached checks.
 `,
@@ -398,7 +398,7 @@ Used: ` + strconv.Itoa(respJSON.UsedCount) + `x` + lastUsed + ``
 
 var channelListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list all notification channels",
+	Short: "List all notification channels",
 	Long: `
 List all notification channels.
 `,
@@ -439,7 +439,7 @@ List all notification channels.
 
 var channelUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "update existing notification channel",
+	Short: "Update existing notification channel",
 	Long: `
 Update existing notification channel.
 `,

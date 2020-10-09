@@ -220,7 +220,7 @@ func init() {
 
 var checkCmd = &cobra.Command{
 	Use:   "check",
-	Short: "manage your checks",
+	Short: "Manage your checks",
 	Long: `
 Manage your checks. A command (one of "add", "delete", "inspect", "list" or "update") is optional.
 
@@ -249,7 +249,7 @@ If an argument is provided without any command, assume "binocs checks inspect <a
 
 var checkAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "add a new endpoint that you want to check",
+	Short: "Add a new endpoint that you want to check",
 	Long: `
 Add a check and start reporting on it. Check identifier is returned upon successful add operation.
 
@@ -264,7 +264,7 @@ This command is interactive and asks user for parameters that were not provided 
 
 var checkInspectCmd = &cobra.Command{
 	Use:   "inspect",
-	Short: "view check status and metrics",
+	Short: "View check status and metrics",
 	Long: `
 View check status and metrics.
 `,
@@ -418,7 +418,7 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 // @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list all checks with status and metrics overview",
+	Short: "List all checks with status and metrics overview",
 	Long: `
 List all checks with status and metrics overview.
 `,
@@ -536,7 +536,7 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 
 var checkUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "update existing check attributes",
+	Short: "Update existing check attributes",
 	Long: `
 Update existing check attributes.
 `,
@@ -548,7 +548,7 @@ Update existing check attributes.
 
 var checkDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "delete existing check and collected metrics",
+	Short: "Delete existing check and collected metrics",
 	Long: `
 Delete existing check and collected metrics.
 `,

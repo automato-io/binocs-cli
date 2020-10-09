@@ -61,7 +61,7 @@ var spin = spinner.New(spinner.CharSets[7], 100*time.Millisecond)
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "binocs-cli",
-	Short: "monitoring tool for websites, applications and APIs",
+	Short: "Monitoring tool for websites, applications and APIs",
 	Long: `
 binocs is a devops-oriented monitoring tool for websites, applications and APIs. 
 
