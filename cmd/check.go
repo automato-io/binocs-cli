@@ -488,9 +488,9 @@ List all checks with status and metrics overview.
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP", "TARGET", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
+		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
-			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
+			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
 		for _, v := range tableData {
 			table.Append(v)
@@ -529,7 +529,7 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	}
 	tableRow := []string{
 		check.Ident, check.Name, util.Ellipsis(check.URL, 40), check.Method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
-		lastStatusCodeMatches, fmt.Sprintf("%.3f s", check.Target), tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+		lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow
 }
