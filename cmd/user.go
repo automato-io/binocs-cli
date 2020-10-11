@@ -2,15 +2,26 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
 
 	util "github.com/automato-io/binocs-cli/util"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+// User comes from the API as a JSON
+type User struct {
+	Name     string `json:"name,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Timezone string `json:"timezone,omitempty"`
+	Created  string `json:"created,omitempty"`
+}
 
 const (
 	validAccessKeyIDPattern     = `^[A-Z0-9]{10}$`
@@ -36,7 +47,33 @@ Display information about your binocs user
 `,
 	Aliases: []string{"account"},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("manage user stuff")
+		spin.Start()
+		spin.Suffix = " loading user..."
+		respData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var respJSON User
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Table "main"
+
+		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
+E-mail: ` + respJSON.Email + `
+Timezone: ` + respJSON.Timezone + ``
+
+		tableMain := tablewriter.NewWriter(os.Stdout)
+		tableMain.SetHeader([]string{"BINOCS USER"})
+		tableMain.SetAutoWrapText(false)
+		tableMain.Append([]string{tableMainCheckCellContent})
+
+		spin.Stop()
+		tableMain.Render()
 	},
 }
 
