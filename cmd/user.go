@@ -22,16 +22,19 @@ const (
 func init() {
 	rootCmd.AddCommand(userCmd)
 	userCmd.AddCommand(userUpdateCmd)
+	userCmd.AddCommand(generateKeyCmd)
+	userCmd.AddCommand(invalidateKeyCmd)
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(logoutCmd)
 }
 
 var userCmd = &cobra.Command{
 	Use:   "user",
-	Short: "View user information",
+	Short: "Display information about your binocs user",
 	Long: `
-View your user information
+Display information about your binocs user
 `,
+	Aliases: []string{"account"},
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("manage user stuff")
 	},
@@ -39,12 +42,35 @@ View your user information
 
 var userUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update your binocs user",
+	Short: "Update current binocs user",
 	Long: `
-Update your binocs user
+Update any of the following parameters of the current binocs user: 
+email, password, name, billing-address, timezone
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("update user")
+	},
+}
+
+var generateKeyCmd = &cobra.Command{
+	Use:   "generate-key",
+	Short: "Generate new Access ID and Secret Key",
+	Long: `
+Generate new Access ID and Secret Key
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("gen key")
+	},
+}
+
+var invalidateKeyCmd = &cobra.Command{
+	Use:   "invalidate-key",
+	Short: "Deny future login attempts using this key",
+	Long: `
+Deny future login attempts using this key
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("key rm")
 	},
 }
 
