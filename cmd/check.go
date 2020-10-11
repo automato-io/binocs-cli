@@ -39,6 +39,7 @@ type Check struct {
 	LastStatusDuration         string   `json:"last_status_duration,omitempty"`
 	Created                    string   `json:"created,omitempty"`
 	Updated                    string   `json:"updated,omitempty"`
+	ChannelsCount              int      `json:"channels_count,omitempty"`
 }
 
 // Identity method returns "Name (URL)" or "URL"
@@ -488,8 +489,8 @@ List all checks with status and metrics overview.
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
+		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "CHAN", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
+		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
 		for _, v := range tableData {
@@ -529,7 +530,7 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	}
 	tableRow := []string{
 		check.Ident, check.Name, util.Ellipsis(check.URL, 40), check.Method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
-		lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+		strconv.Itoa(check.ChannelsCount), lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow
 }
