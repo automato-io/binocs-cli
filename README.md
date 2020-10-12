@@ -168,23 +168,20 @@ Global Flags:
 
 ### binocs user update
 
-- [ ] implemented
+- [x] implemented
 
 `binocs user update --help`
 
 ```
 Update any of the following parameters of your user: 
-email, password, name, billing-address, timezone
+name, timezone
 
 Usage:
   binocs user update [flags]
 
 Flags:
-      --email string                       Email address, also used as the username
-      --password string                    user password (min. 8 chars)
-      --name string                        user name (Optional)
-      --billing-address                    We use it on the invoices only
-      --timezone                           Display all times in this timezone, defaults to UTC (London)
+      --name string                        Your name
+      --timezone                           Your timezone, defaults to UTC
   -h, --help                               Display help
 
 Global Flags:

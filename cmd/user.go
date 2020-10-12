@@ -3,13 +3,16 @@ package cmd
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
+	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,6 +26,12 @@ type User struct {
 	Created  string `json:"created,omitempty"`
 }
 
+// `user update` flags
+var (
+	userFlagName     string
+	userFlagTimezone string
+)
+
 const (
 	validAccessKeyIDPattern     = `^[A-Z0-9]{10}$`
 	validSecretAccessKeyPattern = `^[a-z0-9]{16}$`
@@ -33,6 +42,10 @@ const (
 func init() {
 	rootCmd.AddCommand(userCmd)
 	userCmd.AddCommand(userUpdateCmd)
+
+	userUpdateCmd.Flags().StringVarP(&userFlagName, "name", "n", "", "Your name")
+	userUpdateCmd.Flags().StringVarP(&userFlagTimezone, "timezone", "t", "", "Your timezone")
+
 	userCmd.AddCommand(generateKeyCmd)
 	userCmd.AddCommand(invalidateKeyCmd)
 	rootCmd.AddCommand(loginCmd)
@@ -82,10 +95,91 @@ var userUpdateCmd = &cobra.Command{
 	Short: "Update current binocs user",
 	Long: `
 Update any of the following parameters of the current binocs user: 
-email, password, name, billing-address, timezone
+name, timezone
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("update user")
+		var err error
+		var match bool
+		var tpl string
+
+		var (
+			flagName     string
+			flagTimezone string
+		)
+
+		flagName = userFlagName
+		flagTimezone = userFlagTimezone
+
+		match, err = regexp.MatchString(validNamePattern, flagName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if match == false || flagName == "" {
+			validate := func(input string) error {
+				match, err = regexp.MatchString(validNamePattern, input)
+				if err != nil {
+					return errors.New("Invalid input")
+				} else if match == false {
+					return errors.New("Invalid input value")
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "Enter a valid name",
+				Validate: validate,
+			}
+			flagName, err = prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+
+		_, err = time.LoadLocation(flagTimezone)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if match == false || flagTimezone == "" {
+			validate := func(input string) error {
+				_, err := time.LoadLocation(input)
+				if err != nil {
+					return errors.New("Invalid timezone value")
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "Enter a valid timezone",
+				Validate: validate,
+			}
+			flagTimezone, err = prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+
+		user := User{
+			Name:     flagName,
+			Timezone: flagTimezone,
+		}
+		postData, err := json.Marshal(user)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		respData, err := util.BinocsAPI("/user", http.MethodPut, postData)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = json.Unmarshal(respData, &user)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		tpl = "User " + user.Email + " updated successfully"
+		fmt.Println(tpl)
 	},
 }
 
