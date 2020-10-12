@@ -26,6 +26,12 @@ type User struct {
 	Created  string `json:"created,omitempty"`
 }
 
+// AccessKeyPair struct
+type AccessKeyPair struct {
+	AccessKeyID     string `json:"access_key_id"`
+	SecretAccessKey string `json:"secret_access_key"`
+}
+
 // `user update` flags
 var (
 	userFlagName     string
@@ -190,7 +196,28 @@ var generateKeyCmd = &cobra.Command{
 Generate new Access ID and Secret Key
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gen key")
+		var tpl string
+
+		spin.Start()
+		spin.Suffix = " generating new key pair..."
+		respData, err := util.BinocsAPI("/user/generate-key", http.MethodPost, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var respJSON AccessKeyPair
+		err = json.Unmarshal(respData, &respJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		tpl = `This is your new key pair. The Secret Access Key is displayed only now, so please store it carefully. Type ` + "`binocs login`" + ` to authenticate to Binocs using your key pair.
+Access Key ID: ` + respJSON.AccessKeyID + `
+Secret Access Key: ` + respJSON.SecretAccessKey + `
+`
+		spin.Stop()
+		fmt.Print(tpl)
 	},
 }
 

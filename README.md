@@ -125,7 +125,7 @@ Use "binocs user [command] --help" for more information about a command.
 
 ### binocs user generate-key
 
-- [ ] implemented
+- [x] implemented
 
 `binocs user generate-key --help`
 
