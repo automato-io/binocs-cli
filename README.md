@@ -145,7 +145,7 @@ Global Flags:
 
 ### binocs user invalidate-key
 
-- [ ] implemented
+- [x] implemented
 
 `binocs user invalidate-key --help`
 
@@ -155,10 +155,9 @@ Deny future login attempts using this key.
 Usage:
   binocs user invalidate-key [arg] [flags]
 
-Arg: Access ID
+Arg: Access Key ID
 
 Flags:
-      --id      The Access ID to invalidate
   -h, --help    Display help
 
 Global Flags:

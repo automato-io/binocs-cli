@@ -28,8 +28,8 @@ type User struct {
 
 // AccessKeyPair struct
 type AccessKeyPair struct {
-	AccessKeyID     string `json:"access_key_id"`
-	SecretAccessKey string `json:"secret_access_key"`
+	AccessKeyID     string `json:"access_key_id,omitempty"`
+	SecretAccessKey string `json:"secret_access_key,omitempty"`
 }
 
 // `user update` flags
@@ -107,12 +107,10 @@ name, timezone
 		var err error
 		var match bool
 		var tpl string
-
 		var (
 			flagName     string
 			flagTimezone string
 		)
-
 		flagName = userFlagName
 		flagTimezone = userFlagTimezone
 
@@ -197,7 +195,6 @@ Generate new Access ID and Secret Key
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		var tpl string
-
 		spin.Start()
 		spin.Suffix = " generating new key pair..."
 		respData, err := util.BinocsAPI("/user/generate-key", http.MethodPost, []byte{})
@@ -211,7 +208,6 @@ Generate new Access ID and Secret Key
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
 		tpl = `This is your new key pair. The Secret Access Key is displayed only now, so please store it carefully. Type ` + "`binocs login`" + ` to authenticate to Binocs using your key pair.
 Access Key ID: ` + respJSON.AccessKeyID + `
 Secret Access Key: ` + respJSON.SecretAccessKey + `
@@ -227,8 +223,28 @@ var invalidateKeyCmd = &cobra.Command{
 	Long: `
 Deny future login attempts using this key
 `,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("key rm")
+		var tpl string
+		spin.Start()
+		spin.Suffix = " invalidating key " + args[0]
+		accessKey := AccessKeyPair{
+			AccessKeyID: args[0],
+		}
+		postData, err := json.Marshal(accessKey)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		_, err = util.BinocsAPI("/user/invalidate-key", http.MethodPost, postData)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		tpl = `Successfully invalidated Access Key ID ` + args[0] + `
+`
+		spin.Stop()
+		fmt.Print(tpl)
 	},
 }
 
@@ -242,7 +258,6 @@ Use your Access Key ID and Secret Access Key and login to binocs
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var match bool
-
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("Enter your Access Key ID: ")
 		accessKeyID, _ := reader.ReadString('\n')
