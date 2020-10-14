@@ -737,6 +737,8 @@ Global Flags:
 
 ## binocs status
 
+- [ ] implemented
+
 `binocs status --help`
 
 ```
