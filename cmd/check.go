@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -486,6 +487,9 @@ List all checks with status and metrics overview.
 			spin.Suffix = " loading checks metrics... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(respJSON)) + ")"
 			tableData = append(tableData, <-ch)
 		}
+		sort.Slice(tableData, func(i, j int) bool {
+			return strings.ToLower(tableData[i][1]) < strings.ToLower(tableData[j][1])
+		})
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
