@@ -9,8 +9,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: compile and release
-      uses: ngs/go-release.action@v1.0.2
+      uses: automato-io/go-release.action@master
       env:
+        CMD_PATH: "-o binocs ."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "386"
         GOOS: linux
@@ -21,8 +22,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: compile and release
-      uses: ngs/go-release.action@v1.0.2
+      uses: automato-io/go-release.action@master
       env:
+        CMD_PATH: "-o binocs ."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: linux
@@ -33,8 +35,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: compile and release
-      uses: ngs/go-release.action@v1.0.2
+      uses: automato-io/go-release.action@master
       env:
+        CMD_PATH: "-o binocs ."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "arm"
         GOOS: linux
@@ -45,8 +48,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: compile and release
-      uses: ngs/go-release.action@v1.0.2
+      uses: automato-io/go-release.action@master
       env:
+        CMD_PATH: "-o binocs ."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: arm64
         GOOS: linux
@@ -57,8 +61,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: compile and release
-      uses: ngs/go-release.action@v1.0.2
+      uses: automato-io/go-release.action@master
       env:
+        CMD_PATH: "-o binocs ."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: darwin
@@ -69,8 +74,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: compile and release
-      uses: ngs/go-release.action@v1.0.2
+      uses: automato-io/go-release.action@master
       env:
+        CMD_PATH: "-o binocs ."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "386"
         GOOS: windows
@@ -81,8 +87,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: compile and release
-      uses: ngs/go-release.action@v1.0.2
+      uses: automato-io/go-release.action@master
       env:
+        CMD_PATH: "-o binocs ."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: windows
