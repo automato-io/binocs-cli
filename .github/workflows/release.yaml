@@ -12,10 +12,11 @@ jobs:
       uses: automato-io/go-release.action@master
       env:
         PROJECT_NAME: binocs
+        CMD_PATH: "."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "386"
         GOOS: linux
-        # EXTRA_FILES: "LICENSE"
+        EXTRA_FILES: ""
   release-linux-amd64:
     name: release linux/amd64
     runs-on: ubuntu-latest
@@ -25,10 +26,11 @@ jobs:
       uses: automato-io/go-release.action@master
       env:
         PROJECT_NAME: binocs
+        CMD_PATH: "."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: linux
-        # EXTRA_FILES: "LICENSE"
+        EXTRA_FILES: ""
   release-linux-arm:
     name: release linux/386
     runs-on: ubuntu-latest
@@ -38,10 +40,11 @@ jobs:
       uses: automato-io/go-release.action@master
       env:
         PROJECT_NAME: binocs
+        CMD_PATH: "."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "arm"
         GOOS: linux
-        # EXTRA_FILES: "LICENSE"
+        EXTRA_FILES: ""
   release-linux-arm64:
     name: release linux/amd64
     runs-on: ubuntu-latest
@@ -51,10 +54,11 @@ jobs:
       uses: automato-io/go-release.action@master
       env:
         PROJECT_NAME: binocs
+        CMD_PATH: "."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: arm64
         GOOS: linux
-        # EXTRA_FILES: "LICENSE"
+        EXTRA_FILES: ""
   release-darwin-amd64:
     name: release darwin/amd64
     runs-on: ubuntu-latest
@@ -64,10 +68,11 @@ jobs:
       uses: automato-io/go-release.action@master
       env:
         PROJECT_NAME: binocs
+        CMD_PATH: "."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: darwin
-        # EXTRA_FILES: "LICENSE"
+        EXTRA_FILES: ""
   release-windows-386:
     name: release windows/386
     runs-on: ubuntu-latest
@@ -77,10 +82,11 @@ jobs:
       uses: automato-io/go-release.action@master
       env:
         PROJECT_NAME: binocs
+        CMD_PATH: "."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "386"
         GOOS: windows
-        # EXTRA_FILES: "LICENSE"
+        EXTRA_FILES: ""
   release-windows-amd64:
     name: release windows/amd64
     runs-on: ubuntu-latest
@@ -90,7 +96,8 @@ jobs:
       uses: automato-io/go-release.action@master
       env:
         PROJECT_NAME: binocs
+        CMD_PATH: "."
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: windows
-        # EXTRA_FILES: "LICENSE"
+        EXTRA_FILES: ""
