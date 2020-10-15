@@ -11,6 +11,7 @@ jobs:
     - name: compile and release
       uses: automato-io/go-release.action@master
       env:
+        PROJECT_NAME: binocs
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "386"
         GOOS: linux
@@ -23,6 +24,7 @@ jobs:
     - name: compile and release
       uses: automato-io/go-release.action@master
       env:
+        PROJECT_NAME: binocs
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: linux
@@ -35,6 +37,7 @@ jobs:
     - name: compile and release
       uses: automato-io/go-release.action@master
       env:
+        PROJECT_NAME: binocs
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "arm"
         GOOS: linux
@@ -47,6 +50,7 @@ jobs:
     - name: compile and release
       uses: automato-io/go-release.action@master
       env:
+        PROJECT_NAME: binocs
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: arm64
         GOOS: linux
@@ -59,6 +63,7 @@ jobs:
     - name: compile and release
       uses: automato-io/go-release.action@master
       env:
+        PROJECT_NAME: binocs
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: darwin
@@ -71,6 +76,7 @@ jobs:
     - name: compile and release
       uses: automato-io/go-release.action@master
       env:
+        PROJECT_NAME: binocs
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: "386"
         GOOS: windows
@@ -83,6 +89,7 @@ jobs:
     - name: compile and release
       uses: automato-io/go-release.action@master
       env:
+        PROJECT_NAME: binocs
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GOARCH: amd64
         GOOS: windows
