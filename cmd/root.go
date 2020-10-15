@@ -13,6 +13,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// BinocsVersion semver
+const BinocsVersion = "0.3.0"
+
 const (
 	statusUnknown  = 0
 	statusStepUp   = 1

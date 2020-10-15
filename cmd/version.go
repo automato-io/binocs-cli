@@ -17,6 +17,6 @@ var versionCmd = &cobra.Command{
 Print the Binocs version number
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("binocs v0.2")
+		fmt.Println("binocs " + BinocsVersion)
 	},
 }
