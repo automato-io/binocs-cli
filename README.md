@@ -1,6 +1,8 @@
 # binocs-cli
 
-# test cases for valid UpCode regexp pattern
+## 
+
+## Test cases for valid UpCode regexp pattern
 
 ```
 404
@@ -27,9 +29,9 @@ x
 200-101
 ```
 
-# help pages
+## Help pages
 
-## ToC
+### ToC
 
 - [x] [binocs](#binocs)
 - [x] [binocs user](#binocs-user)
@@ -188,7 +190,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs check
+### binocs check
 
 - [x] implemented
 
@@ -228,7 +230,7 @@ Global Flags:
 Use "binocs-cli check [command] --help" for more information about a command.
 ```
 
-## binocs check add
+### binocs check add
 
 - [x] implemented
 
@@ -285,7 +287,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs check inspect
+### binocs check inspect
 
 - [x] implemented
 
@@ -310,7 +312,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs check list
+### binocs check list
 
 - [x] implemented
 
@@ -336,7 +338,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs check update
+### binocs check update
 
 - [x] implemented
 
@@ -365,7 +367,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs help
+### binocs help
 
 - [x] implemented
 
@@ -385,7 +387,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs incident
+### binocs incident
 
 - [ ] implemented
 
@@ -421,7 +423,7 @@ Global Flags:
 Use "binocs incident [command] --help" for more information about a command.
 ```
 
-## binocs incident inspect
+### binocs incident inspect
 
 - [ ] implemented
 
@@ -446,7 +448,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs incident list
+### binocs incident list
 
 - [x] implemented
 
@@ -469,7 +471,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs incident update
+### binocs incident update
 
 - [ ] implemented
 
@@ -492,7 +494,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs login
+### binocs login
 
 - [x] implemented
 
@@ -515,7 +517,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs logout
+### binocs logout
 
 - [x] implemented
 
@@ -535,7 +537,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs channel
+### binocs channel
 
 - [x] implemented
 
@@ -567,7 +569,7 @@ Global Flags:
 Use "binocs-cli channel [command] --help" for more information about a command.
 ```
 
-## binocs channel add
+### binocs channel add
 
 - [x] implemented
 
@@ -593,7 +595,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel attach
+### binocs channel attach
 
 - [x] implemented
 
@@ -619,7 +621,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel detach
+### binocs channel detach
 
 - [x] implemented
 
@@ -641,7 +643,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel list
+### binocs channel list
 
 - [x] implemented
 
@@ -665,7 +667,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel delete
+### binocs channel delete
 
 - [x] implemented
 
@@ -688,7 +690,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel update
+### binocs channel update
 
 - [x] implemented
 
@@ -710,7 +712,7 @@ Global Flags:
   -v, --verbose         verbose output
 ```
 
-## binocs channel view
+### binocs channel view
 
 - [x] implemented
 
@@ -735,7 +737,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs status
+### binocs status
 
 - [ ] implemented
 
@@ -755,7 +757,7 @@ Global Flags:
   -v, --verbose         Verbose output
 ```
 
-## binocs version
+### binocs version
 
 - [x] implemented
 
