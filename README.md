@@ -1,6 +1,12 @@
 # binocs-cli
 
-## 
+## Distribute binaries
+
+GH Release -> GH Actions -> binaries 
+
+download binaries to `~/Code/automato/binocs-download/public/`
+
+then `cd ~/Code/automato/binocs-download/ && ./sync`
 
 ## Test cases for valid UpCode regexp pattern
 
