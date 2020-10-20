@@ -14,7 +14,7 @@ import (
 )
 
 // BinocsVersion semver
-const BinocsVersion = "v0.3.6"
+const BinocsVersion = "v0.3.7"
 
 const (
 	statusUnknown  = 0
