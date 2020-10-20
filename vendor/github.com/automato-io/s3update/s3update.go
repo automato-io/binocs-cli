@@ -107,8 +107,7 @@ func untgzFile(filename string) error {
 	if header.Typeflag != tar.TypeReg {
 		return fmt.Errorf("gunzipping file: unknown file type")
 	}
-	data := make([]byte, header.Size)
-	_, err = tr.Read(data)
+	data, err := ioutil.ReadAll(tr)
 	if err != nil {
 		return err
 	}
@@ -204,11 +203,16 @@ func downloadUpdate(downloadURL, checksumURL, version string) error {
 		}
 	}
 
+	err = os.Chmod(target, 0755)
+	if err != nil {
+		os.Rename(backup, target)
+		return err
+	}
+
 	os.Remove(backup)
 
 	fmt.Printf("successfully updated to %s\n", version)
 
-	return nil
 	// re-run original command
 	return syscall.Exec(target, os.Args, os.Environ())
 }
