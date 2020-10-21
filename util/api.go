@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const apiURLBase = "https://binocs.sh"
+const apiURLBase = "https://api.binocs.sh"
 const storageDir = ".binocs"
 const jwtFile = "auth.json"
 
