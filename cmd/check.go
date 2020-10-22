@@ -293,6 +293,15 @@ View check status and metrics.
 			}
 		}
 
+		// @todo check against currently supported GET /regions
+		match, err = regexp.MatchString(validRegionPattern, checkInspectFlagRegion)
+		if len(checkInspectFlagRegion) > 0 && match == false {
+			fmt.Println("Invalid region provided")
+			os.Exit(1)
+		} else if err == nil && match == true {
+			urlValues.Set("region", checkInspectFlagRegion)
+		}
+
 		spin.Start()
 		spin.Suffix = " loading metrics..."
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
@@ -417,7 +426,6 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 	},
 }
 
-// @todo allow specifying -interval 24h|3d default 24h for mrt, uptime, apdex and apdex chart
 var checkListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all checks with status and metrics overview",
