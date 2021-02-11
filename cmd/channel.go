@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/manifoldco/promptui"
@@ -69,6 +70,9 @@ const (
 	validAliasPattern            = `^[a-zA-Z0-9_\ \/\-\.]{0,25}$`
 	validTypePattern             = `^(email|slack|telegram)$`
 	validNotificationTypePattern = `^(http-code-change|status)$`
+	channelTypeEmail             = "email"
+	channelTypeTelegram          = "telegram"
+	channelTypeSlack             = "slack"
 )
 
 var supportedNotificationTypes = []string{"http-code-change", "status"}
@@ -487,7 +491,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		} else if match == false {
 			prompt := promptui.Select{
 				Label: "Type",
-				Items: []string{"email", "slack", "telegram"},
+				Items: []string{channelTypeEmail, channelTypeSlack, channelTypeTelegram},
 			}
 			_, flagType, err = prompt.Run()
 			if err != nil {
@@ -571,23 +575,51 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			fmt.Println(err)
 			os.Exit(1)
 		} else if match == false {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validHandlePattern[flagType], input)
+			if flagType == channelTypeSlack {
+				slackIntegrationToken, err := requestSlackIntegrationToken()
 				if err != nil {
-					return errors.New("Invalid input")
-				} else if match == false {
-					return errors.New("Invalid input value")
+					fmt.Println(err)
+					os.Exit(1)
 				}
-				return nil
-			}
-			prompt := promptui.Prompt{
-				Label:    "Enter a valid " + flagType + " handle",
-				Validate: validate,
-			}
-			flagHandle, err = prompt.Run()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				slackScope := "incoming-webhook"
+				slackRedirectURI := "https://binocs.sh/integration/slack/callback"
+				slackClientID := "1145502794960.1106931893399"
+				slackAuthorizeURL := "https://slack.com/oauth/v2/authorize?scope=" + url.QueryEscape(slackScope) + "&client_id=" + url.QueryEscape(slackClientID) + "&redirect_uri=" + url.QueryEscape(slackRedirectURI) + "&state=" + slackIntegrationToken.Token
+				fmt.Println("Visit the following URL to choose where we should send your notifications:")
+				fmt.Println(slackAuthorizeURL)
+				spin.Start()
+				spin.Suffix = " waiting for your action ..."
+				for {
+					pollResult, err := pollSlackIntegrationStatus(slackIntegrationToken.Token)
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(1)
+					}
+					if pollResult.Updated != "nil" {
+						break
+					}
+					time.Sleep(3 * time.Second)
+				}
+				spin.Stop()
+			} else {
+				validate := func(input string) error {
+					match, err = regexp.MatchString(validHandlePattern[flagType], input)
+					if err != nil {
+						return errors.New("Invalid input")
+					} else if match == false {
+						return errors.New("Invalid input value")
+					}
+					return nil
+				}
+				prompt := promptui.Prompt{
+					Label:    "Enter a valid " + flagType + " handle",
+					Validate: validate,
+				}
+				flagHandle, err = prompt.Run()
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 			}
 		}
 	}
@@ -670,4 +702,45 @@ func fetchChannels(urlValues url.Values) ([]Channel, error) {
 		return channels, err
 	}
 	return channels, nil
+}
+
+// SlackIntegrationToken struct
+type SlackIntegrationToken struct {
+	Token string `json:"token"`
+}
+
+func requestSlackIntegrationToken() (SlackIntegrationToken, error) {
+	var token SlackIntegrationToken
+	respData, err := util.BinocsAPI("/integration/slack/request-integration-token", http.MethodPost, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = json.Unmarshal(respData, &token)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return token, nil
+}
+
+// SlackIntegrationStatus struct
+type SlackIntegrationStatus struct {
+	Token   string `json:"token"`
+	Updated string `json:"updated,omitempty"`
+}
+
+func pollSlackIntegrationStatus(token string) (SlackIntegrationStatus, error) {
+	var status SlackIntegrationStatus
+	respData, err := util.BinocsAPI("/integration/slack/status/"+token, http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = json.Unmarshal(respData, &status)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return status, nil
 }
