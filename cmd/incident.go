@@ -206,7 +206,7 @@ List all past incidents.
 		var tableData [][]string
 		for _, v := range incidents {
 			// Mon Jan 2 15:04:05 -0700 MST 2006
-			opened, err := time.Parse("2006-01-02 15:04:05 -0700 MST", v.Opened)
+			opened, err := time.Parse("2006-01-02 15:04:05 -0700", v.Opened)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
