@@ -73,21 +73,21 @@ jobs:
         GOARCH: amd64
         GOOS: darwin
         EXTRA_FILES: ""
-  release-darwin-arm64:
-    name: release darwin/arm64
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: compile and release
-      uses: automato-io/go-release.action@master
-      env:
-        PROJECT_NAME: binocs
-        CMD_PATH: "."
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: arm64
-        GOOS: darwin
-        CGO_ENABLED: 1
-        EXTRA_FILES: ""
+  # release-darwin-arm64:
+  #   name: release darwin/arm64
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: compile and release
+  #     uses: automato-io/go-release.action@master
+  #     env:
+  #       PROJECT_NAME: binocs
+  #       CMD_PATH: "."
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       GOARCH: arm64
+  #       GOOS: darwin
+  #       CGO_ENABLED: 1
+  #       EXTRA_FILES: ""
   release-windows-386:
     name: release windows/386
     runs-on: ubuntu-latest
