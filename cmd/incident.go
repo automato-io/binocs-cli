@@ -21,6 +21,7 @@ type Incident struct {
 	ID            int       `json:"id"`
 	Ident         string    `json:"ident"`
 	CheckID       int       `json:"check_id"`
+	CheckIdent    string    `json:"check_ident"`
 	IncidentNote  string    `json:"incident_note"`
 	IncidentState string    `json:"incident_state"`
 	CheckName     string    `json:"check_name"`
@@ -119,8 +120,10 @@ View incident details, notes and associated requests.
 
 		// Table "main"
 
-		tableMainIncidentCellContent := `State: ` + respJSON.IncidentState + `
+		tableMainIncidentCellContent := `Check ID: ` + respJSON.CheckIdent + `
+Check: ` + respJSON.CheckName + ` 
 URL: ` + respJSON.CheckURL + `
+Incident State: ` + respJSON.IncidentState + `
 Response Codes: ` + respJSON.ResponseCodes + `
 
 Opened: ` + respJSON.Opened + `
