@@ -596,6 +596,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 						os.Exit(1)
 					}
 					if pollResult.Updated != "nil" {
+						flagHandle = pollResult.IncomingWebhookURL
 						break
 					}
 					time.Sleep(3 * time.Second)
@@ -726,8 +727,9 @@ func requestSlackIntegrationToken() (SlackIntegrationToken, error) {
 
 // SlackIntegrationStatus struct
 type SlackIntegrationStatus struct {
-	Token   string `json:"token"`
-	Updated string `json:"updated,omitempty"`
+	Token              string `json:"token"`
+	IncomingWebhookURL string `json:"incoming_webhook_url"`
+	Updated            string `json:"updated,omitempty"`
 }
 
 func pollSlackIntegrationStatus(token string) (SlackIntegrationStatus, error) {
