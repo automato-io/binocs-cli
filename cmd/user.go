@@ -208,7 +208,10 @@ Generate new Access ID and Secret Key
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		tpl = `This is your new key pair. The Secret Access Key is displayed only now, so please store it carefully. Type ` + "`binocs login`" + ` to authenticate to Binocs using your key pair.
+		tpl = `Please keep your secret safe. We will not be able to show it to you again.
+Type ` + "`binocs login`" + ` to authenticate to Binocs using your key pair.
+
+This is your new key pair: 
 Access Key ID: ` + respJSON.AccessKeyID + `
 Secret Access Key: ` + respJSON.SecretAccessKey + `
 `
