@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
+	"github.com/automato-io/s3update"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 
@@ -14,7 +16,7 @@ import (
 )
 
 // BinocsVersion semver
-const BinocsVersion = "v0.3.11"
+const BinocsVersion = "v0.3.12"
 
 const (
 	statusUnknown  = 0
@@ -57,6 +59,8 @@ var supportedPeriods = map[string]time.Duration{
 // Verbose flag
 var Verbose bool
 
+var AutoUpdateInterval = 3600 * 24 * 2
+
 var cfgFile string
 
 var spin = spinner.New(spinner.CharSets[7], 100*time.Millisecond)
@@ -88,6 +92,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initAutoUpdater)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
@@ -139,4 +144,40 @@ func initConfig() {
 func writeConfigTemplate(path string) error {
 	configContent := []byte("{\"access_key_id\": \"\", \"secret_access_key\": \"\"}")
 	return ioutil.WriteFile(path, configContent, 0600)
+}
+
+func initAutoUpdater() {
+	currentUnix := int(time.Now().UTC().Unix())
+	lastUpdatedRaw := viper.GetString("update_last_checked")
+	lastUpdated, err := strconv.Atoi(lastUpdatedRaw)
+	if err != nil {
+		if Verbose {
+			fmt.Println(err)
+		}
+	}
+	if lastUpdated+AutoUpdateInterval < currentUnix {
+		err := s3update.AutoUpdate(s3update.Updater{
+			CurrentVersion: BinocsVersion,
+			S3VersionKey:   "VERSION",
+			S3Bucket:       "binocs-download-website",
+			S3ReleaseKey:   "binocs_{{VERSION}}_{{OS}}_{{ARCH}}.tgz",
+			ChecksumKey:    "binocs_{{VERSION}}_{{OS}}_{{ARCH}}_checksum.txt",
+			Verbose:        true,
+		})
+		if err != nil {
+			fmt.Println("Error loading auto updater (2)")
+			if Verbose {
+				fmt.Println(err)
+			}
+		} else {
+			viper.Set("update_last_checked", fmt.Sprintf("%v", currentUnix))
+			err = viper.WriteConfigAs(viper.ConfigFileUsed())
+			if err != nil {
+				fmt.Println("Error loading auto updater (3)")
+				if Verbose {
+					fmt.Println(err)
+				}
+			}
+		}
+	}
 }
