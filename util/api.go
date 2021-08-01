@@ -34,7 +34,7 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	respBody, respStatusCode, err := makeBinocsAPIRequest(url, method, data)
+	respBody, respStatusCode, err := makeBinocsAPIRequest(url, method, data, false)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -46,7 +46,10 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	}
 	if respStatusCode == http.StatusUnauthorized {
 		BinocsAPIGetAccessToken(viper.Get("access_key_id").(string), viper.Get("secret_access_key").(string))
-		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
+		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data, true)
+		if err != nil {
+			return []byte{}, err
+		}
 		if respStatusCode == http.StatusUnauthorized {
 			return []byte{}, fmt.Errorf("please login to your binocs account using `binocs login`")
 		}
@@ -91,13 +94,13 @@ func ResetAccessToken() error {
 
 var binocsAPIAccessToken string
 
-func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int, error) {
+func makeBinocsAPIRequest(url *url.URL, method string, data []byte, forceAccessTokenReload bool) ([]byte, int, error) {
 	req, err := http.NewRequest(method, url.String(), bytes.NewReader(data))
 	if err != nil {
 		return []byte{}, 0, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	if binocsAPIAccessToken == "" {
+	if forceAccessTokenReload && binocsAPIAccessToken == "" {
 		binocsAPIAccessToken, err = loadAccessToken()
 	}
 	if err != nil {
