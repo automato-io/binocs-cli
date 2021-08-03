@@ -51,12 +51,14 @@ var (
 var (
 	channelAttachFlagCheck string
 	channelAttachFlagType  string
+	channelAttachFlagAll   bool
 )
 
 // `channel detach` flags
 var (
 	channelDetachFlagCheck string
 	channelDetachFlagType  string
+	channelDetachFlagAll   bool
 )
 
 // `channel update` flags
@@ -95,10 +97,12 @@ func init() {
 
 	channelAttachCmd.Flags().StringVarP(&channelAttachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
 	channelAttachCmd.Flags().StringVarP(&channelAttachFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
+	channelAttachCmd.Flags().BoolVarP(&channelAttachFlagAll, "all", "a", false, "attach all checks to this channel")
 	channelAttachCmd.Flags().SortFlags = false
 
 	channelDetachCmd.Flags().StringVarP(&channelDetachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
 	channelDetachCmd.Flags().StringVarP(&channelDetachFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
+	channelDetachCmd.Flags().BoolVarP(&channelDetachFlagAll, "all", "a", false, "detach all checks from this channel")
 	channelDetachCmd.Flags().SortFlags = false
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
@@ -157,6 +161,9 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 		var err error
 		var match bool
 
+		spin.Start()
+		spin.Suffix = " attaching channel " + args[0]
+
 		// validate channels ident
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
@@ -170,23 +177,45 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 			os.Exit(1)
 		}
 
-		// validate checks against pattern, single or slice, required
 		checkIdents := []string{}
-		if len(channelAttachFlagCheck) == 0 {
-			fmt.Println("Set at least one check to attach to the channel")
-			os.Exit(1)
-		}
-		checkIdents = strings.Split(channelAttachFlagCheck, ",")
-		for _, c := range checkIdents {
-			match, err = regexp.MatchString(validCheckIdentPattern, c)
+
+		if channelAttachFlagAll {
+			// get all checks
+			checkRespData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if match == false {
-				fmt.Println("Provided check identifier is invalid")
+			}
+			checksRespJSON := make([]Check, 0)
+			decoder := json.NewDecoder(bytes.NewBuffer(checkRespData))
+			err = decoder.Decode(&checksRespJSON)
+			if err != nil {
+				fmt.Println(err)
 				os.Exit(1)
 			}
+			for _, c := range checksRespJSON {
+				checkIdents = append(checkIdents, c.Ident)
+			}
+		} else {
+			// validate checks against pattern, single or slice, required
+			if len(channelAttachFlagCheck) == 0 {
+				fmt.Println("Set at least one check to attach to the channel")
+				os.Exit(1)
+			}
+			checkIdents = strings.Split(channelAttachFlagCheck, ",")
+			for _, c := range checkIdents {
+				match, err = regexp.MatchString(validCheckIdentPattern, c)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				} else if match == false {
+					fmt.Println("Provided check identifier is invalid")
+					os.Exit(1)
+				}
+			}
 		}
+
+		spin.Suffix = " attaching channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks"
 
 		// validate types against pattern, single or slice, default all
 		notificationTypes := []string{}
@@ -200,7 +229,7 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if match == false {
+			} else if !match {
 				fmt.Println("Provided notification type is invalid. Supported notification types: " + strings.Join(supportedNotificationTypes, ", "))
 				os.Exit(1)
 			}
@@ -223,6 +252,7 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 			}
 		}
 
+		spin.Stop()
 		fmt.Println("Successfully attached channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks")
 	},
 }
@@ -238,6 +268,9 @@ Detach channel from one or more checks, either for "status", "http-code-change" 
 		var err error
 		var match bool
 
+		spin.Start()
+		spin.Suffix = " detaching channel " + args[0]
+
 		// validate channels ident
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
@@ -251,23 +284,45 @@ Detach channel from one or more checks, either for "status", "http-code-change" 
 			os.Exit(1)
 		}
 
-		// validate checks against pattern, single or slice, required
 		checkIdents := []string{}
-		if len(channelDetachFlagCheck) == 0 {
-			fmt.Println("Set at least one check to detach from the channel")
-			os.Exit(1)
-		}
-		checkIdents = strings.Split(channelDetachFlagCheck, ",")
-		for _, c := range checkIdents {
-			match, err = regexp.MatchString(validCheckIdentPattern, c)
+
+		if channelDetachFlagAll {
+			// get all checks
+			checkRespData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if match == false {
-				fmt.Println("Provided check identifier is invalid")
+			}
+			checksRespJSON := make([]Check, 0)
+			decoder := json.NewDecoder(bytes.NewBuffer(checkRespData))
+			err = decoder.Decode(&checksRespJSON)
+			if err != nil {
+				fmt.Println(err)
 				os.Exit(1)
 			}
+			for _, c := range checksRespJSON {
+				checkIdents = append(checkIdents, c.Ident)
+			}
+		} else {
+			// validate checks against pattern, single or slice, required
+			if len(channelDetachFlagCheck) == 0 {
+				fmt.Println("Set at least one check to detach from the channel")
+				os.Exit(1)
+			}
+			checkIdents = strings.Split(channelDetachFlagCheck, ",")
+			for _, c := range checkIdents {
+				match, err = regexp.MatchString(validCheckIdentPattern, c)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				} else if !match {
+					fmt.Println("Provided check identifier is invalid")
+					os.Exit(1)
+				}
+			}
 		}
+
+		spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
 
 		// validate types against pattern, single or slice, default all
 		notificationTypes := []string{}
@@ -304,6 +359,7 @@ Detach channel from one or more checks, either for "status", "http-code-change" 
 			}
 		}
 
+		spin.Stop()
 		fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
 	},
 }
