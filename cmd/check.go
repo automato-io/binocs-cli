@@ -304,6 +304,19 @@ View check status and metrics.
 
 		spin.Start()
 		spin.Suffix = " loading metrics..."
+
+		userRespData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var userRespJSON User
+		err = json.Unmarshal(userRespData, &userRespJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -416,7 +429,7 @@ Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
 
 		// Timeline
 
-		timeline := drawTimeline(urlValues.Get("period"), aggregateMetricsDataPoints[urlValues.Get("period")], "                ")
+		timeline := drawTimeline(&userRespJSON, urlValues.Get("period"), aggregateMetricsDataPoints[urlValues.Get("period")], "                ")
 		tableCharts.Append([]string{timeline})
 
 		spin.Stop()
@@ -903,9 +916,15 @@ func drawChartTitle(title string, chart string, periodTitle string) string {
 	return title
 }
 
-func drawTimeline(period string, dataPoints int, leftMargin string) string {
+func drawTimeline(user *User, period string, dataPoints int, leftMargin string) string {
 	var timeline [2]string
-	var now = time.Now()
+
+	tz, err := time.LoadLocation(user.Timezone)
+	if err != nil {
+		tz = time.UTC
+	}
+
+	var now = time.Now().In(tz)
 	switch period {
 	case periodHour:
 		for i := 0; i < 15; i++ {
