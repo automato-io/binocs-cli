@@ -164,9 +164,9 @@ Duration: ` + respJSON.Duration
 					responseTime := fmt.Sprintf("%.3f s", request.Timings.DSNLookup+request.Timings.Connection+request.Timings.TLS+request.Timings.Wait+request.Timings.Transfer)
 					timingsDNSLookup := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
 					timingsConnection := fmt.Sprintf("%.3f s", request.Timings.Connection)
-					timingsTLS := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
-					timingsWait := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
-					timingsTransfer := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
+					timingsTLS := fmt.Sprintf("%.3f s", request.Timings.TLS)
+					timingsWait := fmt.Sprintf("%.3f s", request.Timings.Wait)
+					timingsTransfer := fmt.Sprintf("%.3f s", request.Timings.Transfer)
 					tableRequests.Append([]string{request.Timestamp.Format("2006-01-02 15:04:05"), request.Region, request.ResponseStatusCode, responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer})
 				}
 			}
