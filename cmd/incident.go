@@ -146,8 +146,8 @@ Duration: ` + respJSON.Duration
 
 		tableRequests := tablewriter.NewWriter(os.Stdout)
 		if len(respJSON.Requests) > 0 {
-			tz := respJSON.Requests[0].Timestamp.Format("-07:00 MST")
-			tableRequests.SetHeader([]string{"CHECKED (" + tz + ")", "FROM", "RESPONSE CODE", "RESPONSE TIME", "DNS LOOKUP", "CONNECTION", "TLS", "WAITING", "TRANSFER"})
+			tz := respJSON.Requests[0].Timestamp.Format("-07:00")
+			tableRequests.SetHeader([]string{"CHECKED AT (" + tz + ")", "CHECKED FROM", "RESPONSE CODE", "RESPONSE TIME", "DNS LOOKUP", "CONNECTION", "TLS", "WAITING", "TRANSFER"})
 			tableRequests.SetAutoWrapText(false)
 			tableRequests.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
