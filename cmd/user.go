@@ -64,7 +64,8 @@ var userCmd = &cobra.Command{
 	Long: `
 Display information about your binocs user
 `,
-	Aliases: []string{"account"},
+	Aliases:           []string{"account"},
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading user..."
@@ -103,6 +104,7 @@ var userUpdateCmd = &cobra.Command{
 Update any of the following parameters of the current binocs user: 
 name, timezone
 `,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var match bool
@@ -193,6 +195,7 @@ var generateKeyCmd = &cobra.Command{
 	Long: `
 Generate new Access ID and Secret Key
 `,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var tpl string
 		spin.Start()
@@ -226,7 +229,8 @@ var invalidateKeyCmd = &cobra.Command{
 	Long: `
 Deny future login attempts using this key
 `,
-	Args: cobra.ExactArgs(1),
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var tpl string
 		spin.Start()
@@ -257,7 +261,8 @@ var loginCmd = &cobra.Command{
 	Long: `
 Use your Access Key ID and Secret Access Key and login to binocs
 `,
-	Aliases: []string{"auth"},
+	Aliases:           []string{"auth"},
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var match bool
@@ -305,7 +310,8 @@ var logoutCmd = &cobra.Command{
 	Long: `
 Log out of the binocs user on this machine
 `,
-	Aliases: []string{},
+	Aliases:           []string{},
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		viper.Set("access_key_id", "")

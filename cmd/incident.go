@@ -79,10 +79,11 @@ func init() {
 }
 
 var incidentCmd = &cobra.Command{
-	Use:     "incident",
-	Short:   "Manage incidents",
-	Long:    ``,
-	Aliases: []string{"incidents"},
+	Use:               "incident",
+	Short:             "Manage incidents",
+	Long:              ``,
+	Aliases:           []string{"incidents"},
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Run(incidentListCmd, args)
@@ -101,8 +102,9 @@ var incidentInspectCmd = &cobra.Command{
 	Long: `
 View incident details, notes and associated requests.
 `,
-	Aliases: []string{"view", "show", "info"},
-	Args:    cobra.ExactArgs(1),
+	Aliases:           []string{"view", "show", "info"},
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading incident..."
@@ -187,8 +189,9 @@ var incidentListCmd = &cobra.Command{
 	Long: `
 List all past incidents.
 `,
-	Aliases: []string{"ls"},
-	Args:    cobra.NoArgs,
+	Aliases:           []string{"ls"},
+	Args:              cobra.NoArgs,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading incidents..."
@@ -240,7 +243,8 @@ var incidentUpdateCmd = &cobra.Command{
 	Long: `
 Provide incident with a note. This note would be visible on incident page.
 `,
-	Args: cobra.ExactArgs(1),
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		// @todo implement
 	},

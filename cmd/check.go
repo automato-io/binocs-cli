@@ -230,8 +230,9 @@ If neither command nor argument are provided, assume "binocs checks list".
 	
 If an argument is provided without any command, assume "binocs checks inspect <arg>".
 `,
-	Aliases: []string{"checks"},
-	Example: "",
+	Aliases:           []string{"checks"},
+	Example:           "",
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			checkListFlagPeriod = checkFlagPeriod
@@ -257,8 +258,9 @@ Add a check and start reporting on it. Check identifier is returned upon success
 
 This command is interactive and asks user for parameters that were not provided as flags. See the flags overview below.
 `,
-	Aliases: []string{"create"},
-	Args:    cobra.NoArgs,
+	Aliases:           []string{"create"},
+	Args:              cobra.NoArgs,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		checkAddOrUpdate("add", "")
 	},
@@ -270,8 +272,9 @@ var checkInspectCmd = &cobra.Command{
 	Long: `
 View check status and metrics.
 `,
-	Aliases: []string{"view", "show", "info"},
-	Args:    cobra.ExactArgs(1),
+	Aliases:           []string{"view", "show", "info"},
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		urlValues := url.Values{
 			"period": []string{"day"},
@@ -445,8 +448,9 @@ var checkListCmd = &cobra.Command{
 	Long: `
 List all checks with status and metrics overview.
 `,
-	Aliases: []string{"ls"},
-	Args:    cobra.NoArgs,
+	Aliases:           []string{"ls"},
+	Args:              cobra.NoArgs,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		urlValues1 := url.Values{}
 		urlValues2 := url.Values{
@@ -566,7 +570,8 @@ var checkUpdateCmd = &cobra.Command{
 	Long: `
 Update existing check attributes.
 `,
-	Args: cobra.ExactArgs(1),
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		checkAddOrUpdate("update", args[0])
 	},
@@ -578,8 +583,9 @@ var checkDeleteCmd = &cobra.Command{
 	Long: `
 Delete existing check and collected metrics.
 `,
-	Aliases: []string{"del", "rm"},
-	Args:    cobra.ExactArgs(1),
+	Aliases:           []string{"del", "rm"},
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {

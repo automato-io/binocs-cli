@@ -16,6 +16,7 @@ var versionCmd = &cobra.Command{
 	Long: `
 Print the Binocs version number
 `,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("binocs " + BinocsVersion)
 	},

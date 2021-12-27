@@ -123,7 +123,8 @@ var channelCmd = &cobra.Command{
 	Long: `
 Manage notification channels
 `,
-	Aliases: []string{"channels"},
+	Aliases:           []string{"channels"},
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Run(channelListCmd, args)
@@ -142,8 +143,9 @@ var channelAddCmd = &cobra.Command{
 	Long: `
 Add a new notification channel
 `,
-	Aliases: []string{"create"},
-	Args:    cobra.NoArgs,
+	Aliases:           []string{"create"},
+	Args:              cobra.NoArgs,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		channelAddOrUpdate("add", "")
 	},
@@ -155,8 +157,9 @@ var channelAttachCmd = &cobra.Command{
 	Long: `
 Attach channel to one or more checks, either for "status", "http-code-change" or both types of notifications
 `,
-	Aliases: []string{"att"},
-	Args:    cobra.ExactArgs(1),
+	Aliases:           []string{"att"},
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var match bool
@@ -263,7 +266,8 @@ var channelDetachCmd = &cobra.Command{
 	Long: `
 Detach channel from one or more checks, either for "status", "http-code-change" or both types of notifications
 `,
-	Args: cobra.ExactArgs(1),
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 		var match bool
@@ -370,8 +374,9 @@ var channelDeleteCmd = &cobra.Command{
 	Long: `
 Delete a notification channel.
 `,
-	Aliases: []string{"del", "rm"},
-	Args:    cobra.ExactArgs(1),
+	Aliases:           []string{"del", "rm"},
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		respData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
@@ -414,8 +419,9 @@ var channelInspectCmd = &cobra.Command{
 	Long: `
 View channel details and attached checks.
 `,
-	Aliases: []string{"view", "show", "info"},
-	Args:    cobra.ExactArgs(1),
+	Aliases:           []string{"view", "show", "info"},
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading channel..."
@@ -462,8 +468,9 @@ var channelListCmd = &cobra.Command{
 	Long: `
 List all notification channels.
 `,
-	Aliases: []string{"ls"},
-	Args:    cobra.NoArgs,
+	Aliases:           []string{"ls"},
+	Args:              cobra.NoArgs,
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading channels..."
@@ -503,7 +510,8 @@ var channelUpdateCmd = &cobra.Command{
 	Long: `
 Update existing notification channel.
 `,
-	Args: cobra.ExactArgs(1),
+	Args:              cobra.ExactArgs(1),
+	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		channelAddOrUpdate("update", args[0])
 	},

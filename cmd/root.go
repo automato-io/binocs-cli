@@ -76,6 +76,7 @@ Binocs continuously measures uptime and performance of HTTP or TCP endpoints
 and provides insight into current state and metrics history. 
 Get notified via Slack, Telegram, SMS or email.
 `,
+	DisableAutoGenTag: true,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
