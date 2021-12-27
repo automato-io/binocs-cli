@@ -1,0 +1,34 @@
+## binocs-cli channel detach
+
+Detach channel from one or more checks
+
+### Synopsis
+
+
+Detach channel from one or more checks, either for "status", "http-code-change" or both types of notifications
+
+
+```
+binocs-cli channel detach [flags]
+```
+
+### Options
+
+```
+  -c, --check string   check identifier, using multiple comma-separated identifiers is supported
+  -t, --type string    notification type, "status" or "http-code-change" or both, defaults to "http-code-change,status"
+  -a, --all            detach all checks from this channel
+  -h, --help           help for detach
+```
+
+### Options inherited from parent commands
+
+```
+      --config string   config file (default is $HOME/.binocs-cli.json)
+  -v, --verbose         verbose output
+```
+
+### SEE ALSO
+
+* [binocs-cli channel](binocs-cli_channel.md)	 - Manage notification channels
+
