@@ -111,7 +111,7 @@ func makeBinocsAPIRequest(url *url.URL, method string, data []byte, forceAccessT
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("cannot reach binocs servers: %v\n", err)
+		fmt.Printf("cannot reach Binocs API: %v\n", err)
 		os.Exit(1)
 	}
 	defer resp.Body.Close()

@@ -73,7 +73,7 @@ x
 `binocs --help`
 
 ```
-binocs is a devops-oriented monitoring tool for websites, applications and APIs.
+Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and API.
 
 binocs continuously measures uptime and performance of http or tcp endpoints
 and provides insight into current state and metrics history.
