@@ -27,14 +27,14 @@ type AccessTokenStorage struct {
 	AccessToken string `json:"access_token"`
 }
 
-// BinocsAPI is another gateway to the binocs REST API
+// BinocsAPI is another gateway to the binocs REST API // @todo "another gateway"?
 func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	var err error
 	url, err := url.Parse(apiURLBase + path)
 	if err != nil {
 		return []byte{}, err
 	}
-	respBody, respStatusCode, err := makeBinocsAPIRequest(url, method, data, false)
+	respBody, respStatusCode, err := makeBinocsAPIRequest(url, method, data)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -46,7 +46,7 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	}
 	if respStatusCode == http.StatusUnauthorized {
 		BinocsAPIGetAccessToken(viper.Get("access_key_id").(string), viper.Get("secret_access_key").(string))
-		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data, true)
+		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
 		if err != nil {
 			return []byte{}, err
 		}
@@ -59,14 +59,20 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 
 // BinocsAPIGetAccessToken attempts to get an access token via API and stores it
 func BinocsAPIGetAccessToken(accessKeyID, secretAccessKey string) {
+	var err error
+	url, err := url.Parse(apiURLBase + "/authenticate")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	postData := []byte("{\"access_key_id\": \"" + accessKeyID + "\", \"secret_access_key\": \"" + secretAccessKey + "\"}")
-	respData, err := BinocsAPI("/authenticate", http.MethodPost, postData)
+	respBody, _, err := makeBinocsAPIRequest(url, http.MethodPost, postData)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	var respJSON AuthResponse
-	err = json.Unmarshal(respData, &respJSON)
+	err = json.Unmarshal(respBody, &respJSON)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -94,18 +100,17 @@ func ResetAccessToken() error {
 
 var binocsAPIAccessToken string
 
-func makeBinocsAPIRequest(url *url.URL, method string, data []byte, forceAccessTokenReload bool) ([]byte, int, error) {
+func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int, error) {
 	req, err := http.NewRequest(method, url.String(), bytes.NewReader(data))
 	if err != nil {
 		return []byte{}, 0, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	if forceAccessTokenReload && binocsAPIAccessToken == "" {
-		binocsAPIAccessToken, err = loadAccessToken()
-	}
+	binocsAPIAccessToken, err = loadAccessToken()
 	if err != nil {
 		return []byte{}, 0, err
-	} else if len(binocsAPIAccessToken) > 0 {
+	}
+	if len(binocsAPIAccessToken) > 0 {
 		req.Header.Set("Authorization", "bearer "+binocsAPIAccessToken)
 	}
 	client := &http.Client{}
