@@ -28,8 +28,8 @@ type User struct {
 
 // AccessKeyPair struct
 type AccessKeyPair struct {
-	AccessKeyID     string `json:"access_key_id,omitempty"`
-	SecretAccessKey string `json:"secret_access_key,omitempty"`
+	AccessKey string `json:"access_key,omitempty"`
+	SecretKey string `json:"secret_key,omitempty"`
 }
 
 // `user update` flags
@@ -39,10 +39,10 @@ var (
 )
 
 const (
-	validAccessKeyIDPattern     = `^[A-Z0-9]{10}$`
-	validSecretAccessKeyPattern = `^[a-z0-9]{16}$`
-	storageDir                  = ".binocs"
-	configFile                  = "config.json"
+	validAccessKeyPattern = `^[A-Z0-9]{10}$`
+	validSecretKeyPattern = `^[a-z0-9]{16}$`
+	storageDir            = ".binocs"
+	configFile            = "config.json"
 )
 
 func init() {
@@ -215,8 +215,8 @@ Generate new Access ID and Secret Key
 Type ` + "`binocs login`" + ` to authenticate to Binocs using your key pair.
 
 This is your new key pair: 
-Access Key ID: ` + respJSON.AccessKeyID + `
-Secret Access Key: ` + respJSON.SecretAccessKey + `
+Access Key: ` + respJSON.AccessKey + `
+Secret Key : ` + respJSON.SecretKey + `
 `
 		spin.Stop()
 		fmt.Print(tpl)
@@ -236,7 +236,7 @@ Deny future login attempts using this key
 		spin.Start()
 		spin.Suffix = " invalidating key " + args[0]
 		accessKey := AccessKeyPair{
-			AccessKeyID: args[0],
+			AccessKey: args[0],
 		}
 		postData, err := json.Marshal(accessKey)
 		if err != nil {
@@ -248,7 +248,7 @@ Deny future login attempts using this key
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		tpl = `Successfully invalidated Access Key ID ` + args[0] + `
+		tpl = `Successfully invalidated Access Key ` + args[0] + `
 `
 		spin.Stop()
 		fmt.Print(tpl)
@@ -259,7 +259,7 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to binocs",
 	Long: `
-Use your Access Key ID and Secret Access Key and login to binocs
+Use your Access Key and Secret Key and login to binocs
 `,
 	Aliases:           []string{"auth"},
 	DisableAutoGenTag: true,
@@ -267,34 +267,34 @@ Use your Access Key ID and Secret Access Key and login to binocs
 		var err error
 		var match bool
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter your Access Key ID: ")
-		accessKeyID, _ := reader.ReadString('\n')
-		accessKeyID = strings.TrimSpace(accessKeyID)
-		fmt.Print("Enter your Secret Access Key: ")
-		secretAccessKey, _ := reader.ReadString('\n')
-		secretAccessKey = strings.TrimSpace(secretAccessKey)
+		fmt.Print("Enter your Access Key: ")
+		accessKey, _ := reader.ReadString('\n')
+		accessKey = strings.TrimSpace(accessKey)
+		fmt.Print("Enter your Secret Key: ")
+		secretKey, _ := reader.ReadString('\n')
+		secretKey = strings.TrimSpace(secretKey)
 
-		match, err = regexp.MatchString(validAccessKeyIDPattern, accessKeyID)
+		match, err = regexp.MatchString(validAccessKeyPattern, accessKey)
 		if err != nil || match == false {
-			fmt.Println("Provided Access Key ID is invalid")
+			fmt.Println("Provided Access Key is invalid")
 			os.Exit(1)
 		}
 
-		match, err = regexp.MatchString(validSecretAccessKeyPattern, secretAccessKey)
+		match, err = regexp.MatchString(validSecretKeyPattern, secretKey)
 		if err != nil || match == false {
-			fmt.Println("Provided Secret Access Key is invalid")
+			fmt.Println("Provided Secret Key is invalid")
 			os.Exit(1)
 		}
 
-		viper.Set("access_key_id", accessKeyID)
-		viper.Set("secret_access_key", secretAccessKey)
+		viper.Set("access_key", accessKey)
+		viper.Set("secret_key", secretKey)
 		err = viper.WriteConfigAs(viper.ConfigFileUsed())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		util.BinocsAPIGetAccessToken(accessKeyID, secretAccessKey)
+		util.BinocsAPIGetAccessToken(accessKey, secretKey)
 
 		// @todo load user
 		tpl := `Credentials OK
@@ -314,8 +314,8 @@ Log out of the binocs user on this machine
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
-		viper.Set("access_key_id", "")
-		viper.Set("secret_access_key", "")
+		viper.Set("access_key", "")
+		viper.Set("secret_key", "")
 		err = viper.WriteConfigAs(viper.ConfigFileUsed())
 		if err != nil {
 			fmt.Println(err)

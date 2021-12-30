@@ -5,7 +5,7 @@ Login to binocs
 ### Synopsis
 
 
-Use your Access Key ID and Secret Access Key and login to binocs
+Use your Access Key and Secret Key and login to binocs
 
 
 ```

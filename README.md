@@ -163,7 +163,7 @@ Deny future login attempts using this key.
 Usage:
   binocs user invalidate-key [arg] [flags]
 
-Arg: Access Key ID
+Arg: Access Key
 
 Flags:
   -h, --help    Display help

@@ -45,7 +45,7 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 		return []byte{}, fmt.Errorf("bad request")
 	}
 	if respStatusCode == http.StatusUnauthorized {
-		BinocsAPIGetAccessToken(viper.Get("access_key_id").(string), viper.Get("secret_access_key").(string))
+		BinocsAPIGetAccessToken(viper.Get("access_key").(string), viper.Get("secret_key").(string))
 		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
 		if err != nil {
 			return []byte{}, err
@@ -58,14 +58,14 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 }
 
 // BinocsAPIGetAccessToken attempts to get an access token via API and stores it
-func BinocsAPIGetAccessToken(accessKeyID, secretAccessKey string) {
+func BinocsAPIGetAccessToken(accessKey, secretKey string) {
 	var err error
 	url, err := url.Parse(apiURLBase + "/authenticate")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	postData := []byte("{\"access_key_id\": \"" + accessKeyID + "\", \"secret_access_key\": \"" + secretAccessKey + "\"}")
+	postData := []byte("{\"access_key\": \"" + accessKey + "\", \"secret_key\": \"" + secretKey + "\"}")
 	respBody, _, err := makeBinocsAPIRequest(url, http.MethodPost, postData)
 	if err != nil {
 		fmt.Println(err)

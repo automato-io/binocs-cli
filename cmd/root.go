@@ -143,7 +143,7 @@ func initConfig() {
 }
 
 func writeConfigTemplate(path string) error {
-	configContent := []byte("{\"access_key_id\": \"\", \"secret_access_key\": \"\"}")
+	configContent := []byte("{\"access_key\": \"\", \"secret_key\": \"\"}")
 	return ioutil.WriteFile(path, configContent, 0600)
 }
 
