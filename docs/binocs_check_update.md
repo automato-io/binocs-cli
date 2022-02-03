@@ -1,4 +1,4 @@
-## binocs-cli check update
+## binocs check update
 
 Update existing check attributes
 
@@ -9,7 +9,7 @@ Update existing check attributes.
 
 
 ```
-binocs-cli check update [flags]
+binocs check update [flags]
 ```
 
 ### Options
@@ -30,11 +30,11 @@ binocs-cli check update [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli check](binocs-cli_check.md)	 - Manage your checks
+* [binocs check](binocs_check.md)	 - Manage your checks
 

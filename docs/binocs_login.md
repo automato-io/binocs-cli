@@ -1,4 +1,4 @@
-## binocs-cli login
+## binocs login
 
 Login to binocs
 
@@ -9,7 +9,7 @@ Use your Access Key and Secret Key and login to binocs
 
 
 ```
-binocs-cli login [flags]
+binocs login [flags]
 ```
 
 ### Options
@@ -21,11 +21,11 @@ binocs-cli login [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli](binocs-cli.md)	 - Monitoring tool for websites, applications and APIs
+* [binocs](binocs.md)	 - Monitoring tool for websites, applications and APIs
 

@@ -1,4 +1,4 @@
-## binocs-cli incident update
+## binocs incident update
 
 Provide incident with a note
 
@@ -9,7 +9,7 @@ Provide incident with a note. This note would be visible on incident page.
 
 
 ```
-binocs-cli incident update [flags]
+binocs incident update [flags]
 ```
 
 ### Options
@@ -22,11 +22,11 @@ binocs-cli incident update [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli incident](binocs-cli_incident.md)	 - Manage incidents
+* [binocs incident](binocs_incident.md)	 - Manage incidents
 

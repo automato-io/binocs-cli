@@ -1,4 +1,4 @@
-## binocs-cli channel add
+## binocs channel add
 
 Add a new notification channel
 
@@ -9,7 +9,7 @@ Add a new notification channel
 
 
 ```
-binocs-cli channel add [flags]
+binocs channel add [flags]
 ```
 
 ### Options
@@ -24,11 +24,11 @@ binocs-cli channel add [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli channel](binocs-cli_channel.md)	 - Manage notification channels
+* [binocs channel](binocs_channel.md)	 - Manage notification channels
 

@@ -1,4 +1,4 @@
-## binocs-cli check inspect
+## binocs check inspect
 
 View check status and metrics
 
@@ -9,7 +9,7 @@ View check status and metrics.
 
 
 ```
-binocs-cli check inspect [flags]
+binocs check inspect [flags]
 ```
 
 ### Options
@@ -24,11 +24,11 @@ binocs-cli check inspect [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli check](binocs-cli_check.md)	 - Manage your checks
+* [binocs check](binocs_check.md)	 - Manage your checks
 

@@ -1,4 +1,4 @@
-## binocs-cli check
+## binocs check
 
 Manage your checks
 
@@ -13,7 +13,7 @@ If an argument is provided without any command, assume "binocs checks inspect <a
 
 
 ```
-binocs-cli check [flags]
+binocs check [flags]
 ```
 
 ### Options
@@ -28,16 +28,16 @@ binocs-cli check [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli](binocs-cli.md)	 - Monitoring tool for websites, applications and APIs
-* [binocs-cli check add](binocs-cli_check_add.md)	 - Add a new endpoint that you want to check
-* [binocs-cli check delete](binocs-cli_check_delete.md)	 - Delete existing check and collected metrics
-* [binocs-cli check inspect](binocs-cli_check_inspect.md)	 - View check status and metrics
-* [binocs-cli check list](binocs-cli_check_list.md)	 - List all checks with status and metrics overview
-* [binocs-cli check update](binocs-cli_check_update.md)	 - Update existing check attributes
+* [binocs](binocs.md)	 - Monitoring tool for websites, applications and APIs
+* [binocs check add](binocs_check_add.md)	 - Add a new endpoint that you want to check
+* [binocs check delete](binocs_check_delete.md)	 - Delete existing check and collected metrics
+* [binocs check inspect](binocs_check_inspect.md)	 - View check status and metrics
+* [binocs check list](binocs_check_list.md)	 - List all checks with status and metrics overview
+* [binocs check update](binocs_check_update.md)	 - Update existing check attributes
 

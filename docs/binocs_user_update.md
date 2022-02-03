@@ -1,4 +1,4 @@
-## binocs-cli user update
+## binocs user update
 
 Update current binocs user
 
@@ -10,7 +10,7 @@ name, timezone
 
 
 ```
-binocs-cli user update [flags]
+binocs user update [flags]
 ```
 
 ### Options
@@ -24,11 +24,11 @@ binocs-cli user update [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli user](binocs-cli_user.md)	 - Display information about your binocs user
+* [binocs user](binocs_user.md)	 - Display information about your binocs user
 

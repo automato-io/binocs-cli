@@ -1,4 +1,4 @@
-## binocs-cli incident list
+## binocs incident list
 
 List all past incidents
 
@@ -9,7 +9,7 @@ List all past incidents.
 
 
 ```
-binocs-cli incident list [flags]
+binocs incident list [flags]
 ```
 
 ### Options
@@ -22,11 +22,11 @@ binocs-cli incident list [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli incident](binocs-cli_incident.md)	 - Manage incidents
+* [binocs incident](binocs_incident.md)	 - Manage incidents
 

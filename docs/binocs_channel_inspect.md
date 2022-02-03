@@ -1,4 +1,4 @@
-## binocs-cli channel inspect
+## binocs channel inspect
 
 View channel details
 
@@ -9,7 +9,7 @@ View channel details and attached checks.
 
 
 ```
-binocs-cli channel inspect [flags]
+binocs channel inspect [flags]
 ```
 
 ### Options
@@ -21,11 +21,11 @@ binocs-cli channel inspect [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli channel](binocs-cli_channel.md)	 - Manage notification channels
+* [binocs channel](binocs_channel.md)	 - Manage notification channels
 

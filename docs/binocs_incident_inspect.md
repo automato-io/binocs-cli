@@ -1,4 +1,4 @@
-## binocs-cli incident inspect
+## binocs incident inspect
 
 View incident details
 
@@ -9,7 +9,7 @@ View incident details, notes and associated requests.
 
 
 ```
-binocs-cli incident inspect [flags]
+binocs incident inspect [flags]
 ```
 
 ### Options
@@ -21,11 +21,11 @@ binocs-cli incident inspect [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli incident](binocs-cli_incident.md)	 - Manage incidents
+* [binocs incident](binocs_incident.md)	 - Manage incidents
 

@@ -1,4 +1,4 @@
-## binocs-cli channel list
+## binocs channel list
 
 List all notification channels
 
@@ -9,7 +9,7 @@ List all notification channels.
 
 
 ```
-binocs-cli channel list [flags]
+binocs channel list [flags]
 ```
 
 ### Options
@@ -22,11 +22,11 @@ binocs-cli channel list [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli channel](binocs-cli_channel.md)	 - Manage notification channels
+* [binocs channel](binocs_channel.md)	 - Manage notification channels
 

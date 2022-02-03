@@ -1,4 +1,4 @@
-## binocs-cli channel attach
+## binocs channel attach
 
 Attach channel to one or more checks
 
@@ -9,7 +9,7 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 
 
 ```
-binocs-cli channel attach [flags]
+binocs channel attach [flags]
 ```
 
 ### Options
@@ -24,11 +24,11 @@ binocs-cli channel attach [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.binocs-cli.json)
+      --config string   config file (default is $HOME/.binocs/config.json)
   -v, --verbose         verbose output
 ```
 
 ### SEE ALSO
 
-* [binocs-cli channel](binocs-cli_channel.md)	 - Manage notification channels
+* [binocs channel](binocs_channel.md)	 - Manage notification channels
 
