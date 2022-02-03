@@ -75,9 +75,11 @@ x
 ```
 Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and API.
 
-binocs continuously measures uptime and performance of http or tcp endpoints
-and provides insight into current state and metrics history.
-Get notified via Slack, Telegram and SMS.
+Binocs servers continuously measure uptime and performance of http or tcp endpoints. 
+
+Get insight into current state of your endpoints and metrics history using this CLI tool. 
+
+Receive notifications about any incidents in real-time.
 
 Usage:
   binocs [command] [flags] [args]
