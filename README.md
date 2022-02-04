@@ -8,6 +8,23 @@ download binaries to `~/Code/automato/binocs-download/public/`
 
 then `cd ~/Code/automato/binocs-download/ && ./sync`
 
+## Update documentation on the website
+
+```
+$ go run main.go docgen
+purged: ./docs
+documentation generated successfully
+
+$ go run main.go version
+binocs v0.3.14
+
+$ mkdir ~/Code/automato/binocs-website/public/docs/v0.3.14/
+
+$ cp -a docs/* ~/Code/automato/binocs-website/resources/docs/v0.3.14/
+```
+
+Update `web.php` in web project to include the new version and make it default.
+
 ## Test cases for valid UpCode regexp pattern
 
 ```
