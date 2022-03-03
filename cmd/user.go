@@ -296,10 +296,19 @@ Use your Access Key and Secret Key and login to binocs
 
 		util.BinocsAPIGetAccessToken(accessKey, secretKey)
 
-		// @todo load user
-		tpl := `Credentials OK
-You are authenticated as dev@automato.io
-`
+		userRespData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		var userRespJSON User
+		err = json.Unmarshal(userRespData, &userRespJSON)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		tpl := `You are authenticated as ` + userRespJSON.Name + ` (` + userRespJSON.Email + `)`
 		fmt.Print(tpl)
 	},
 }
