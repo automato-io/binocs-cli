@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
@@ -39,10 +37,10 @@ var (
 )
 
 const (
-	validAccessKeyPattern = `^[A-Z0-9]{10}$`
-	validSecretKeyPattern = `^[a-z0-9]{16}$`
-	storageDir            = ".binocs"
-	configFile            = "config.json"
+	// validAccessKeyPattern = `^[A-Z0-9]{10}$`
+	// validSecretKeyPattern = `^[a-z0-9]{16}$`
+	storageDir = ".binocs"
+	configFile = "config.json"
 )
 
 func init() {
@@ -264,25 +262,36 @@ Use your Access Key and Secret Key and login to binocs
 	Aliases:           []string{"auth"},
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		var err error
-		var match bool
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter your Access Key: ")
-		accessKey, _ := reader.ReadString('\n')
-		accessKey = strings.TrimSpace(accessKey)
-		fmt.Print("Enter your Secret Key: ")
-		secretKey, _ := reader.ReadString('\n')
-		secretKey = strings.TrimSpace(secretKey)
-
-		match, err = regexp.MatchString(validAccessKeyPattern, accessKey)
-		if err != nil || match == false {
-			fmt.Println("Provided Access Key is invalid")
+		prompt := promptui.Prompt{
+			Label: "Enter Access Key",
+			Templates: &promptui.PromptTemplates{
+				Valid:   "{{ . | bold }}: ",
+				Invalid: "{{ . | bold }}: ",
+			},
+		}
+		accessKey, err := prompt.Run()
+		if err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		match, err = regexp.MatchString(validSecretKeyPattern, secretKey)
-		if err != nil || match == false {
-			fmt.Println("Provided Secret Key is invalid")
+		prompt = promptui.Prompt{
+			Label: "Enter Secret Key",
+			Templates: &promptui.PromptTemplates{
+				Valid:   "{{ . | bold }}: ",
+				Invalid: "{{ . | bold }}: ",
+			},
+			Mask: '*',
+		}
+		secretKey, err := prompt.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		err = util.BinocsAPIGetAccessToken(accessKey, secretKey)
+		if err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 
@@ -293,8 +302,6 @@ Use your Access Key and Secret Key and login to binocs
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
-		util.BinocsAPIGetAccessToken(accessKey, secretKey)
 
 		userRespData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
 		if err != nil {
@@ -308,7 +315,8 @@ Use your Access Key and Secret Key and login to binocs
 			os.Exit(1)
 		}
 
-		tpl := `You are authenticated as ` + userRespJSON.Name + ` (` + userRespJSON.Email + `)`
+		tpl := `You are authenticated as ` + userRespJSON.Name + ` (` + userRespJSON.Email + `)
+`
 		fmt.Print(tpl)
 	},
 }
