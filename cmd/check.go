@@ -764,7 +764,7 @@ func drawApdexChart(apdex []ApdexResponse, dataPoints int, leftMargin string) st
 			if vf > (float64(i)+1.0)/float64(numRows) {
 				rows[i] = rows[i] + "░"
 			} else if vf <= (float64(i)+1.0)/float64(numRows) && vf > float64(i)/float64(numRows) {
-				rows[i] = rows[i] + "●"
+				rows[i] = rows[i] + "▩"
 			} else {
 				rows[i] = rows[i] + " "
 			}
@@ -787,22 +787,22 @@ func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints in
 	var chart string
 	for _, v := range responseCodes {
 		if v.Xx2 > 0 {
-			rows[0] = rows[0] + "●"
+			rows[0] = rows[0] + "▩"
 		} else {
 			rows[0] = rows[0] + " "
 		}
 		if v.Xx3 > 0 {
-			rows[1] = rows[1] + "●"
+			rows[1] = rows[1] + "▩"
 		} else {
 			rows[1] = rows[1] + " "
 		}
 		if v.Xx4 > 0 {
-			rows[2] = rows[2] + "●"
+			rows[2] = rows[2] + "▩"
 		} else {
 			rows[2] = rows[2] + " "
 		}
 		if v.Xx5 > 0 {
-			rows[3] = rows[3] + "●"
+			rows[3] = rows[3] + "▩"
 		} else {
 			rows[3] = rows[3] + " "
 		}
@@ -857,7 +857,7 @@ func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapRespo
 			heatmapMaximum = v.Rt7
 		}
 	}
-	var palette = [5]string{" ", "░", "▒", "▓", "█"}
+	var palette = [5]string{" ", "▨", "▨", "▩", "▩"}
 	var paletteStep = float32(len(palette) - 1)
 	var thresholds = [4]float32{
 		1.0,
