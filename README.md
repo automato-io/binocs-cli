@@ -18,7 +18,7 @@ documentation generated successfully
 $ go run main.go version
 binocs v0.3.14
 
-$ mkdir ~/Code/automato/binocs-website/public/docs/v0.3.14/
+$ mkdir ~/Code/automato/binocs-website/resources/docs/v0.3.14/
 
 $ cp -a docs/* ~/Code/automato/binocs-website/resources/docs/v0.3.14/
 ```
