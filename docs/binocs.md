@@ -5,7 +5,7 @@ Monitoring tool for websites, applications and APIs
 ### Synopsis
 
 
-Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and API.
+Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and APIs.
 
 Binocs servers continuously measure uptime and performance of http or tcp endpoints. 
 
