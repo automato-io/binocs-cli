@@ -354,7 +354,7 @@ Mean Response Time: ` + formatMRT(metrics.MRT)
 UP HTTP Codes: ` + respJSON.UpCodes + `
 Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
 Confirmations thresholds: UP: ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN: ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + ` 
-Binocs locations: ` + strings.Join(respJSON.Regions, ", ")
+Binocs regions: ` + strings.Join(respJSON.Regions, ", ")
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHECK", "METRICS (" + periodTableTitle + ")", "SETTINGS"})
