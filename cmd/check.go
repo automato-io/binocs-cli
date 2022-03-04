@@ -531,7 +531,7 @@ List all checks with status and metrics overview.
 }
 
 func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
-	lastStatusCodeRegex, err := regexp.Compile(`\d{3}`)
+	lastStatusCodeRegex, _ := regexp.Compile(`\d{3}`)
 	lastStatusCodeMatches := lastStatusCodeRegex.FindString(check.LastStatusCode)
 	metrics, err := fetchMetrics(check.Ident, urlValues)
 	if err != nil {
@@ -665,7 +665,6 @@ func loadSupportedRegions() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	// @toto verbose print respData
 	regionsResponse := RegionsResponse{}
 	err = json.Unmarshal(respData, &regionsResponse)
 	if err != nil {
