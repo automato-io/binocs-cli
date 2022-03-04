@@ -2,10 +2,6 @@
 
 Manage incidents
 
-### Synopsis
-
-Manage incidents
-
 ```
 binocs incident [flags]
 ```
