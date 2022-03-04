@@ -761,7 +761,7 @@ func drawApdexChart(apdex []ApdexResponse, dataPoints int, leftMargin string) st
 		var vf, _ = strconv.ParseFloat(v.Apdex, 32)
 		for i := 0; i < numRows; i++ {
 			if vf > (float64(i)+1.0)/float64(numRows) {
-				rows[i] = rows[i] + "░"
+				rows[i] = rows[i] + " "
 			} else if vf <= (float64(i)+1.0)/float64(numRows) && vf > float64(i)/float64(numRows) {
 				rows[i] = rows[i] + "▩"
 			} else {
