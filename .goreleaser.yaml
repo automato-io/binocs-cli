@@ -1,5 +1,3 @@
-env:
-  - GITHUB_TOKEN={{ .Env.GH_TOKEN }}
 project_name: binocs
 builds:
   - env:
