@@ -1,17 +1,25 @@
 project_name: binocs
 builds:
-  - env:
-      - CGO_ENABLED=0
-    dir: .
+  - id: binocs
     binary: binocs
     goos:
       - linux
       - windows
-      - darwin
     goarch:
       - 386
       - amd64
       - arm64
+  - id: binocs-macos
+    # env:
+    #   - AC_PASSWORD={{ .Env.AC_PASSWORD }}
+    binary: binocs
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      # - arm64
+    hooks:
+      post: gon gon.json
 archives:
   - format: binary
 checksum:
