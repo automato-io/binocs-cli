@@ -1,0 +1,26 @@
+env:
+  - GITHUB_TOKEN={{ .Env.GH_TOKEN }}
+project_name: binocs
+builds:
+  - env:
+      - CGO_ENABLED=0
+    dir: .
+    binary: binocs
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - 386
+      - amd64
+      - arm64
+archives:
+  - format: binary
+checksum:
+  algorithm: sha256
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
