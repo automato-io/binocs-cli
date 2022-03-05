@@ -6,7 +6,7 @@ on:
 permissions:
   contents: write
 jobs:
-  goreleaser:
+  release:
     runs-on: macos-11
     steps:
       - name: Checkout

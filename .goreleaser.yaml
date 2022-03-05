@@ -10,20 +10,28 @@ builds:
       - amd64
       - arm64
   - id: binocs-macos
-    # env:
-    #   - AC_PASSWORD={{ .Env.AC_PASSWORD }}
     binary: binocs
     goos:
       - darwin
     goarch:
       - amd64
       # - arm64
-    hooks:
-      post: gon gon.json
+    # hooks:
+    #   post: gon gon.json
 archives:
   - format: binary
 checksum:
   algorithm: sha256
+signs:
+  - signature: "${artifact}"
+    artifacts: all
+    ids:
+      - binocs-macos
+    cmd: gon
+    args:
+      - gon.json
+    # env:
+    #   - AC_PASSWORD={{ .Env.AC_PASSWORD }}
 changelog:
   sort: asc
   filters:
