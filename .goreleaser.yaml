@@ -15,10 +15,10 @@ builds:
       - darwin
     goarch:
       - amd64
-      # - arm64
+      - arm64
     hooks:
       post:
-       - cmd: 'gon -log-level=debug -log-json gon.{{ .Arch }}.json'
+       - cmd: 'gon -log-level=info gon.{{ .Arch }}.json'
          output: true
 archives:
   - format: binary
@@ -26,7 +26,3 @@ checksum:
   algorithm: sha256
 changelog:
   sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
