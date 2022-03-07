@@ -15,7 +15,7 @@ builds:
       - darwin
     goarch:
       - amd64
-      - arm64
+      # - arm64
     hooks:
       post:
        - cmd: 'gon -log-level=debug -log-json gon.{{ .Arch }}.json'
