@@ -1,14 +1,14 @@
 project_name: binocs
 builds:
-  # - id: binocs
-  #   binary: binocs
-  #   goos:
-  #     - linux
-  #     - windows
-  #   goarch:
-  #     - 386
-  #     - amd64
-  #     - arm64
+  - id: binocs
+    binary: binocs
+    goos:
+      - linux
+      - windows
+    goarch:
+      - 386
+      - amd64
+      - arm64
   - id: binocs-macos-amd64
     binary: binocs
     goos:
