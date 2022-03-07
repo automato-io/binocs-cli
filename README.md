@@ -2,7 +2,7 @@
 
 ## Release
 
-### 1. Set version in code in `root.go`
+### 1. Set version in `root.go`
 
 `const BinocsVersion = "v0.4.0"`
 
