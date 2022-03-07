@@ -16,22 +16,22 @@ builds:
     goarch:
       - amd64
       # - arm64
-    # hooks:
-    #   post: gon gon.json
+    hooks:
+      post: gon -log-level=debug -log-json gon.json
 archives:
   - format: binary
 checksum:
   algorithm: sha256
-signs:
-  - signature: "${artifact}.dmg"
-    artifacts: all
-    ids:
-      - binocs-macos
-    cmd: gon
-    args:
-      - -log-level=debug
-      - -log-json
-      - gon.json
+# signs:
+#   - signature: "${artifact}.dmg"
+#     artifacts: all
+#     ids:
+#       - binocs-macos
+#     cmd: gon
+#     args:
+#       - -log-level=debug
+#       - -log-json
+#       - gon.json
     # env:
     #   - AC_PASSWORD={{ .Env.AC_PASSWORD }}
 changelog:
