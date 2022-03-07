@@ -15,28 +15,18 @@ builds:
       - darwin
     goarch:
       - amd64
-      # - arm64
+      - arm64
     hooks:
       post:
        - cmd: 'gon -log-level=debug -log-json gon.json'
-         dir: .
          output: true
+         env:
+          - BINOCS_SOURCE_FILE_PATH="{{ .Path }}"
+          - BINOCS_OUTPUT_ZIP_FILE_PATH="{{ .Path }}.zip"
 archives:
   - format: binary
 checksum:
   algorithm: sha256
-# signs:
-#   - signature: "${artifact}.dmg"
-#     artifacts: all
-#     ids:
-#       - binocs-macos
-#     cmd: gon
-#     args:
-#       - -log-level=debug
-#       - -log-json
-#       - gon.json
-    # env:
-    #   - AC_PASSWORD={{ .Env.AC_PASSWORD }}
 changelog:
   sort: asc
   filters:
