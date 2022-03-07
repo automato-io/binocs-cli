@@ -14,7 +14,7 @@ $ mkdir ~/Code/automato/binocs-website/resources/docs/v0.4.0/
 $ cp -a docs/* ~/Code/automato/binocs-website/resources/docs/v0.4.0/
 ```
 
-Update `web.php` in web project to include the new version and make it default.
+Update `routes/web.php` and `config/binocs.php` in web project to include the new version and make it default.
 
 ### 3. Execute release via GitHub Actions
 
