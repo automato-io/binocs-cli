@@ -1,6 +1,6 @@
 {
     "source": [
-        "@env:BINOCS_SOURCE_FILE_PATH"
+        "./dist/binocs-macos_darwin_arm64/binocs"
     ],
     "bundle_id": "sh.binocs.macos",
     "apple_id": {
@@ -11,6 +11,6 @@
         "application_identity" : "586F6651E48ABDA71C8F6E1BD195E65377C337C6"
     },
     "zip": {
-        "output_path": "@env:BINOCS_OUTPUT_ZIP_FILE_PATH"
+        "output_path": "./dist/binocs-macos_darwin_arm64/binocs.zip"
     }
 }

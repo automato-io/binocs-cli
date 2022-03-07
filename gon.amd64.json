@@ -1,0 +1,16 @@
+{
+    "source": [
+        "./dist/binocs-macos_darwin_amd64/binocs"
+    ],
+    "bundle_id": "sh.binocs.macos",
+    "apple_id": {
+        "username" : "j.holub@gmail.com",
+        "password":  "@env:APPLE_ID_AC_PASSWORD"
+    },
+    "sign": {
+        "application_identity" : "586F6651E48ABDA71C8F6E1BD195E65377C337C6"
+    },
+    "zip": {
+        "output_path": "./dist/binocs-macos_darwin_amd64/binocs.zip"
+    }
+}

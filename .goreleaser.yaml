@@ -18,11 +18,8 @@ builds:
       - arm64
     hooks:
       post:
-       - cmd: 'gon -log-level=debug -log-json gon.json'
+       - cmd: 'gon -log-level=debug -log-json gon.{{ .Arch }}.json'
          output: true
-         env:
-          - BINOCS_SOURCE_FILE_PATH="{{ .Path }}"
-          - BINOCS_OUTPUT_ZIP_FILE_PATH="{{ .Path }}.zip"
 archives:
   - format: binary
 checksum:
