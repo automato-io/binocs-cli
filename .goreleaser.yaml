@@ -18,7 +18,7 @@ builds:
       - arm64
     hooks:
       post:
-       - cmd: 'gon -log-level=info gon.{{ .Arch }}.json'
+       - cmd: 'gon gon.{{ .Arch }}.json'
          output: true
 archives:
   - format: binary
