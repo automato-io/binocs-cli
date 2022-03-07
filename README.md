@@ -1,29 +1,35 @@
 # binocs-cli
 
-## Distribute binaries
+## Release
 
-GH Release -> GH Actions -> binaries 
+### 1. Set version in code in `root.go`
 
-download binaries to `~/Code/automato/binocs-download/public/`
+`const BinocsVersion = "v0.4.0"`
 
-then `cd ~/Code/automato/binocs-download/ && ./sync`
+### 2. Generate docs and update docs on the website
 
-## Update documentation on the website
-
-```
+```shell
 $ go run main.go docgen
-purged: ./docs
-documentation generated successfully
-
-$ go run main.go version
-binocs v0.3.14
-
-$ mkdir ~/Code/automato/binocs-website/resources/docs/v0.3.14/
-
-$ cp -a docs/* ~/Code/automato/binocs-website/resources/docs/v0.3.14/
+$ mkdir ~/Code/automato/binocs-website/resources/docs/v0.4.0/
+$ cp -a docs/* ~/Code/automato/binocs-website/resources/docs/v0.4.0/
 ```
 
 Update `web.php` in web project to include the new version and make it default.
+
+### 3. Execute release via GitHub Actions
+
+```shell
+$ git commit -m 'bump version to 0.4.0'
+$ git tag -a v0.4.0 -m 'release v0.4.0'
+$ git push origin master
+$ git push origin v0.4.0
+```
+
+Download binaries to `~/Code/automato/binocs-download/public/`
+
+```shell
+$ cd ~/Code/automato/binocs-download/ && ./sync
+```
 
 ## Test cases for valid UpCode regexp pattern
 
