@@ -1,24 +1,24 @@
 project_name: binocs
 builds:
-  - id: binocs
-    binary: binocs
-    goos:
-      - linux
-      - windows
-    goarch:
-      - 386
-      - amd64
-      - arm64
+  # - id: binocs
+  #   binary: binocs
+  #   goos:
+  #     - linux
+  #     - windows
+  #   goarch:
+  #     - 386
+  #     - amd64
+  #     - arm64
   - id: binocs-macos
     binary: binocs
     goos:
       - darwin
     goarch:
-      - amd64
+      # - amd64
       - arm64
     hooks:
       post:
-       - cmd: 'gon gon.{{ .Arch }}.json'
+       - cmd: 'gon -log-level=debug -log-json gon.{{ .Arch }}.json'
          output: true
 archives:
   - format: binary
