@@ -23,12 +23,14 @@ archives:
 checksum:
   algorithm: sha256
 signs:
-  - signature: "${artifact}"
+  - signature: "${artifact}.dmg"
     artifacts: all
     ids:
       - binocs-macos
     cmd: gon
     args:
+      - -log-level=debug
+      - -log-json
       - gon.json
     # env:
     #   - AC_PASSWORD={{ .Env.AC_PASSWORD }}
