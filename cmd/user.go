@@ -86,7 +86,7 @@ E-mail: ` + respJSON.Email + `
 Timezone: ` + respJSON.Timezone + ``
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
-		tableMain.SetHeader([]string{"BINOCS USER"})
+		tableMain.SetHeader([]string{"USER"})
 		tableMain.SetAutoWrapText(false)
 		tableMain.Append([]string{tableMainCheckCellContent})
 
