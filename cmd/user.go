@@ -320,9 +320,11 @@ Use your Access Key and Secret Key and login to binocs
 			os.Exit(1)
 		}
 
-		tpl := `You are authenticated as ` + userRespJSON.Name + ` (` + userRespJSON.Email + `)
-`
-		fmt.Print(tpl)
+		if userRespJSON.CreditBalance == 0 {
+			printZeroCreditsWarning()
+		}
+
+		fmt.Println(`You are authenticated as ` + userRespJSON.Name + ` (` + userRespJSON.Email + `)`)
 	},
 }
 
