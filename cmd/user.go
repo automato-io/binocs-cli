@@ -18,10 +18,11 @@ import (
 
 // User comes from the API as a JSON
 type User struct {
-	Name     string `json:"name,omitempty"`
-	Email    string `json:"email,omitempty"`
-	Timezone string `json:"timezone,omitempty"`
-	Created  string `json:"created,omitempty"`
+	Name          string `json:"name,omitempty"`
+	Email         string `json:"email,omitempty"`
+	Timezone      string `json:"timezone,omitempty"`
+	CreditBalance int    `json:"credit_balance,omitempty"`
+	Created       string `json:"created,omitempty"`
 }
 
 // AccessKeyPair struct
@@ -83,7 +84,8 @@ Display information about your binocs user
 
 		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
 E-mail: ` + respJSON.Email + `
-Timezone: ` + respJSON.Timezone + ``
+Timezone: ` + respJSON.Timezone + `
+Credit balance: ` + fmt.Sprint(respJSON.CreditBalance) + ``
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"USER"})
