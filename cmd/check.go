@@ -430,6 +430,9 @@ Binocs regions: ` + strings.Join(respJSON.Regions, ", ")
 		tableCharts.Append([]string{timeline})
 
 		spin.Stop()
+		if user.CreditBalance == 0 {
+			printZeroCreditsWarning()
+		}
 		tableMain.Render()
 		fmt.Println()
 		tableCharts.Render()
@@ -484,6 +487,12 @@ List all checks with status and metrics overview.
 		spin.Start()
 		spin.Suffix = " loading checks..."
 
+		user, err := fetchUser()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		respData, err := util.BinocsAPI("/checks?"+urlValues1.Encode(), http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -520,6 +529,9 @@ List all checks with status and metrics overview.
 			table.Append(v)
 		}
 		spin.Stop()
+		if user.CreditBalance == 0 {
+			printZeroCreditsWarning()
+		}
 		table.Render()
 	},
 }
