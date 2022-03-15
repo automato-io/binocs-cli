@@ -93,6 +93,9 @@ Credit balance: ` + fmt.Sprint(respJSON.CreditBalance) + ``
 		tableMain.Append([]string{tableMainCheckCellContent})
 
 		spin.Stop()
+		if respJSON.CreditBalance == 0 {
+			printZeroCreditsWarning()
+		}
 		tableMain.Render()
 	},
 }

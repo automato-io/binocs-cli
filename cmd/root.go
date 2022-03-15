@@ -9,6 +9,7 @@ import (
 
 	"github.com/automato-io/s3update"
 	"github.com/briandowns/spinner"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -179,4 +180,12 @@ func initAutoUpdater() {
 			}
 		}
 	}
+}
+
+func printZeroCreditsWarning() {
+	creditsBalanceWarning := "WARNING: Your credit balance reached zero and all your checks were paused.\nIf you wish to continue using Binocs, please visit the Settings page at https://binocs.sh/settings to purchase additional credits.\nYour checks will resume once you top up credits."
+	tableCreditsBalanceWarning := tablewriter.NewWriter(os.Stdout)
+	tableCreditsBalanceWarning.SetAutoWrapText(false)
+	tableCreditsBalanceWarning.Append([]string{creditsBalanceWarning})
+	tableCreditsBalanceWarning.Render()
 }
