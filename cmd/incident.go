@@ -108,6 +108,11 @@ View incident details, notes and associated requests.
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading incident..."
+		user, err := fetchUser()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		respData, err := util.BinocsAPI("/incidents/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -175,6 +180,9 @@ Duration: ` + respJSON.Duration
 		}
 
 		spin.Stop()
+		if user.CreditBalance == 0 {
+			printZeroCreditsWarning()
+		}
 		tableMain.Render()
 		if len(respJSON.Requests) > 0 {
 			fmt.Println()
@@ -195,7 +203,11 @@ List all past incidents.
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading incidents..."
-
+		user, err := fetchUser()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		urlValues := url.Values{
 			"period": []string{"all"},
 		}
@@ -208,7 +220,6 @@ List all past incidents.
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
 		var tableData [][]string
 		for _, v := range incidents {
 			// Mon Jan 2 15:04:05 -0700 MST 2006
@@ -233,6 +244,9 @@ List all past incidents.
 			table.Append(v)
 		}
 		spin.Stop()
+		if user.CreditBalance == 0 {
+			printZeroCreditsWarning()
+		}
 		table.Render()
 	},
 }

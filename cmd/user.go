@@ -68,13 +68,7 @@ Display information about your binocs user
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
 		spin.Suffix = " loading user..."
-		respData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var respJSON User
-		err = json.Unmarshal(respData, &respJSON)
+		respJSON, err := fetchUser()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -308,23 +302,17 @@ Use your Access Key and Secret Key and login to binocs
 			os.Exit(1)
 		}
 
-		userRespData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var userRespJSON User
-		err = json.Unmarshal(userRespData, &userRespJSON)
+		user, err := fetchUser()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		if userRespJSON.CreditBalance == 0 {
+		if user.CreditBalance == 0 {
 			printZeroCreditsWarning()
 		}
 
-		fmt.Println(`You are authenticated as ` + userRespJSON.Name + ` (` + userRespJSON.Email + `)`)
+		fmt.Println(`You are authenticated as ` + user.Name + ` (` + user.Email + `)`)
 	},
 }
 
@@ -354,4 +342,14 @@ Log out of the binocs user on this machine
 `
 		fmt.Print(tpl)
 	},
+}
+
+func fetchUser() (User, error) {
+	var respJSON User
+	respData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
+	if err != nil {
+		return respJSON, err
+	}
+	err = json.Unmarshal(respData, &respJSON)
+	return respJSON, err
 }

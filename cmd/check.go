@@ -308,13 +308,7 @@ View check status and metrics.
 		spin.Start()
 		spin.Suffix = " loading metrics..."
 
-		userRespData, err := util.BinocsAPI("/user", http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var userRespJSON User
-		err = json.Unmarshal(userRespData, &userRespJSON)
+		user, err := fetchUser()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -432,7 +426,7 @@ Binocs regions: ` + strings.Join(respJSON.Regions, ", ")
 
 		// Timeline
 
-		timeline := drawTimeline(&userRespJSON, urlValues.Get("period"), aggregateMetricsDataPoints[urlValues.Get("period")], "                ")
+		timeline := drawTimeline(&user, urlValues.Get("period"), aggregateMetricsDataPoints[urlValues.Get("period")], "                ")
 		tableCharts.Append([]string{timeline})
 
 		spin.Stop()
