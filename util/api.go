@@ -51,7 +51,7 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 			return []byte{}, err
 		}
 		if respStatusCode == http.StatusUnauthorized {
-			return []byte{}, fmt.Errorf("Please login to your Binocs account using `binocs login`")
+			return []byte{}, fmt.Errorf("Please login to your account using `binocs login` command.\nGet your Access Key and Secret Key at https://binocs.sh/settings")
 		}
 	}
 	return respBody, nil
@@ -132,7 +132,6 @@ func loadAccessToken() (string, error) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
 	data, err := ioutil.ReadFile(home + "/" + storageDir + "/" + jwtFile)
 	if err != nil {
 		if os.IsNotExist(err) {
