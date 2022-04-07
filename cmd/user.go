@@ -70,6 +70,7 @@ Display information about your binocs user
 		spin.Suffix = " loading user..."
 		respJSON, err := fetchUser()
 		if err != nil {
+			spin.Stop()
 			fmt.Println(err)
 			os.Exit(1)
 		}
