@@ -176,6 +176,16 @@ var aggregateMetricsDataPoints = map[string]int{
 
 var supportedRegions = []string{}
 
+// @todo fetch via API
+var defaultRegions = []string{
+	"us-east-1",
+	"us-west-1",
+	"ap-northeast-1",
+	"ap-southeast-1",
+	"eu-central-1",
+	"eu-west-1",
+}
+
 func init() {
 	rootCmd.AddCommand(checkCmd)
 	checkCmd.AddCommand(checkAddCmd)
@@ -1179,13 +1189,13 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	}
 
 	// note: we cannot use the Prompt library here because of its lack of multi-select support,
-	// we don't prompt, we choose the default "all" regions unless user specifies regions via the -r option; https://github.com/manifoldco/promptui/issues/72
+	// we don't prompt, we choose the default regions unless user specifies regions via the -r option; https://github.com/manifoldco/promptui/issues/72
 	if mode == "update" && len(flagRegions) == 0 {
 		// pass
 	} else {
 		loadSupportedRegions()
 		if len(flagRegions) == 0 {
-			flagRegions = supportedRegions
+			flagRegions = defaultRegions
 		} else {
 			for _, r := range flagRegions {
 				if r == "all" {
