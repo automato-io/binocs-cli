@@ -187,6 +187,8 @@ var defaultRegions = []string{
 }
 
 func init() {
+	loadSupportedRegions()
+
 	rootCmd.AddCommand(checkCmd)
 	checkCmd.AddCommand(checkAddCmd)
 	checkCmd.AddCommand(checkInspectCmd)
@@ -203,8 +205,7 @@ func init() {
 	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "GET", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "how often binocs checks the URL, in seconds")
 	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
-	// @todo fix help text - how to list all regions
-	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{"all"}, "from where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{}, fmt.Sprintf("from where in the world we check the provided URL. Choose \"all\" or a combination of values: %v", strings.Join(supportedRegions, ", ")))
 	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent Up responses before triggering notifications")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent Down responses before triggering notifications")
@@ -222,8 +223,7 @@ func init() {
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "how often we check the URL, in seconds")
 	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
-	// @todo fix help text - how to list all regions
-	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, "from where in the world we check the provided URL. Choose `all` or any combination of `us-east-1`, `eu-central-1`, ...")
+	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, fmt.Sprintf("from where in the world we check the provided URL. Choose \"all\" or a combination of values: %v", strings.Join(supportedRegions, ", ")))
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent Up responses before triggering notifications")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent Down responses before triggering notifications")
