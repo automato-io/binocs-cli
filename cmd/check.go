@@ -595,46 +595,46 @@ Update existing check attributes.
 
 var checkDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete existing check and collected metrics",
+	Short: "Delete existing check(s) and collected metrics",
 	Long: `
-Delete existing check and collected metrics.
+Delete existing check(s) and collected metrics.
 `,
 	Aliases:           []string{"del", "rm"},
-	Args:              cobra.ExactArgs(1),
+	Args:              cobra.MatchAll(),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
-		if err != nil {
-			// @todo verbose error
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var respJSON Check
-		err = json.Unmarshal(respData, &respJSON)
-		if err != nil {
-			// @todo verbose error
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		for _, arg := range args {
+			respData, err := util.BinocsAPI("/checks/"+arg, http.MethodGet, []byte{})
+			if err != nil {
+				// @todo verbose error
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			var respJSON Check
+			err = json.Unmarshal(respData, &respJSON)
+			if err != nil {
+				// @todo verbose error
+				fmt.Println(err)
+				os.Exit(1)
+			}
 
-		prompt := promptui.Prompt{
-			Label:     "Delete " + respJSON.Name + " (" + respJSON.URL + ")",
-			IsConfirm: true,
+			prompt := promptui.Prompt{
+				Label:     "Delete " + respJSON.Name + " (" + respJSON.URL + ")",
+				IsConfirm: true,
+			}
+			_, err = prompt.Run()
+			if err != nil {
+				fmt.Println("Aborting")
+				os.Exit(0)
+			}
+			_, err = util.BinocsAPI("/checks/"+arg, http.MethodDelete, []byte{})
+			if err != nil {
+				// @todo verbose error
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			fmt.Println("Check successfully deleted")
 		}
-		_, err = prompt.Run()
-		if err != nil {
-			fmt.Println("Aborting")
-			os.Exit(0)
-		}
-		_, err = util.BinocsAPI("/checks/"+args[0], http.MethodDelete, []byte{})
-		if err != nil {
-			// @todo verbose error
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		tpl := `Check successfully deleted
-`
-		fmt.Print(tpl)
 	},
 }
 
