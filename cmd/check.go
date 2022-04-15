@@ -604,36 +604,38 @@ Delete existing check(s) and collected metrics.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, arg := range args {
+			ok := true
 			respData, err := util.BinocsAPI("/checks/"+arg, http.MethodGet, []byte{})
 			if err != nil {
-				// @todo verbose error
-				fmt.Println(err)
-				os.Exit(1)
+				fmt.Println("Error loading check " + arg)
+				ok = false
+				continue
 			}
 			var respJSON Check
 			err = json.Unmarshal(respData, &respJSON)
 			if err != nil {
-				// @todo verbose error
-				fmt.Println(err)
-				os.Exit(1)
+				fmt.Println("Invalid response from binocs.sh")
+				ok = false
+				continue
 			}
-
 			prompt := promptui.Prompt{
 				Label:     "Delete " + respJSON.Name + " (" + respJSON.URL + ")",
 				IsConfirm: true,
 			}
 			_, err = prompt.Run()
 			if err != nil {
-				fmt.Println("Aborting")
-				os.Exit(0)
+				ok = false
+				continue
 			}
 			_, err = util.BinocsAPI("/checks/"+arg, http.MethodDelete, []byte{})
 			if err != nil {
-				// @todo verbose error
-				fmt.Println(err)
-				os.Exit(1)
+				fmt.Println("Error deleting check " + arg)
+				ok = false
+				continue
 			}
-			fmt.Println("Check successfully deleted")
+			if ok {
+				fmt.Println("Check successfully deleted")
+			}
 		}
 	},
 }
