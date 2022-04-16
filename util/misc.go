@@ -31,7 +31,7 @@ func OutputDurationWithDays(d string) string {
 		rest := re1.ReplaceAllString(d, fmt.Sprintf("%.0f", hours)+"h")
 		re2 := regexp.MustCompile(`([0-9]+)s`)
 		rest = re2.ReplaceAllString(rest, "")
-		return fmt.Sprintf("%.0fd %s", days, rest)
+		return fmt.Sprintf("%.0f days %s", days, rest)
 	}
 	return d
 }
