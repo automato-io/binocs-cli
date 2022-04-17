@@ -707,27 +707,18 @@ func isSupportedRegion(region string) bool {
 func drawCompactApdexChart(apdex []ApdexResponse) string {
 	var chart []rune
 	var alphabet = map[string]rune{
-		"00": ' ',
-		"01": '⢀',
-		"02": '⢠',
-		"03": '⢰',
-		"04": '⢸',
-		"10": '⡀',
 		"11": '⣀',
 		"12": '⣠',
 		"13": '⣰',
 		"14": '⣸',
-		"20": '⡄',
 		"21": '⣄',
 		"22": '⣤',
 		"23": '⣴',
 		"24": '⣼',
-		"30": '⡆',
 		"31": '⣆',
 		"32": '⣦',
 		"33": '⣶',
 		"34": '⣾',
-		"40": '⡇',
 		"41": '⣇',
 		"42": '⣧',
 		"43": '⣷',
@@ -738,17 +729,17 @@ func drawCompactApdexChart(apdex []ApdexResponse) string {
 		reverseApdex = append([]ApdexResponse{v}, reverseApdex...)
 	}
 	var assignChar = func(left, right float64) rune {
-		const steps = 5
+		const steps = 4
 		var leftDots, rightDots string
 		for j := 1; j < 1+steps; j++ {
 			if left <= float64(j)/steps {
-				leftDots = strconv.Itoa(j - 1)
+				leftDots = strconv.Itoa(j)
 				break
 			}
 		}
 		for k := 1; k < 1+steps; k++ {
 			if right <= float64(k)/steps {
-				rightDots = strconv.Itoa(k - 1)
+				rightDots = strconv.Itoa(k)
 				break
 			}
 		}
