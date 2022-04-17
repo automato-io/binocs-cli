@@ -347,7 +347,7 @@ View check status and metrics.
 		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
 URL: ` + respJSON.URL + `
 Method: ` + respJSON.Method + `
-HTTP Status Code: ` + respJSON.LastStatusCode + `
+Response: ` + respJSON.LastStatusCode + `
 ` + statusName[respJSON.LastStatus] + " for " + util.OutputDurationWithDays(respJSON.LastStatusDuration)
 
 		tableMainMetricsCellContent := `Uptime: ` + formatUptime(metrics.Uptime) + `
