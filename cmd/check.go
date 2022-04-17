@@ -532,7 +532,7 @@ List all checks with status and metrics overview.
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
 		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "CHAN", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT,
+		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_RIGHT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
 		for _, v := range tableData {
@@ -547,8 +547,11 @@ List all checks with status and metrics overview.
 }
 
 func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
-	lastStatusCodeRegex, _ := regexp.Compile(`\d{3}`)
+	lastStatusCodeRegex, _ := regexp.Compile(`^[1-5]{1}[0-9]{2}`)
 	lastStatusCodeMatches := lastStatusCodeRegex.FindString(check.LastStatusCode)
+	if lastStatusCodeMatches == "" {
+		lastStatusCodeMatches = "-"
+	}
 	metrics, err := fetchMetrics(check.Ident, urlValues)
 	if err != nil {
 		fmt.Println(err)
