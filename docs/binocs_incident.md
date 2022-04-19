@@ -23,6 +23,6 @@ binocs incident [flags]
 
 * [binocs](binocs.md)	 - Monitoring tool for websites, applications and APIs
 * [binocs incident inspect](binocs_incident_inspect.md)	 - View incident details
-* [binocs incident list](binocs_incident_list.md)	 - List all past incidents
+* [binocs incident list](binocs_incident_list.md)	 - List all past and current incidents
 * [binocs incident update](binocs_incident_update.md)	 - Provide incident with a note
 

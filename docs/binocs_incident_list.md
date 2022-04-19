@@ -1,11 +1,11 @@
 ## binocs incident list
 
-List all past incidents
+List all past and current incidents
 
 ### Synopsis
 
 
-List all past incidents.
+List all past and current incidents.
 
 
 ```
