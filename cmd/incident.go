@@ -29,7 +29,7 @@ type Incident struct {
 	Opened        string    `json:"opened"`
 	Closed        string    `json:"closed"`
 	Duration      string    `json:"duration"`
-	ResponseCodes string    `json:"response_codes"`
+	ResponseCodes []string  `json:"response_codes"`
 	Requests      []Request `json:"requests"`
 }
 
@@ -131,7 +131,7 @@ View incident details, notes and associated requests.
 Check: ` + respJSON.CheckName + ` 
 URL: ` + respJSON.CheckURL + `
 Incident State: ` + respJSON.IncidentState + `
-Response Codes: ` + respJSON.ResponseCodes + `
+Response Codes: ` + strings.Join(respJSON.ResponseCodes, "\n") + `
 
 Opened: ` + respJSON.Opened + `
 Closed: ` + respJSON.Closed + `
@@ -228,11 +228,8 @@ List all past incidents.
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			responseCodesRegex, _ := regexp.Compile(`\d{3}`)
-			responseCodesMatches := responseCodesRegex.FindAllString(v.ResponseCodes, -1)
-			responseCodes := strings.Join(responseCodesMatches, ", ")
 			tableRow := []string{
-				v.Ident, v.CheckName, util.Ellipsis(v.CheckURL, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), responseCodes, v.IncidentNote,
+				v.Ident, v.CheckName, util.Ellipsis(v.CheckURL, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"), v.IncidentNote,
 			}
 			tableData = append(tableData, tableRow)
 		}
