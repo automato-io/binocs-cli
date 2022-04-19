@@ -158,7 +158,7 @@ Duration: ` + respJSON.Duration
 			tableRequests.SetHeader([]string{"CHECKED AT (" + tz + ")", "CHECKED FROM", "RESPONSE CODE", "RESPONSE TIME", "DNS LOOKUP", "CONNECTION", "TLS", "WAITING", "TRANSFER"})
 			tableRequests.SetAutoWrapText(false)
 			tableRequests.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
+			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
 			for _, request := range respJSON.Requests {
 				if strings.Contains(request.Timestamp.String(), "0001") {
 					placeholder := "~"
