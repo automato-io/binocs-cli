@@ -193,9 +193,9 @@ Duration: ` + respJSON.Duration
 
 var incidentListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List all past incidents",
+	Short: "List all past and current incidents",
 	Long: `
-List all past incidents.
+List all past and current incidents.
 `,
 	Aliases:           []string{"ls"},
 	Args:              cobra.NoArgs,
@@ -212,7 +212,7 @@ List all past incidents.
 			"period": []string{"all"},
 		}
 		match, err := regexp.MatchString(validCheckIdentPattern, incidentListFlagCheck)
-		if err == nil && match == true {
+		if err == nil && match {
 			urlValues.Set("check", incidentListFlagCheck)
 		}
 		incidents, err := fetchIncidents(urlValues)
