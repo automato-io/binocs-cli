@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -46,11 +47,11 @@ type Request struct {
 
 // Timings struct
 type Timings struct {
-	DSNLookup  float64 `json:"dns_lookup"`
-	Connection float64 `json:"connection"`
-	TLS        float64 `json:"tls"`
-	Wait       float64 `json:"wait"`
-	Transfer   float64 `json:"transfer"`
+	DSNLookup  string `json:"dns_lookup"`
+	Connection string `json:"connection"`
+	TLS        string `json:"tls"`
+	Wait       string `json:"wait"`
+	Transfer   string `json:"transfer"`
 }
 
 // `incident ls` flags
@@ -168,12 +169,28 @@ Duration: ` + respJSON.Duration
 					}
 					tableRequests.Append([]string{shortcut, strings.Repeat(placeholder, 7), request.ResponseStatusCode, strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7)})
 				} else {
-					responseTime := fmt.Sprintf("%.3f s", request.Timings.DSNLookup+request.Timings.Connection+request.Timings.TLS+request.Timings.Wait+request.Timings.Transfer)
-					timingsDNSLookup := fmt.Sprintf("%.3f s", request.Timings.DSNLookup)
-					timingsConnection := fmt.Sprintf("%.3f s", request.Timings.Connection)
-					timingsTLS := fmt.Sprintf("%.3f s", request.Timings.TLS)
-					timingsWait := fmt.Sprintf("%.3f s", request.Timings.Wait)
-					timingsTransfer := fmt.Sprintf("%.3f s", request.Timings.Transfer)
+					var responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer string
+					var timingsDNSLookupFloat, timingsConnectionFloat, timingsTLSFloat, timingsWaitFloat, timingsTransferFloat float64
+					if request.Timings.DSNLookup != "nil" {
+						timingsDNSLookup = fmt.Sprintf("%s s", request.Timings.DSNLookup)
+						timingsConnection = fmt.Sprintf("%s s", request.Timings.Connection)
+						timingsTLS = fmt.Sprintf("%s s", request.Timings.TLS)
+						timingsWait = fmt.Sprintf("%s s", request.Timings.Wait)
+						timingsTransfer = fmt.Sprintf("%s s", request.Timings.Transfer)
+						timingsDNSLookupFloat, _ = strconv.ParseFloat(request.Timings.DSNLookup, 32)
+						timingsConnectionFloat, _ = strconv.ParseFloat(request.Timings.Connection, 32)
+						timingsTLSFloat, _ = strconv.ParseFloat(request.Timings.TLS, 32)
+						timingsWaitFloat, _ = strconv.ParseFloat(request.Timings.Wait, 32)
+						timingsTransferFloat, _ = strconv.ParseFloat(request.Timings.Transfer, 32)
+						responseTime = fmt.Sprintf("%.3f s", timingsDNSLookupFloat+timingsConnectionFloat+timingsTLSFloat+timingsWaitFloat+timingsTransferFloat)
+					} else {
+						responseTime = "n/a"
+						timingsDNSLookup = "n/a"
+						timingsConnection = "n/a"
+						timingsTLS = "n/a"
+						timingsWait = "n/a"
+						timingsTransfer = "n/a"
+					}
 					tableRequests.Append([]string{request.Timestamp.Format("2006-01-02 15:04:05"), request.Region, request.ResponseStatusCode, responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer})
 				}
 			}
