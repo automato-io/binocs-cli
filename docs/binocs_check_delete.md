@@ -1,11 +1,11 @@
 ## binocs check delete
 
-Delete existing check and collected metrics
+Delete existing check(s) and collected metrics
 
 ### Synopsis
 
 
-Delete existing check and collected metrics.
+Delete existing check(s) and collected metrics.
 
 
 ```

@@ -36,7 +36,7 @@ binocs check [flags]
 
 * [binocs](binocs.md)	 - Monitoring tool for websites, applications and APIs
 * [binocs check add](binocs_check_add.md)	 - Add a new endpoint that you want to check
-* [binocs check delete](binocs_check_delete.md)	 - Delete existing check and collected metrics
+* [binocs check delete](binocs_check_delete.md)	 - Delete existing check(s) and collected metrics
 * [binocs check inspect](binocs_check_inspect.md)	 - View check status and metrics
 * [binocs check list](binocs_check_list.md)	 - List all checks with status and metrics overview
 * [binocs check update](binocs_check_update.md)	 - Update existing check attributes

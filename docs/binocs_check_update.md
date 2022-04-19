@@ -20,7 +20,7 @@ binocs check update [flags]
   -m, --method string                      HTTP method (GET, HEAD, POST, PUT, DELETE)
   -i, --interval int                       how often we check the URL, in seconds
   -t, --target float                       response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places
-  -r, --regions strings                    from where in the world we check the provided URL. Choose "all" or a combination of values: us-east-1, us-west-1, ap-east-1, ap-southeast-2, eu-central-1, eu-west-1, ap-south-1, ap-northeast-1, ap-southeast-1, sa-east-1, af-south-1
+  -r, --regions strings                    from where in the world we check the provided URL. Choose "all" or a combination of values: us-west-1, ap-east-1, ap-south-1, ap-southeast-1, eu-west-1, af-south-1, us-east-1, ap-northeast-1, ap-southeast-2, eu-central-1, sa-east-1
       --up_codes 2xx                       what are the good ("UP") HTTP response codes, e.g. 2xx or `200-302`, or `200,301`
       --up_confirmations_threshold int     how many subsequent Up responses before triggering notifications
       --down_confirmations_threshold int   how many subsequent Down responses before triggering notifications
