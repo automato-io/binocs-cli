@@ -580,36 +580,6 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		}
 	}
 
-	if mode == "update" && flagAlias == "" {
-		// pass
-	} else {
-		// check if Alias is alphanum, space & normal chars, empty OK
-		match, err = regexp.MatchString(validAliasPattern, flagAlias)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		} else if match == false || flagAlias == "" {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validAliasPattern, input)
-				if err != nil {
-					return errors.New("Invalid input")
-				} else if match == false {
-					return errors.New("Invalid input value")
-				}
-				return nil
-			}
-			prompt := promptui.Prompt{
-				Label:    "Channel alias (optional)",
-				Validate: validate,
-			}
-			flagAlias, err = prompt.Run()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}
-	}
-
 	if mode == "update" && flagHandle == "" {
 		// pass
 	} else if mode == "update" {
@@ -700,6 +670,36 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 					fmt.Println(err)
 					os.Exit(1)
 				}
+			}
+		}
+	}
+
+	if mode == "update" && flagAlias == "" {
+		// pass
+	} else {
+		// check if Alias is alphanum, space & normal chars, empty OK
+		match, err = regexp.MatchString(validAliasPattern, flagAlias)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if !match || flagAlias == "" {
+			validate := func(input string) error {
+				match, err = regexp.MatchString(validAliasPattern, input)
+				if err != nil {
+					return errors.New("Invalid input")
+				} else if !match {
+					return errors.New("Invalid input value")
+				}
+				return nil
+			}
+			prompt := promptui.Prompt{
+				Label:    "Channel alias (optional)",
+				Validate: validate,
+			}
+			flagAlias, err = prompt.Run()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 	}
