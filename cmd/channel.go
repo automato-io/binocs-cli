@@ -139,9 +139,9 @@ Manage notification channels
 
 var channelAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add a new notification channel",
+	Short: "Add a new notifications channel",
 	Long: `
-Add a new notification channel
+Add a new notifications channel
 `,
 	Aliases:           []string{"create"},
 	Args:              cobra.NoArgs,
