@@ -340,7 +340,7 @@ Detach channel from one or more checks, either for "status", "http-code-change" 
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if match == false {
+			} else if !match {
 				fmt.Println("Provided notification type is invalid. Supported notification types: " + strings.Join(supportedNotificationTypes, ", "))
 				os.Exit(1)
 			}
@@ -477,7 +477,7 @@ List all notification channels.
 
 		urlValues := url.Values{}
 		match, err := regexp.MatchString(validCheckIdentPattern, channelListFlagCheck)
-		if err == nil && match == true {
+		if err == nil && !match {
 			urlValues.Set("check", channelListFlagCheck)
 		}
 		channels, err := fetchChannels(urlValues)
@@ -552,7 +552,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false {
+		} else if !match {
 			prompt := promptui.Select{
 				Label: "Type",
 				Items: []string{channelTypeEmail, channelTypeSlack, channelTypeTelegram},
@@ -613,12 +613,12 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false {
+		} else if !match {
 			validate := func(input string) error {
 				match, err = regexp.MatchString(validHandlePattern[currentRespJSON.Type], input)
 				if err != nil {
 					return errors.New("Invalid input")
-				} else if match == false {
+				} else if !match {
 					return errors.New("Invalid input value")
 				}
 				return nil
@@ -638,7 +638,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false {
+		} else if !match {
 			if flagType == channelTypeSlack {
 				slackIntegrationToken, err := requestSlackIntegrationToken()
 				if err != nil {
@@ -671,7 +671,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 					match, err = regexp.MatchString(validHandlePattern[flagType], input)
 					if err != nil {
 						return errors.New("Invalid input")
-					} else if match == false {
+					} else if !match {
 						return errors.New("Invalid input value")
 					}
 					return nil
