@@ -443,12 +443,18 @@ View channel details and attached checks.
 			lastUsed = `, last time at ` + respJSON.LastUsed
 		}
 
+		var used string
+		if respJSON.UsedCount == 0 {
+			used = "never"
+		} else {
+			used = fmt.Sprintf("%d x", respJSON.UsedCount)
+		}
 		// @todo show ID field in check and incident detail as well
 		tableMainChannelCellContent := `ID: ` + respJSON.Ident + `
 Type: ` + respJSON.Type + `
 Alias: ` + respJSON.Alias + `
 Handle: ` + respJSON.Handle + `
-Used ` + strconv.Itoa(respJSON.UsedCount) + `x` + lastUsed + ``
+Used: ` + used + lastUsed + ``
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHANNEL"})
@@ -488,8 +494,16 @@ List all notification channels.
 
 		var tableData [][]string
 		for _, v := range channels {
+			var used, lastUsed string
+			if v.UsedCount == 0 {
+				used = "never"
+				lastUsed = "n/a"
+			} else {
+				used = fmt.Sprintf("%d x", v.UsedCount)
+				lastUsed = v.LastUsed
+			}
 			tableRow := []string{
-				v.Ident, v.Type, v.Alias, util.Ellipsis(v.Handle, 50), strconv.Itoa(v.UsedCount), v.LastUsed,
+				v.Ident, v.Type, v.Alias, util.Ellipsis(v.Handle, 50), used, lastUsed,
 			}
 			tableData = append(tableData, tableRow)
 		}
