@@ -37,6 +37,8 @@ $ git push origin master
 $ ./sync
 ```
 
+Release `binocs-website`
+
 ## Test cases for valid UpCode regexp pattern
 
 ```
