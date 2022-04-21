@@ -136,7 +136,7 @@ Response Codes: ` + strings.Join(respJSON.ResponseCodes, "\n") + `
 
 Opened: ` + respJSON.Opened + `
 Closed: ` + respJSON.Closed + `
-Duration: ` + respJSON.Duration
+Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
 
 		tableMainNotesCellContent := respJSON.IncidentNote
 		if tableMainNotesCellContent == "" {
