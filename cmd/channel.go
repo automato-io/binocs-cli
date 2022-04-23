@@ -50,14 +50,12 @@ var (
 // `channel attach` flags
 var (
 	channelAttachFlagCheck string
-	channelAttachFlagType  string
 	channelAttachFlagAll   bool
 )
 
 // `channel detach` flags
 var (
 	channelDetachFlagCheck string
-	channelDetachFlagType  string
 	channelDetachFlagAll   bool
 )
 
@@ -96,12 +94,10 @@ func init() {
 	channelCmd.AddCommand(channelUpdateCmd)
 
 	channelAttachCmd.Flags().StringVarP(&channelAttachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
-	channelAttachCmd.Flags().StringVarP(&channelAttachFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
 	channelAttachCmd.Flags().BoolVarP(&channelAttachFlagAll, "all", "a", false, "attach all checks to this channel")
 	channelAttachCmd.Flags().SortFlags = false
 
 	channelDetachCmd.Flags().StringVarP(&channelDetachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
-	channelDetachCmd.Flags().StringVarP(&channelDetachFlagType, "type", "t", "", "notification type, \"status\" or \"http-code-change\" or both, defaults to \"http-code-change,status\"")
 	channelDetachCmd.Flags().BoolVarP(&channelDetachFlagAll, "all", "a", false, "detach all checks from this channel")
 	channelDetachCmd.Flags().SortFlags = false
 
@@ -153,9 +149,9 @@ Add a new notifications channel
 
 var channelAttachCmd = &cobra.Command{
 	Use:   "attach",
-	Short: "Attach channel to one or more checks",
+	Short: "Attach channel to check(s)",
 	Long: `
-Attach channel to one or more checks, either for "status", "http-code-change" or both types of notifications
+Attach channel to check(s)
 `,
 	Aliases:           []string{"att"},
 	Args:              cobra.ExactArgs(1),
@@ -220,38 +216,16 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 
 		spin.Suffix = " attaching channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks"
 
-		// validate types against pattern, single or slice, default all
-		notificationTypes := []string{}
-		if len(channelAttachFlagType) == 0 {
-			notificationTypes = supportedNotificationTypes
-		} else {
-			notificationTypes = strings.Split(channelAttachFlagType, ",")
-		}
-		for _, nt := range notificationTypes {
-			match, err = regexp.MatchString(validNotificationTypePattern, nt)
+		for _, c := range checkIdents {
+			postData, err := json.Marshal(ChannelAttachment{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if !match {
-				fmt.Println("Provided notification type is invalid. Supported notification types: " + strings.Join(supportedNotificationTypes, ", "))
-				os.Exit(1)
 			}
-		}
-
-		for _, c := range checkIdents {
-			for _, nt := range notificationTypes {
-				postData, err := json.Marshal(ChannelAttachment{
-					NotificationType: nt,
-				})
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodPost, postData)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
+			_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodPost, postData)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 
@@ -262,9 +236,9 @@ Attach channel to one or more checks, either for "status", "http-code-change" or
 
 var channelDetachCmd = &cobra.Command{
 	Use:   "detach",
-	Short: "Detach channel from one or more checks",
+	Short: "Detach channel from check(s)",
 	Long: `
-Detach channel from one or more checks, either for "status", "http-code-change" or both types of notifications
+Detach channel from check(s)
 `,
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
@@ -328,38 +302,16 @@ Detach channel from one or more checks, either for "status", "http-code-change" 
 
 		spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
 
-		// validate types against pattern, single or slice, default all
-		notificationTypes := []string{}
-		if len(channelDetachFlagType) == 0 {
-			notificationTypes = supportedNotificationTypes
-		} else {
-			notificationTypes = strings.Split(channelDetachFlagType, ",")
-		}
-		for _, nt := range notificationTypes {
-			match, err = regexp.MatchString(validNotificationTypePattern, nt)
+		for _, c := range checkIdents {
+			deleteData, err := json.Marshal(ChannelAttachment{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
-			} else if !match {
-				fmt.Println("Provided notification type is invalid. Supported notification types: " + strings.Join(supportedNotificationTypes, ", "))
-				os.Exit(1)
 			}
-		}
-
-		for _, c := range checkIdents {
-			for _, nt := range notificationTypes {
-				deleteData, err := json.Marshal(ChannelAttachment{
-					NotificationType: nt,
-				})
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodDelete, deleteData)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
+			_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodDelete, deleteData)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 
