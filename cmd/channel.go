@@ -266,6 +266,7 @@ Detach channel from check(s)
 
 		if channelDetachFlagAll {
 			// get all checks
+			// @todo only load checks attached to this channel
 			checkRespData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
@@ -300,7 +301,8 @@ Detach channel from check(s)
 			}
 		}
 
-		spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
+		// @todo re-enable once we only load checks attached to this channel, not it's confusing
+		// spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
 
 		for _, c := range checkIdents {
 			deleteData, err := json.Marshal(ChannelAttachment{})
@@ -316,7 +318,9 @@ Detach channel from check(s)
 		}
 
 		spin.Stop()
-		fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
+		// @todo re-enable once we only load checks attached to this channel, not it's confusing
+		// fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
+		fmt.Println("Successfully detached channel " + args[0])
 	},
 }
 
