@@ -645,13 +645,11 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		reqURL = "/channels/" + channelIdent
 		reqMethod = http.MethodPut
 	}
-	// @todo verbose print postData
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	// @toto verbose print respData
 	err = json.Unmarshal(respData, &channel)
 	if err != nil {
 		fmt.Println(err)
