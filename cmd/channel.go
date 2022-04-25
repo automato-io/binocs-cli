@@ -61,8 +61,7 @@ var (
 
 // `channel update` flags
 var (
-	channelUpdateFlagAlias  string
-	channelUpdateFlagHandle string
+	channelUpdateFlagAlias string
 )
 
 const (
@@ -103,14 +102,12 @@ func init() {
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
 	channelAddCmd.Flags().StringVarP(&channelAddFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, Slack URL for Slack")
-	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias - how we're gonna refer to it; optional")
+	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias - human-friendly name of the check; optional")
 	channelAddCmd.Flags().SortFlags = false
 
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
-	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, Slack URL for Slack")
-	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagAlias, "alias", "", "", "channel alias - how we're gonna refer to it; optional")
-	channelUpdateCmd.Flags().SortFlags = false
+	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagAlias, "alias", "", "", "channel alias - human-friendly name of the check")
 }
 
 var channelCmd = &cobra.Command{
@@ -512,7 +509,6 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		flagType = channelAddFlagType
 	case "update":
 		flagAlias = channelUpdateFlagAlias
-		flagHandle = channelUpdateFlagHandle
 	}
 
 	if mode == "update" {
@@ -536,44 +532,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		}
 	}
 
-	if mode == "update" && flagHandle == "" {
+	if mode == "update" {
 		// pass
-	} else if mode == "update" {
-		currentRespData, err := util.BinocsAPI("/channels/"+channelIdent, http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var currentRespJSON Channel
-		err = json.Unmarshal(currentRespData, &currentRespJSON)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		match, err = regexp.MatchString(validHandlePattern[currentRespJSON.Type], flagHandle)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		} else if !match {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validHandlePattern[currentRespJSON.Type], input)
-				if err != nil {
-					return errors.New("Invalid input")
-				} else if !match {
-					return errors.New("Invalid input value")
-				}
-				return nil
-			}
-			prompt := promptui.Prompt{
-				Label:    "Enter a valid " + currentRespJSON.Type + " handle",
-				Validate: validate,
-			}
-			flagHandle, err = prompt.Run()
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}
 	} else {
 		match, err = regexp.MatchString(validHandlePattern[flagType], flagHandle)
 		if err != nil {
