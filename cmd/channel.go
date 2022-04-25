@@ -535,39 +535,12 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	if mode == "update" {
 		// pass
 	} else {
-		match, err = regexp.MatchString(validHandlePattern[flagType], flagHandle)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		} else if !match {
-			if flagType == channelTypeSlack {
-				slackIntegrationToken, err := requestSlackIntegrationToken()
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				slackScope := "incoming-webhook"
-				slackRedirectURI := "https://binocs.sh/integration/slack/callback"
-				slackClientID := "1145502794960.1106931893399"
-				slackAuthorizeURL := "https://slack.com/oauth/v2/authorize?scope=" + url.QueryEscape(slackScope) + "&client_id=" + url.QueryEscape(slackClientID) + "&redirect_uri=" + url.QueryEscape(slackRedirectURI) + "&state=" + slackIntegrationToken.Token
-				fmt.Println("Visit the following URL to choose where we should send your notifications:")
-				fmt.Println(slackAuthorizeURL)
-				spin.Start()
-				spin.Suffix = " waiting for your action ..."
-				for {
-					pollResult, err := pollSlackIntegrationStatus(slackIntegrationToken.Token)
-					if err != nil {
-						fmt.Println(err)
-						os.Exit(1)
-					}
-					if pollResult.Updated != "nil" {
-						flagHandle = pollResult.IncomingWebhookURL
-						break
-					}
-					time.Sleep(3 * time.Second)
-				}
-				spin.Stop()
-			} else {
+		if flagType == channelTypeEmail {
+			match, err = regexp.MatchString(validHandlePattern[flagType], flagHandle)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else if !match {
 				validate := func(input string) error {
 					match, err = regexp.MatchString(validHandlePattern[flagType], input)
 					if err != nil {
@@ -587,6 +560,35 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 					os.Exit(1)
 				}
 			}
+		} else if flagType == channelTypeSlack {
+			slackIntegrationToken, err := requestSlackIntegrationToken()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			slackScope := "incoming-webhook"
+			slackRedirectURI := "https://binocs.sh/integration/slack/callback"
+			slackClientID := "1145502794960.1106931893399"
+			slackAuthorizeURL := "https://slack.com/oauth/v2/authorize?scope=" + url.QueryEscape(slackScope) + "&client_id=" + url.QueryEscape(slackClientID) + "&redirect_uri=" + url.QueryEscape(slackRedirectURI) + "&state=" + slackIntegrationToken.Token
+			fmt.Println("Visit the following URL to choose where we should send your notifications:")
+			fmt.Println(slackAuthorizeURL)
+			spin.Start()
+			spin.Suffix = " waiting for your action ..."
+			for {
+				pollResult, err := pollSlackIntegrationStatus(slackIntegrationToken.Token)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				if pollResult.Updated != "nil" {
+					flagHandle = pollResult.IncomingWebhookURL
+					break
+				}
+				time.Sleep(3 * time.Second)
+			}
+			spin.Stop()
+		} else if flagType == channelTypeTelegram {
+			// @todo
 		}
 	}
 
