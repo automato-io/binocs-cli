@@ -1,11 +1,11 @@
 ## binocs channel add
 
-Add a new notification channel
+Add a new notifications channel
 
 ### Synopsis
 
 
-Add a new notification channel
+Add a new notifications channel
 
 
 ```

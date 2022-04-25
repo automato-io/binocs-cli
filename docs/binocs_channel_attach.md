@@ -1,11 +1,11 @@
 ## binocs channel attach
 
-Attach channel to one or more checks
+Attach channel to check(s)
 
 ### Synopsis
 
 
-Attach channel to one or more checks, either for "status", "http-code-change" or both types of notifications
+Attach channel to check(s)
 
 
 ```
@@ -16,7 +16,6 @@ binocs channel attach [flags]
 
 ```
   -c, --check string   check identifier, using multiple comma-separated identifiers is supported
-  -t, --type string    notification type, "status" or "http-code-change" or both, defaults to "http-code-change,status"
   -a, --all            attach all checks to this channel
   -h, --help           help for attach
 ```
