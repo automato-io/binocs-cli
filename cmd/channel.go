@@ -323,46 +323,48 @@ Detach channel from check(s)
 
 var channelDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete a notification channel",
+	Short: "Delete notification channel(s)",
 	Long: `
-Delete a notification channel.
+Delete notification channel(s).
 `,
 	Aliases:           []string{"del", "rm"},
-	Args:              cobra.ExactArgs(1),
+	Args:              cobra.MatchAll(),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		respData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
-		if err != nil {
-			// @todo verbose error
-			fmt.Println(err)
-			os.Exit(1)
+		for _, arg := range args {
+			ok := true
+			respData, err := util.BinocsAPI("/channels/"+arg, http.MethodGet, []byte{})
+			if err != nil {
+				fmt.Println("Error loading channel " + arg)
+				ok = false
+				continue
+			}
+			var respJSON Channel
+			err = json.Unmarshal(respData, &respJSON)
+			if err != nil {
+				fmt.Println("Invalid response from binocs.sh")
+				ok = false
+				continue
+			}
+			prompt := promptui.Prompt{
+				Label:     "Delete " + respJSON.Type + " notification channel " + respJSON.Alias + " (" + respJSON.Handle + ")",
+				IsConfirm: true,
+			}
+			_, err = prompt.Run()
+			if err != nil {
+				ok = false
+				continue
+			}
+			_, err = util.BinocsAPI("/channels/"+arg, http.MethodDelete, []byte{})
+			if err != nil {
+				fmt.Println("Error deleting channel " + arg)
+				ok = false
+				continue
+			}
+			if ok {
+				fmt.Println("Channel successfully deleted")
+			}
 		}
-		var respJSON Channel
-		err = json.Unmarshal(respData, &respJSON)
-		if err != nil {
-			// @todo verbose error
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		prompt := promptui.Prompt{
-			Label:     "Delete " + respJSON.Type + " notification channel " + respJSON.Alias + " (" + respJSON.Handle + ")",
-			IsConfirm: true,
-		}
-		_, err = prompt.Run()
-		if err != nil {
-			fmt.Println("Aborting")
-			os.Exit(0)
-		}
-		_, err = util.BinocsAPI("/channels/"+args[0], http.MethodDelete, []byte{})
-		if err != nil {
-			// @todo verbose error
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		tpl := `Channel successfully deleted
-`
-		fmt.Print(tpl)
 	},
 }
 
