@@ -590,7 +590,29 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			}
 			spin.Stop()
 		} else if flagType == channelTypeTelegram {
-			// @todo
+			telegramIntegrationToken, err := requestTelegramIntegrationToken()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			telegramInstallURL := "https://t.me/binocs_bot?start=" + telegramIntegrationToken.Token
+			fmt.Println("Visit the following URL to add @binocs_bot to your Telegram:")
+			fmt.Println(telegramInstallURL)
+			spin.Start()
+			spin.Suffix = " waiting for your action ..."
+			for {
+				pollResult, err := pollTelegramIntegrationStatus(telegramIntegrationToken.Token)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				if pollResult.Updated != "nil" {
+					flagHandle = pollResult.ChatID
+					break
+				}
+				time.Sleep(3 * time.Second)
+			}
+			spin.Stop()
 		}
 	}
 
@@ -732,6 +754,48 @@ type SlackIntegrationStatus struct {
 func pollSlackIntegrationStatus(token string) (SlackIntegrationStatus, error) {
 	var status SlackIntegrationStatus
 	respData, err := util.BinocsAPI("/integration/slack/status/"+token, http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = json.Unmarshal(respData, &status)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return status, nil
+}
+
+// TelegramIntegrationToken struct
+type TelegramIntegrationToken struct {
+	Token string `json:"token"`
+}
+
+func requestTelegramIntegrationToken() (TelegramIntegrationToken, error) {
+	var token TelegramIntegrationToken
+	respData, err := util.BinocsAPI("/integration/telegram/request-integration-token", http.MethodPost, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = json.Unmarshal(respData, &token)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return token, nil
+}
+
+// TelegramIntegrationStatus struct
+type TelegramIntegrationStatus struct {
+	Token   string `json:"token"`
+	ChatID  string `json:"chat_id"`
+	Updated string `json:"updated,omitempty"`
+}
+
+func pollTelegramIntegrationStatus(token string) (TelegramIntegrationStatus, error) {
+	var status TelegramIntegrationStatus
+	respData, err := util.BinocsAPI("/integration/telegram/status/"+token, http.MethodGet, []byte{})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
