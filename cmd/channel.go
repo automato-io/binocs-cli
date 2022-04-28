@@ -607,11 +607,12 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 					os.Exit(1)
 				}
 				if pollResult.Updated != "nil" {
-					flagHandle = pollResult.ChatID
+					flagHandle = fmt.Sprintf("%d", pollResult.ChatID)
 					break
 				}
 				time.Sleep(3 * time.Second)
 			}
+			fmt.Println("Successfully associated with Telegram.")
 			spin.Stop()
 		}
 	}
@@ -789,7 +790,7 @@ func requestTelegramIntegrationToken() (TelegramIntegrationToken, error) {
 // TelegramIntegrationStatus struct
 type TelegramIntegrationStatus struct {
 	Token   string `json:"token"`
-	ChatID  string `json:"chat_id"`
+	ChatID  int64  `json:"chat_id"`
 	Updated string `json:"updated,omitempty"`
 }
 
