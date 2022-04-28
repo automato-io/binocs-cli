@@ -27,6 +27,11 @@ type AccessTokenStorage struct {
 	AccessToken string `json:"access_token"`
 }
 
+type ApiErrorResponse struct {
+	Status string `json:"status"`
+	Error  string `json:"error"`
+}
+
 // BinocsAPI is another gateway to the binocs REST API // @todo "another gateway"?
 func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	var err error
@@ -39,10 +44,16 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 		return []byte{}, err
 	}
 	if respStatusCode == http.StatusNotFound {
-		return []byte{}, fmt.Errorf("requested resource does not exist")
+		return []byte{}, fmt.Errorf("The requested resource does not exist")
 	}
 	if respStatusCode == http.StatusBadRequest {
-		return []byte{}, fmt.Errorf("bad request")
+		var apiErrorResponse ApiErrorResponse
+		err = json.Unmarshal(respBody, &apiErrorResponse)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		return []byte{}, fmt.Errorf(apiErrorResponse.Status + `: ` + apiErrorResponse.Error)
 	}
 	if respStatusCode == http.StatusUnauthorized {
 		_ = BinocsAPIGetAccessToken(viper.Get("access_key").(string), viper.Get("secret_key").(string))
