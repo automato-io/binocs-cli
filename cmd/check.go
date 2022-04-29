@@ -1283,7 +1283,6 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		UpConfirmationsThreshold:   flagUpConfirmationsThreshold,
 		DownConfirmationsThreshold: flagDownConfirmationsThreshold,
 	}
-	// @hack check flags
 	postData, err := json.Marshal(check)
 	if err != nil {
 		fmt.Println(err)
@@ -1302,13 +1301,11 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		reqURL = "/checks/" + checkIdent
 		reqMethod = http.MethodPut
 	}
-	// @todo verbose print postData
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	// @toto verbose print respData
 	err = json.Unmarshal(respData, &check)
 	if err != nil {
 		fmt.Println(err)

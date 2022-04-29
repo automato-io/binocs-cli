@@ -32,7 +32,7 @@ type ApiErrorResponse struct {
 	Error  string `json:"error"`
 }
 
-// BinocsAPI is another gateway to the binocs REST API // @todo "another gateway"?
+// BinocsAPI is a gateway to the binocs REST API
 func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	var err error
 	url, err := url.Parse(apiURLBase + path)

@@ -644,7 +644,6 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		Handle: flagHandle,
 		Type:   flagType,
 	}
-	// @hack channel flags
 	postData, err := json.Marshal(channel)
 	if err != nil {
 		fmt.Println(err)
