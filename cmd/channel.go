@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
-	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -332,37 +332,35 @@ Delete notification channel(s).
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, arg := range args {
-			ok := true
 			respData, err := util.BinocsAPI("/channels/"+arg, http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println("Error loading channel " + arg)
-				ok = false
 				continue
 			}
 			var respJSON Channel
 			err = json.Unmarshal(respData, &respJSON)
 			if err != nil {
 				fmt.Println("Invalid response from binocs.sh")
-				ok = false
 				continue
 			}
-			prompt := promptui.Prompt{
-				Label:     "Delete " + respJSON.Type + " notification channel " + respJSON.Alias + " (" + respJSON.Handle + ")",
-				IsConfirm: true,
+			prompt := &survey.Confirm{
+				Message: "Delete " + respJSON.Type + " notification channel " + respJSON.Alias + " (" + respJSON.Handle + ")?",
 			}
-			_, err = prompt.Run()
+			var yes bool
+			err = survey.AskOne(prompt, &yes)
 			if err != nil {
-				ok = false
 				continue
 			}
-			_, err = util.BinocsAPI("/channels/"+arg, http.MethodDelete, []byte{})
-			if err != nil {
-				fmt.Println("Error deleting channel " + arg)
-				ok = false
-				continue
-			}
-			if ok {
-				fmt.Println("Channel successfully deleted")
+			if yes {
+				_, err = util.BinocsAPI("/channels/"+arg, http.MethodDelete, []byte{})
+				if err != nil {
+					fmt.Println("Error deleting channel " + arg)
+					continue
+				} else {
+					fmt.Println("Channel successfully deleted")
+				}
+			} else {
+				fmt.Println("OK, skipping")
 			}
 		}
 	},
@@ -522,11 +520,11 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			fmt.Println(err)
 			os.Exit(1)
 		} else if !match {
-			prompt := promptui.Select{
-				Label: "Type",
-				Items: []string{channelTypeEmail, channelTypeSlack, channelTypeTelegram},
+			prompt := &survey.Select{
+				Message: "Choose type:",
+				Options: []string{channelTypeEmail, channelTypeSlack, channelTypeTelegram},
 			}
-			_, flagType, err = prompt.Run()
+			err = survey.AskOne(prompt, &flagType)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -538,25 +536,24 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		// pass
 	} else {
 		if flagType == channelTypeEmail {
-			match, err = regexp.MatchString(validHandlePattern[flagType], flagHandle)
+			match, err = regexp.MatchString(validHandlePattern[channelTypeEmail], flagHandle)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			} else if !match {
-				validate := func(input string) error {
-					match, err = regexp.MatchString(validHandlePattern[flagType], input)
+				validate := func(val interface{}) error {
+					match, err = regexp.MatchString(validHandlePattern[channelTypeEmail], val.(string))
 					if err != nil {
-						return errors.New("Invalid input")
+						return err
 					} else if !match {
-						return errors.New("Invalid input value")
+						return errors.New("invalid handle format")
 					}
 					return nil
 				}
-				prompt := promptui.Prompt{
-					Label:    "Enter a valid " + flagType + " handle",
-					Validate: validate,
+				prompt := &survey.Input{
+					Message: "Enter a valid " + flagType + " handle",
 				}
-				flagHandle, err = prompt.Run()
+				err = survey.AskOne(prompt, &flagHandle, survey.WithValidator(validate))
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
@@ -620,26 +617,24 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	if mode == "update" && flagAlias == "" {
 		// pass
 	} else {
-		// check if Alias is alphanum, space & normal chars, empty OK
 		match, err = regexp.MatchString(validAliasPattern, flagAlias)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		} else if !match || flagAlias == "" {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validAliasPattern, input)
+			validate := func(val interface{}) error {
+				match, err = regexp.MatchString(validAliasPattern, val.(string))
 				if err != nil {
-					return errors.New("Invalid input")
+					return err
 				} else if !match {
-					return errors.New("Invalid input value")
+					return errors.New("invalid alias format")
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "Channel alias (optional)",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Channel alias (optional)",
 			}
-			flagAlias, err = prompt.Run()
+			err = survey.AskOne(prompt, &flagAlias, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
-	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -607,37 +607,35 @@ Delete existing check(s) and collected metrics.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, arg := range args {
-			ok := true
 			respData, err := util.BinocsAPI("/checks/"+arg, http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println("Error loading check " + arg)
-				ok = false
 				continue
 			}
 			var respJSON Check
 			err = json.Unmarshal(respData, &respJSON)
 			if err != nil {
 				fmt.Println("Invalid response from binocs.sh")
-				ok = false
 				continue
 			}
-			prompt := promptui.Prompt{
-				Label:     "Delete " + respJSON.Name + " (" + respJSON.URL + ")",
-				IsConfirm: true,
+			prompt := &survey.Confirm{
+				Message: "Delete " + respJSON.Ident + " " + respJSON.Name + " (" + respJSON.URL + ")?",
 			}
-			_, err = prompt.Run()
+			var yes bool
+			err = survey.AskOne(prompt, &yes)
 			if err != nil {
-				ok = false
 				continue
 			}
-			_, err = util.BinocsAPI("/checks/"+arg, http.MethodDelete, []byte{})
-			if err != nil {
-				fmt.Println("Error deleting check " + arg)
-				ok = false
-				continue
-			}
-			if ok {
-				fmt.Println("Check successfully deleted")
+			if yes {
+				_, err = util.BinocsAPI("/checks/"+arg, http.MethodDelete, []byte{})
+				if err != nil {
+					fmt.Println("Error deleting check " + arg)
+					continue
+				} else {
+					fmt.Println("Check successfully deleted")
+				}
+			} else {
+				fmt.Println("OK, skipping")
 			}
 		}
 	},
@@ -1056,26 +1054,24 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" && flagName == "" {
 		// pass
 	} else {
-		// check if Name is alphanum, space & normal chars, empty OK
 		match, err = regexp.MatchString(validNamePattern, flagName)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false || flagName == "" {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validNamePattern, input)
+		} else if !match || flagName == "" {
+			validate := func(val interface{}) error {
+				match, err = regexp.MatchString(validNamePattern, val.(string))
 				if err != nil {
-					return errors.New("Invalid input")
-				} else if match == false {
-					return errors.New("Invalid input value")
+					return err
+				} else if !match {
+					return errors.New("invalid name format")
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "Check name (optional)",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Check name (optional)",
 			}
-			flagName, err = prompt.Run()
+			err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -1086,26 +1082,24 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" && flagURL == "" {
 		// pass
 	} else {
-		// check if URL is url, empty not allowed
 		match, err = regexp.MatchString(validURLPattern, flagURL)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validURLPattern, input)
+		} else if !match {
+			validate := func(val interface{}) error {
+				match, err = regexp.MatchString(validURLPattern, val.(string))
 				if err != nil {
-					return errors.New("Invalid input")
-				} else if match == false {
-					return errors.New("Invalid input value")
+					return err
+				} else if !match {
+					return errors.New("invalid URL format")
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "URL to check",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "URL to check",
 			}
-			flagURL, err = prompt.Run()
+			err = survey.AskOne(prompt, &flagURL, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -1116,17 +1110,17 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" && flagMethod == "" {
 		// pass
 	} else {
-		// check if Method is one from a set, empty not allowed
 		match, err = regexp.MatchString(validMethodPattern, flagMethod)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false {
-			prompt := promptui.Select{
-				Label: "HTTP method",
-				Items: []string{"GET", "HEAD", "POST", "PUT", "DELETE"},
+		} else if !match {
+			prompt := &survey.Select{
+				Message: "HTTP method",
+				Options: []string{"GET", "HEAD", "POST", "PUT", "DELETE"},
+				Default: "GET",
 			}
-			_, flagMethod, err = prompt.Run()
+			err := survey.AskOne(prompt, &flagMethod)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -1139,23 +1133,22 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	} else {
 		// check if Interval is in supported range
 		if flagInterval < supportedIntervalMinimum || flagInterval > supportedIntervalMaximum {
-			validate := func(input string) error {
-				var inputInt, _ = strconv.Atoi(input)
+			validate := func(val interface{}) error {
+				var inputInt, _ = strconv.Atoi(val.(string))
 				if inputInt < supportedIntervalMinimum || inputInt > supportedIntervalMaximum {
 					return errors.New("Interval must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum))
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "Interval in seconds (default: 60 s, must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Interval in seconds (must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
+				Default: "60",
 			}
-			flagIntervalString, err := prompt.Run()
+			err := survey.AskOne(prompt, &flagInterval, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			flagInterval, _ = strconv.Atoi(flagIntervalString)
 		}
 	}
 
@@ -1164,28 +1157,25 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	} else {
 		// check if Target is in supported range
 		if flagTarget < supportedTargetMinimum || flagTarget > supportedTargetMaximum {
-			validate := func(input string) error {
-				var inputFloat, _ = strconv.ParseFloat(input, 64)
+			validate := func(val interface{}) error {
+				var inputFloat, _ = strconv.ParseFloat(val.(string), 64)
 				if inputFloat < supportedTargetMinimum || inputFloat > supportedTargetMaximum {
 					return errors.New("Target Response Time must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum))
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "Target Response Time in seconds (default: 1.20 s, must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum) + ")",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Target Response Time in seconds (must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum) + ")",
+				Default: "1.20",
 			}
-			flagTargetString, err := prompt.Run()
+			err := survey.AskOne(prompt, &flagTarget, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			flagTarget, _ = strconv.ParseFloat(flagTargetString, 64)
 		}
 	}
 
-	// note: we cannot use the Prompt library here because of its lack of multi-select support,
-	// we don't prompt, we choose the default regions unless user specifies regions via the -r option; https://github.com/manifoldco/promptui/issues/72
 	if mode == "update" && len(flagRegions) == 0 {
 		// pass
 	} else {
@@ -1209,26 +1199,25 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" && flagUpCodes == "" {
 		// pass
 	} else {
-		// check UpCodes matches format, empty not allowed
 		match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validUpCodePattern, input)
+		} else if !match {
+			validate := func(val interface{}) error {
+				match, err = regexp.MatchString(validUpCodePattern, val.(string))
 				if err != nil {
-					return errors.New("Invalid input")
-				} else if match == false {
-					return errors.New("Invalid input value")
+					return err
+				} else if !match {
+					return errors.New("invalid input value")
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "What are the good (\"UP\") HTTP response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\" (default: \"200-302\" s)",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "What are the good (\"UP\") HTTP response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\"",
+				Default: "200-302",
 			}
-			flagURL, err = prompt.Run()
+			err := survey.AskOne(prompt, &flagUpCodes, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -1239,25 +1228,23 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" && flagUpConfirmationsThreshold == 0 {
 		// pass
 	} else {
-		// check UpConfirmationsThreshold is in supported range
 		if flagUpConfirmationsThreshold < supportedConfirmationsThresholdMinimum || flagUpConfirmationsThreshold > supportedConfirmationsThresholdMaximum {
-			validate := func(input string) error {
-				var inputInt, _ = strconv.Atoi(input)
+			validate := func(val interface{}) error {
+				var inputInt, _ = strconv.Atoi(val.(string))
 				if inputInt < supportedConfirmationsThresholdMinimum || inputInt > supportedConfirmationsThresholdMaximum {
 					return errors.New("Up Confirmations Threshold must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum))
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "Up Confirmations Threshold (default: 2, must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum) + ")",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Up Confirmations Threshold (default: 2, must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum) + ")",
+				Default: "2",
 			}
-			flagUpConfirmationsThresholdString, err := prompt.Run()
+			err := survey.AskOne(prompt, &flagUpConfirmationsThreshold, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			flagUpConfirmationsThreshold, _ = strconv.Atoi(flagUpConfirmationsThresholdString)
 		}
 	}
 
@@ -1266,23 +1253,21 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	} else {
 		// check DownConfirmationsThreshold is in supported range
 		if flagDownConfirmationsThreshold < supportedConfirmationsThresholdMinimum || flagDownConfirmationsThreshold > supportedConfirmationsThresholdMaximum {
-			validate := func(input string) error {
-				var inputInt, _ = strconv.Atoi(input)
+			validate := func(val interface{}) error {
+				var inputInt, _ = strconv.Atoi(val.(string))
 				if inputInt < supportedConfirmationsThresholdMinimum || inputInt > supportedConfirmationsThresholdMaximum {
 					return errors.New("Down Confirmations Threshold must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum))
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "How many subsequent Down responses before triggering notifications",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Down Confirmations Threshold (default: 2, must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum) + ")",
 			}
-			flagDownConfirmationsThresholdString, err := prompt.Run()
+			err := survey.AskOne(prompt, &flagDownConfirmationsThreshold, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			flagDownConfirmationsThreshold, _ = strconv.Atoi(flagDownConfirmationsThresholdString)
 		}
 	}
 

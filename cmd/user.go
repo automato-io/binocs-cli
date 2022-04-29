@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
-	"github.com/manifoldco/promptui"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -118,21 +118,20 @@ name, timezone
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false || flagName == "" {
-			validate := func(input string) error {
-				match, err = regexp.MatchString(validNamePattern, input)
+		} else if !match || flagName == "" {
+			validate := func(val interface{}) error {
+				match, err = regexp.MatchString(validNamePattern, val.(string))
 				if err != nil {
-					return errors.New("Invalid input")
-				} else if match == false {
-					return errors.New("Invalid input value")
+					return err
+				} else if !match {
+					return errors.New("invalid name format")
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "Enter a valid name",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Enter your name",
 			}
-			flagName, err = prompt.Run()
+			err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -143,19 +142,18 @@ name, timezone
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if match == false || flagTimezone == "" {
-			validate := func(input string) error {
-				_, err := time.LoadLocation(input)
+		} else if !match || flagTimezone == "" {
+			validate := func(val interface{}) error {
+				_, err := time.LoadLocation(val.(string))
 				if err != nil {
-					return errors.New("Invalid timezone value")
+					return errors.New("invalid timezone value")
 				}
 				return nil
 			}
-			prompt := promptui.Prompt{
-				Label:    "Enter a valid timezone",
-				Validate: validate,
+			prompt := &survey.Input{
+				Message: "Enter your timezone",
 			}
-			flagTimezone, err = prompt.Run()
+			err = survey.AskOne(prompt, &flagTimezone, survey.WithValidator(validate))
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -262,28 +260,20 @@ Use your Access Key and Secret Key and login to binocs
 	Aliases:           []string{"auth"},
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		prompt := promptui.Prompt{
-			Label: "Enter Access Key",
-			Templates: &promptui.PromptTemplates{
-				Valid:   "{{ . | bold }}: ",
-				Invalid: "{{ . | bold }}: ",
-			},
+		var accessKey, secretKey string
+		promptAccessKey := &survey.Input{
+			Message: "Enter Access Key",
 		}
-		accessKey, err := prompt.Run()
+		err := survey.AskOne(promptAccessKey, &accessKey)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
-		prompt = promptui.Prompt{
-			Label: "Enter Secret Key",
-			Templates: &promptui.PromptTemplates{
-				Valid:   "{{ . | bold }}: ",
-				Invalid: "{{ . | bold }}: ",
-			},
-			Mask: '*',
+		promptSecretKey := &survey.Password{
+			Message: "Enter Secret Key",
 		}
-		secretKey, err := prompt.Run()
+		err = survey.AskOne(promptSecretKey, &secretKey)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
