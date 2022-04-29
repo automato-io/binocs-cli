@@ -48,7 +48,7 @@ func (c Check) Identity() string {
 	if len(c.Name) > 0 {
 		return c.Name + " (" + c.URL + ")"
 	}
-	return c.Name
+	return c.URL
 }
 
 // MetricsResponse comes from the API as a JSON
