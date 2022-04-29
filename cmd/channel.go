@@ -74,12 +74,8 @@ const (
 	channelTypeSlack             = "slack"
 )
 
-var supportedNotificationTypes = []string{"http-code-change", "status"}
-
 var validHandlePattern = map[string]string{
 	"email": `^(?:[a-z0-9!#$%&'*+/=?^_{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$`,
-	// "slack":    `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$`,
-	// "telegram": `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$`,
 }
 
 func init() {
@@ -101,7 +97,7 @@ func init() {
 	channelDetachCmd.Flags().SortFlags = false
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
-	channelAddCmd.Flags().StringVarP(&channelAddFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, Slack URL for Slack")
+	channelAddCmd.Flags().StringVarP(&channelAddFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, handles for Slack and Telegram will be obtained programmatically")
 	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias - human-friendly name of the check; optional")
 	channelAddCmd.Flags().SortFlags = false
 
@@ -204,7 +200,7 @@ Attach channel to check(s)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
-				} else if match == false {
+				} else if !match {
 					fmt.Println("Provided check identifier is invalid")
 					os.Exit(1)
 				}

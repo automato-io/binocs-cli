@@ -198,7 +198,7 @@ func init() {
 
 	checkCmd.Flags().StringVarP(&checkFlagPeriod, "period", "p", "day", "display values and charts for specified period")
 	checkCmd.Flags().StringVarP(&checkFlagRegion, "region", "r", "", "display values and charts from the specified region only")
-	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
+	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
 
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "check name")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
@@ -207,8 +207,8 @@ func init() {
 	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
 	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{}, fmt.Sprintf("from where in the world we check the provided URL. Choose \"all\" or a combination of values: %v", strings.Join(supportedRegions, ", ")))
 	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent Up responses before triggering notifications")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent Down responses before triggering notifications")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent UP responses before triggering notifications")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent DOWN responses before triggering notifications")
 	checkAddCmd.Flags().SortFlags = false
 
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "display values and charts for specified period")
@@ -216,7 +216,7 @@ func init() {
 
 	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
-	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
+	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "check name")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "url", "u", "", "URL to check")
@@ -225,8 +225,8 @@ func init() {
 	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
 	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "regions", "r", []string{}, fmt.Sprintf("from where in the world we check the provided URL. Choose \"all\" or a combination of values: %v", strings.Join(supportedRegions, ", ")))
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent Up responses before triggering notifications")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent Down responses before triggering notifications")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent UP responses before triggering notifications")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent DOWN responses before triggering notifications")
 	checkUpdateCmd.Flags().SortFlags = false
 }
 
@@ -1188,7 +1188,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 					flagRegions = supportedRegions
 					break
 				}
-				if isSupportedRegion(r) == false {
+				if !isSupportedRegion(r) {
 					fmt.Println("unsupported region: " + r)
 					os.Exit(1)
 				}
