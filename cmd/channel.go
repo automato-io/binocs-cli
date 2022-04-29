@@ -97,13 +97,13 @@ func init() {
 	channelDetachCmd.Flags().SortFlags = false
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
-	channelAddCmd.Flags().StringVarP(&channelAddFlagHandle, "handle", "", "", "channel handle - e-mail address for E-mail, handles for Slack and Telegram will be obtained programmatically")
-	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias - human-friendly name of the check; optional")
+	channelAddCmd.Flags().StringVarP(&channelAddFlagHandle, "handle", "", "", "channel handle - an address for \"E-mail\" channel type; handles for Slack and Telegram will be obtained programmatically")
+	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias (optional)")
 	channelAddCmd.Flags().SortFlags = false
 
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
-	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagAlias, "alias", "", "", "channel alias - human-friendly name of the check")
+	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagAlias, "alias", "", "", "channel alias (optional)")
 }
 
 var channelCmd = &cobra.Command{
