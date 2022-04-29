@@ -202,7 +202,7 @@ func init() {
 
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "check name")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "GET", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "how often binocs checks the URL, in seconds")
 	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "response time that accomodates Apdex=1.0, in seconds with up to 3 decimal places")
 	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "regions", "r", []string{}, fmt.Sprintf("from where in the world we check the provided URL. Choose \"all\" or a combination of values: %v", strings.Join(supportedRegions, ", ")))
