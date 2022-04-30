@@ -40,7 +40,7 @@ type Check struct {
 	LastStatusDuration         string   `json:"last_status_duration,omitempty"`
 	Created                    string   `json:"created,omitempty"`
 	Updated                    string   `json:"updated,omitempty"`
-	ChannelsCount              int      `json:"channels_count,omitempty"`
+	Channels                   []string `json:"channels,omitempty"`
 }
 
 // Identity method returns "Name (URL)" or "URL"
@@ -578,7 +578,7 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	}
 	tableRow := []string{
 		check.Ident, check.Name, util.Ellipsis(check.URL, 40), check.Method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
-		strconv.Itoa(check.ChannelsCount), lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+		strconv.Itoa(len(check.Channels)), lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow
 }

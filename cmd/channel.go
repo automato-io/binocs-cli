@@ -45,6 +45,7 @@ var (
 	channelAddFlagAlias  string
 	channelAddFlagHandle string
 	channelAddFlagType   string
+	channelAddFlagAttach []string
 )
 
 // `channel attach` flags
@@ -68,6 +69,7 @@ const (
 	validChannelIdentPattern     = `^[a-f0-9]{5}$`
 	validAliasPattern            = `^[a-zA-Z0-9_\s\/\-\.]{0,25}$`
 	validTypePattern             = `^(email|slack|telegram)$`
+	validChecksIdentListPattern  = `^(all|([a-f0-9]{7})(,[a-f0-9]{7})*)$`
 	validNotificationTypePattern = `^(http-code-change|status)$`
 	channelTypeEmail             = "email"
 	channelTypeTelegram          = "telegram"
@@ -97,13 +99,14 @@ func init() {
 	channelDetachCmd.Flags().SortFlags = false
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
-	channelAddCmd.Flags().StringVarP(&channelAddFlagHandle, "handle", "", "", "channel handle - an address for \"E-mail\" channel type; handles for Slack and Telegram will be obtained programmatically")
-	channelAddCmd.Flags().StringVarP(&channelAddFlagAlias, "alias", "", "", "channel alias (optional)")
+	channelAddCmd.Flags().StringVar(&channelAddFlagHandle, "handle", "", "channel handle - an address for \"E-mail\" channel type; handles for Slack and Telegram will be obtained programmatically")
+	channelAddCmd.Flags().StringVar(&channelAddFlagAlias, "alias", "", "channel alias (optional)")
+	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this notification channel (optional); can be either \"all\" or a comma-separated list of check identifiers")
 	channelAddCmd.Flags().SortFlags = false
 
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
-	channelUpdateCmd.Flags().StringVarP(&channelUpdateFlagAlias, "alias", "", "", "channel alias (optional)")
+	channelUpdateCmd.Flags().StringVar(&channelUpdateFlagAlias, "alias", "", "channel alias (optional)")
 }
 
 var channelCmd = &cobra.Command{
@@ -258,8 +261,6 @@ Detach channel from check(s)
 		checkIdents := []string{}
 
 		if channelDetachFlagAll {
-			// get all checks
-			// @todo only load checks attached to this channel
 			checkRespData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
 			if err != nil {
 				fmt.Println(err)
@@ -273,7 +274,11 @@ Detach channel from check(s)
 				os.Exit(1)
 			}
 			for _, c := range checksRespJSON {
-				checkIdents = append(checkIdents, c.Ident)
+				for _, cc := range c.Channels {
+					if cc == currentRespJSON.Ident {
+						checkIdents = append(checkIdents, c.Ident)
+					}
+				}
 			}
 		} else {
 			// validate checks against pattern, single or slice, required
@@ -294,9 +299,7 @@ Detach channel from check(s)
 			}
 		}
 
-		// @todo re-enable once we only load checks attached to this channel, not it's confusing
-		// spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
-
+		spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
 		for _, c := range checkIdents {
 			deleteData, err := json.Marshal(ChannelAttachment{})
 			if err != nil {
@@ -309,11 +312,8 @@ Detach channel from check(s)
 				os.Exit(1)
 			}
 		}
-
 		spin.Stop()
-		// @todo re-enable once we only load checks attached to this channel, not it's confusing
-		// fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
-		fmt.Println("Successfully detached channel " + args[0])
+		fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
 	},
 }
 
@@ -496,6 +496,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		flagAlias  string
 		flagHandle string
 		flagType   string
+		flagAttach []string
 	)
 
 	switch mode {
@@ -503,6 +504,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		flagAlias = channelAddFlagAlias
 		flagHandle = channelAddFlagHandle
 		flagType = channelAddFlagType
+		flagAttach = channelAddFlagAttach
 	case "update":
 		flagAlias = channelUpdateFlagAlias
 	}
@@ -638,6 +640,47 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		}
 	}
 
+	spin.Start()
+	spin.Suffix = " loading checks..."
+	checksData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	checksJSON := make([]Check, 0)
+	decoder := json.NewDecoder(bytes.NewBuffer(checksData))
+	err = decoder.Decode(&checksJSON)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	spin.Stop()
+
+	if mode == "update" && len(flagAttach) == 0 {
+		// pass
+	} else {
+		match, err = regexp.MatchString(validChecksIdentListPattern, strings.Join(flagAttach, ","))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if !match || len(flagAttach) == 0 {
+			var options = []string{}
+			for _, c := range checksJSON {
+				options = append(options, c.Ident+" "+c.Identity())
+			}
+			prompt := &survey.MultiSelect{
+				Message:  "Checks to attach (optional)",
+				Options:  options,
+				PageSize: 9,
+			}
+			err = survey.AskOne(prompt, &flagAttach)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+	}
+
 	// all clear, we can call the API and confirm adding new channel
 	channel := Channel{
 		Alias:  flagAlias,
@@ -662,6 +705,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		reqURL = "/channels/" + channelIdent
 		reqMethod = http.MethodPut
 	}
+	spin.Start()
+	spin.Suffix = " saving channel..."
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		fmt.Println(err)
@@ -680,12 +725,46 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			channelDescription = channel.Handle
 		}
 		if mode == "add" {
-			tpl = "[" + channel.Ident + "] " + channelDescription + ` added successfully
-`
+			tpl = "[" + channel.Ident + "] " + channelDescription + ` added successfully`
 		}
 		if mode == "update" {
-			tpl = "[" + channel.Ident + "] " + channelDescription + ` updated successfully
-`
+			tpl = "[" + channel.Ident + "] " + channelDescription + ` updated successfully`
+		}
+		if len(flagAttach) > 0 {
+			spin.Suffix = " attaching channel to " + fmt.Sprintf("%d", len(flagAttach)) + " checks..."
+			var detachCheckIdents = []string{}
+			for _, c := range checksJSON {
+				for _, cc := range c.Channels {
+					if cc == channel.Ident {
+						detachCheckIdents = append(detachCheckIdents, c.Ident)
+					}
+				}
+			}
+			for _, c := range detachCheckIdents {
+				deleteData, err := json.Marshal(ChannelAttachment{})
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+c, http.MethodDelete, deleteData)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			}
+			for _, fa := range flagAttach {
+				attachIdent := strings.Split(fa, " ")[0]
+				postData, err := json.Marshal(ChannelAttachment{})
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+attachIdent, http.MethodPost, postData)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			}
 		}
 	} else {
 		if mode == "add" {
@@ -697,7 +776,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			os.Exit(1)
 		}
 	}
-	fmt.Print(tpl)
+	spin.Stop()
+	fmt.Println(tpl)
 }
 
 func fetchChannels(urlValues url.Values) ([]Channel, error) {
