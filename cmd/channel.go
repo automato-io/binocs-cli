@@ -34,9 +34,9 @@ type Channel struct {
 // Identity method returns "Type - Alias (handle)" or "handle"
 func (ch Channel) Identity() string {
 	if len(ch.Alias) > 0 {
-		return ch.Type + " - " + ch.Alias + " (" + ch.Handle + ")"
+		return ch.Alias + " (" + ch.Handle + ")"
 	}
-	return ch.Type + " - " + ch.Handle
+	return ch.Handle
 }
 
 // ChannelAttachment struct is used to attach/detach a channel to/trom a check

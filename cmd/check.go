@@ -1309,14 +1309,14 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	} else if !match || len(flagAttach) == 0 {
 		var options = []string{}
 		for _, ch := range channels {
-			options = append(options, ch.Ident+" "+ch.Identity())
+			options = append(options, ch.Ident+" "+ch.Type+" "+ch.Identity())
 		}
 		var defaultOptions = []string{}
 		if mode == "update" {
 			for _, cc := range currentCheck.Channels {
 				for _, ch := range channels {
 					if ch.Ident == cc {
-						defaultOption := ch.Ident + " " + ch.Identity()
+						defaultOption := ch.Ident + " " + ch.Type + " " + ch.Identity()
 						defaultOptions = append(defaultOptions, defaultOption)
 					}
 				}
