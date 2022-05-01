@@ -702,6 +702,7 @@ func loadSupportedRegions() {
 		os.Exit(1)
 	}
 	supportedRegions = regionsResponse.Regions
+	sort.Strings(supportedRegions)
 }
 
 func isSupportedRegion(region string) bool {
