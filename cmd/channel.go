@@ -169,9 +169,7 @@ Attach channel to check(s)
 		var match bool
 
 		spin.Start()
-		spin.Suffix = " attaching channel " + args[0]
-
-		// validate channels ident
+		spin.Suffix = " loading channel " + args[0]
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -183,9 +181,7 @@ Attach channel to check(s)
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
 		checkIdents := []string{}
-
 		if channelAttachFlagAll {
 			checks, err := fetchChecks(url.Values{})
 			if err != nil {
@@ -213,24 +209,36 @@ Attach channel to check(s)
 				}
 			}
 		}
-
-		spin.Suffix = " attaching channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks"
-
-		for _, c := range checkIdents {
-			postData, err := json.Marshal(ChannelAttachment{})
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodPost, postData)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}
-
 		spin.Stop()
-		fmt.Println("Successfully attached channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks")
+		prompt := &survey.Confirm{
+			Message: "Attach " + currentRespJSON.Type + " notification channel " + currentRespJSON.Identity() + " to " + fmt.Sprintf("%d", len(checkIdents)) + " checks?",
+		}
+		var yes bool
+		err = survey.AskOne(prompt, &yes)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if yes {
+			spin.Start()
+			spin.Suffix = " attaching channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks"
+			for _, c := range checkIdents {
+				postData, err := json.Marshal(ChannelAttachment{})
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodPost, postData)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			}
+			spin.Stop()
+			fmt.Println("Successfully attached channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks")
+		} else {
+			fmt.Println("OK, skipping")
+		}
 	},
 }
 
@@ -247,9 +255,7 @@ Detach channel from check(s)
 		var match bool
 
 		spin.Start()
-		spin.Suffix = " detaching channel " + args[0]
-
-		// validate channels ident
+		spin.Suffix = " loading channel " + args[0]
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -261,9 +267,7 @@ Detach channel from check(s)
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
 		checkIdents := []string{}
-
 		if channelDetachFlagAll {
 			checks, err := fetchChecks(url.Values{})
 			if err != nil {
@@ -295,22 +299,36 @@ Detach channel from check(s)
 				}
 			}
 		}
-
-		spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
-		for _, c := range checkIdents {
-			deleteData, err := json.Marshal(ChannelAttachment{})
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodDelete, deleteData)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}
 		spin.Stop()
-		fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
+		prompt := &survey.Confirm{
+			Message: "Detach " + currentRespJSON.Type + " notification channel " + currentRespJSON.Identity() + " from " + fmt.Sprintf("%d", len(checkIdents)) + " checks?",
+		}
+		var yes bool
+		err = survey.AskOne(prompt, &yes)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if yes {
+			spin.Start()
+			spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
+			for _, c := range checkIdents {
+				deleteData, err := json.Marshal(ChannelAttachment{})
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodDelete, deleteData)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			}
+			spin.Stop()
+			fmt.Println("Successfully detached channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks")
+		} else {
+			fmt.Println("OK, skipping")
+		}
 	},
 }
 
