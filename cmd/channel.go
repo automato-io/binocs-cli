@@ -28,6 +28,7 @@ type Channel struct {
 	Handle    string   `json:"handle,omitempty"`
 	UsedCount int      `json:"used_count,omitempty"`
 	LastUsed  string   `json:"last_used,omitempty"`
+	Verified  string   `json:"verified,omitempty"`
 	Checks    []string `json:"checks,omitempty"`
 }
 
@@ -402,22 +403,27 @@ View channel details and attached checks.
 		}
 
 		// Table "main"
-		lastUsed := ""
+
+		var handle, used, lastUsed string
+		if respJSON.Type == channelTypeEmail && respJSON.Verified == "nil" {
+			handle = respJSON.Handle + " (unverified)"
+		} else {
+			handle = respJSON.Handle
+		}
 		if respJSON.UsedCount > 0 {
 			lastUsed = `, last time at ` + respJSON.LastUsed
 		}
-
-		var used string
 		if respJSON.UsedCount == 0 {
 			used = "never"
 		} else {
 			used = fmt.Sprintf("%d x", respJSON.UsedCount)
 		}
+
 		// @todo show ID field in check and incident detail as well
 		tableMainChannelCellContent := `ID: ` + respJSON.Ident + `
 Type: ` + respJSON.Type + `
 Alias: ` + respJSON.Alias + `
-Handle: ` + respJSON.Handle + `
+Handle: ` + handle + `
 Used: ` + used + lastUsed + ``
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
@@ -458,7 +464,7 @@ List all notification channels.
 
 		var tableData [][]string
 		for _, v := range channels {
-			var used, lastUsed string
+			var used, lastUsed, handle string
 			if v.UsedCount == 0 {
 				used = "never"
 				lastUsed = "n/a"
@@ -466,8 +472,13 @@ List all notification channels.
 				used = fmt.Sprintf("%d x", v.UsedCount)
 				lastUsed = v.LastUsed
 			}
+			if v.Type == channelTypeEmail && v.Verified == "nil" {
+				handle = util.Ellipsis(v.Handle, 50) + " (unverified)"
+			} else {
+				handle = util.Ellipsis(v.Handle, 50)
+			}
 			tableRow := []string{
-				v.Ident, v.Type, v.Alias, util.Ellipsis(v.Handle, 50), used, lastUsed,
+				v.Ident, v.Type, v.Alias, handle, used, lastUsed,
 			}
 			tableData = append(tableData, tableRow)
 		}
