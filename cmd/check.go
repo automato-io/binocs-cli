@@ -1200,23 +1200,29 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	if mode == "update" && len(flagRegions) == 0 {
-		// pass
-	} else {
-		loadSupportedRegions()
-		if len(flagRegions) == 0 {
-			flagRegions = defaultRegions
-		} else {
-			for _, r := range flagRegions {
-				if r == "all" {
-					flagRegions = supportedRegions
-					break
-				}
-				if !isSupportedRegion(r) {
-					fmt.Println("unsupported region: " + r)
-					os.Exit(1)
-				}
-			}
+	match = true
+	for _, fr := range flagRegions {
+		if !util.StringInSlice(fr, supportedRegions) {
+			match = false
+		}
+	}
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if !match || len(flagRegions) == 0 {
+		prompt := &survey.MultiSelect{
+			Message:  "Regions to make requests from",
+			Options:  supportedRegions,
+			PageSize: len(supportedRegions),
+		}
+		prompt.Default = defaultRegions
+		if mode == "update" {
+			prompt.Default = currentCheck.Regions
+		}
+		err = survey.AskOne(prompt, &flagRegions, survey.WithValidator(survey.MinItems(1)))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 
