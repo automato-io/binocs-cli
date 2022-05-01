@@ -76,14 +76,14 @@ var (
 )
 
 const (
-	validChannelIdentPattern     = `^[a-f0-9]{5}$`
-	validAliasPattern            = `^[a-zA-Z0-9_\s\/\-\.]{0,25}$`
-	validTypePattern             = `^(email|slack|telegram)$`
-	validChecksIdentListPattern  = `^(all|([a-f0-9]{7})(,[a-f0-9]{7})*)$`
-	validNotificationTypePattern = `^(http-code-change|status)$`
-	channelTypeEmail             = "email"
-	channelTypeTelegram          = "telegram"
-	channelTypeSlack             = "slack"
+	validChannelIdentPattern      = `^[a-f0-9]{5}$`
+	validAliasPattern             = `^[a-zA-Z0-9_\s\/\-\.]{0,25}$`
+	validTypePattern              = `^(email|slack|telegram)$`
+	validChannelsIdentListPattern = `^(all|([a-f0-9]{5})(,[a-f0-9]{5})*)$`
+	validNotificationTypePattern  = `^(http-code-change|status)$`
+	channelTypeEmail              = "email"
+	channelTypeTelegram           = "telegram"
+	channelTypeSlack              = "slack"
 )
 
 var validHandlePattern = map[string]string{
@@ -187,20 +187,12 @@ Attach channel to check(s)
 		checkIdents := []string{}
 
 		if channelAttachFlagAll {
-			// get all checks
-			checkRespData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
+			checks, err := fetchChecks(url.Values{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			checksRespJSON := make([]Check, 0)
-			decoder := json.NewDecoder(bytes.NewBuffer(checkRespData))
-			err = decoder.Decode(&checksRespJSON)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			for _, c := range checksRespJSON {
+			for _, c := range checks {
 				checkIdents = append(checkIdents, c.Ident)
 			}
 		} else {
@@ -273,19 +265,12 @@ Detach channel from check(s)
 		checkIdents := []string{}
 
 		if channelDetachFlagAll {
-			checkRespData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
+			checks, err := fetchChecks(url.Values{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			checksRespJSON := make([]Check, 0)
-			decoder := json.NewDecoder(bytes.NewBuffer(checkRespData))
-			err = decoder.Decode(&checksRespJSON)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			for _, c := range checksRespJSON {
+			for _, c := range checks {
 				for _, cc := range c.Channels {
 					if cc == currentRespJSON.Ident {
 						checkIdents = append(checkIdents, c.Ident)
@@ -669,14 +654,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 
 	spin.Start()
 	spin.Suffix = " loading checks..."
-	checksData, err := util.BinocsAPI("/checks", http.MethodGet, []byte{})
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	checksJSON := make([]Check, 0)
-	decoder := json.NewDecoder(bytes.NewBuffer(checksData))
-	err = decoder.Decode(&checksJSON)
+	checks, err := fetchChecks(url.Values{})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -687,15 +665,15 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
-	} else if !match || len(flagAttach) == 0 {
+	} else if !match {
 		var options = []string{}
-		for _, c := range checksJSON {
+		for _, c := range checks {
 			options = append(options, c.Ident+" "+c.Identity())
 		}
 		var defaultOptions = []string{}
 		if mode == "update" {
 			for _, cc := range currentChannel.Checks {
-				for _, c := range checksJSON {
+				for _, c := range checks {
 					if c.Ident == cc {
 						defaultOption := c.Ident + " " + c.Identity()
 						defaultOptions = append(defaultOptions, defaultOption)
@@ -713,6 +691,11 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
+		}
+	} else if strings.Join(flagAttach, ",") == "all" {
+		flagAttach = []string{}
+		for _, c := range checks {
+			flagAttach = append(flagAttach, c.Ident)
 		}
 	}
 
@@ -762,7 +745,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		}
 		spin.Suffix = " attaching channel to " + fmt.Sprintf("%d", len(flagAttach)) + " check(s)..."
 		var detachCheckIdents = []string{}
-		for _, c := range checksJSON {
+		for _, c := range checks {
 			for _, cc := range c.Channels {
 				if cc == channel.Ident {
 					detachCheckIdents = append(detachCheckIdents, c.Ident)

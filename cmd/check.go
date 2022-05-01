@@ -24,7 +24,7 @@ import (
 type Check struct {
 	ID                         int      `json:"id,omitempty"`
 	Ident                      string   `json:"ident,omitempty"`
-	Name                       string   `json:"name,omitempty"`
+	Name                       string   `json:"name"`
 	URL                        string   `json:"url,omitempty"`
 	Method                     string   `json:"method,omitempty"`
 	Interval                   int      `json:"interval,omitempty"`
@@ -125,12 +125,12 @@ var (
 	checkAddFlagUpCodes                    string
 	checkAddFlagUpConfirmationsThreshold   int
 	checkAddFlagDownConfirmationsThreshold int
+	checkAddFlagAttach                     []string
 )
 
 // `check update` flags
 var (
 	checkUpdateFlagName                       string
-	checkUpdateFlagURL                        string
 	checkUpdateFlagMethod                     string
 	checkUpdateFlagInterval                   int
 	checkUpdateFlagTarget                     float64
@@ -138,6 +138,7 @@ var (
 	checkUpdateFlagUpCodes                    string
 	checkUpdateFlagUpConfirmationsThreshold   int
 	checkUpdateFlagDownConfirmationsThreshold int
+	checkUpdateFlagAttach                     []string
 )
 
 const (
@@ -151,6 +152,7 @@ const (
 	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
 	validPeriodPattern                     = `^hour|day|week|month$`
+	validChecksIdentListPattern            = `^(all|([a-f0-9]{7})(,[a-f0-9]{7})*)$`
 	supportedConfirmationsThresholdMinimum = 1
 	supportedConfirmationsThresholdMaximum = 10
 )
@@ -209,6 +211,7 @@ func init() {
 	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent UP responses before triggering notifications")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent DOWN responses before triggering notifications")
+	checkAddCmd.Flags().StringSliceVar(&checkAddFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\" or a comma-separated list of channel identifiers")
 	checkAddCmd.Flags().SortFlags = false
 
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "display values and charts for specified period")
@@ -219,7 +222,6 @@ func init() {
 	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "check name")
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagURL, "url", "u", "", "URL to check")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "how often we check the URL, in seconds")
 	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "response time that accommodates Apdex=1.0, in seconds with up to 3 decimal places")
@@ -227,6 +229,7 @@ func init() {
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent UP responses before triggering notifications")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent DOWN responses before triggering notifications")
+	checkUpdateCmd.Flags().StringSliceVar(&checkUpdateFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\" or a comma-separated list of channel identifiers")
 	checkUpdateCmd.Flags().SortFlags = false
 }
 
@@ -292,7 +295,7 @@ View check status and metrics.
 		periodTableTitle := "1 DAY"
 
 		match, err := regexp.MatchString(validPeriodPattern, checkInspectFlagPeriod)
-		if err == nil && match == true {
+		if err == nil && match {
 			urlValues.Set("period", checkInspectFlagPeriod)
 			switch checkInspectFlagPeriod {
 			case "hour":
@@ -308,10 +311,10 @@ View check status and metrics.
 
 		// @todo check against currently supported GET /regions
 		match, err = regexp.MatchString(validRegionPattern, checkInspectFlagRegion)
-		if len(checkInspectFlagRegion) > 0 && match == false {
+		if len(checkInspectFlagRegion) > 0 && !match {
 			fmt.Println("Invalid region provided")
 			os.Exit(1)
-		} else if err == nil && match == true {
+		} else if err == nil && match {
 			urlValues.Set("region", checkInspectFlagRegion)
 		}
 
@@ -503,14 +506,7 @@ List all checks with status and metrics overview.
 			os.Exit(1)
 		}
 
-		respData, err := util.BinocsAPI("/checks?"+urlValues1.Encode(), http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		respJSON := make([]Check, 0)
-		decoder := json.NewDecoder(bytes.NewBuffer(respData))
-		err = decoder.Decode(&respJSON)
+		checks, err := fetchChecks(urlValues1)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -518,11 +514,11 @@ List all checks with status and metrics overview.
 
 		ch := make(chan []string)
 		var tableData [][]string
-		for _, v := range respJSON {
+		for _, v := range checks {
 			go makeCheckListRow(v, ch, &urlValues2)
 		}
-		for i := range respJSON {
-			spin.Suffix = " loading checks metrics... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(respJSON)) + ")"
+		for i := range checks {
+			spin.Suffix = " loading checks metrics... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(checks)) + ")"
 			tableData = append(tableData, <-ch)
 		}
 		sort.Slice(tableData, func(i, j int) bool {
@@ -639,6 +635,21 @@ Delete existing check(s) and collected metrics.
 			}
 		}
 	},
+}
+
+func fetchChecks(urlValues url.Values) ([]Check, error) {
+	var checks []Check
+	respData, err := util.BinocsAPI("/checks?"+urlValues.Encode(), http.MethodGet, []byte{})
+	if err != nil {
+		return checks, err
+	}
+	checks = make([]Check, 0)
+	decoder := json.NewDecoder(bytes.NewBuffer(respData))
+	err = decoder.Decode(&checks)
+	if err != nil {
+		return checks, err
+	}
+	return checks, nil
 }
 
 func fetchMetrics(ident string, urlValues *url.Values) (MetricsResponse, error) {
@@ -1005,7 +1016,6 @@ func drawTimeline(user *User, period string, dataPoints int, leftMargin string) 
 	return leftMargin + timeline[0]
 }
 
-// mode = add|update
 func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode != "add" && mode != "update" {
 		fmt.Println("Unknown mode: " + mode)
@@ -1026,6 +1036,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		flagUpCodes                    string
 		flagUpConfirmationsThreshold   int
 		flagDownConfirmationsThreshold int
+		flagAttach                     []string
 	)
 
 	switch mode {
@@ -1039,9 +1050,9 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		flagUpCodes = checkAddFlagUpCodes
 		flagUpConfirmationsThreshold = checkAddFlagUpConfirmationsThreshold
 		flagDownConfirmationsThreshold = checkAddFlagDownConfirmationsThreshold
+		flagAttach = checkAddFlagAttach
 	case "update":
 		flagName = checkUpdateFlagName
-		flagURL = checkUpdateFlagURL
 		flagMethod = checkUpdateFlagMethod
 		flagInterval = checkUpdateFlagInterval
 		flagTarget = checkUpdateFlagTarget
@@ -1049,38 +1060,55 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		flagUpCodes = checkUpdateFlagUpCodes
 		flagUpConfirmationsThreshold = checkUpdateFlagUpConfirmationsThreshold
 		flagDownConfirmationsThreshold = checkUpdateFlagDownConfirmationsThreshold
+		flagAttach = checkUpdateFlagAttach
 	}
 
-	if mode == "update" && flagName == "" {
-		// pass
-	} else {
-		match, err = regexp.MatchString(validNamePattern, flagName)
+	var currentCheck Check
+	if mode == "update" {
+		spin.Start()
+		spin.Suffix = " loading check..."
+		respData, err := util.BinocsAPI("/checks/"+checkIdent, http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if !match || flagName == "" {
-			validate := func(val interface{}) error {
-				match, err = regexp.MatchString(validNamePattern, val.(string))
-				if err != nil {
-					return err
-				} else if !match {
-					return errors.New("invalid name format")
-				}
-				return nil
-			}
-			prompt := &survey.Input{
-				Message: "Check name (optional)",
-			}
-			err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
+		}
+		err = json.Unmarshal(respData, &currentCheck)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		spin.Stop()
+	}
+
+	match, err = regexp.MatchString(validNamePattern, flagName)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if !match || flagName == "" {
+		validate := func(val interface{}) error {
+			match, err = regexp.MatchString(validNamePattern, val.(string))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return err
+			} else if !match {
+				return errors.New("invalid name format")
 			}
+			return nil
+		}
+		prompt := &survey.Input{
+			Message: "Check name (optional)",
+		}
+		if mode == "update" {
+			prompt.Default = currentCheck.Name
+		}
+		err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 
-	if mode == "update" && flagURL == "" {
-		// pass
+	if mode == "update" {
+		// pass; never update check URL
 	} else {
 		match, err = regexp.MatchString(validURLPattern, flagURL)
 		if err != nil {
@@ -1107,72 +1135,67 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	if mode == "update" && flagMethod == "" {
-		// pass
-	} else {
-		match, err = regexp.MatchString(validMethodPattern, flagMethod)
+	match, err = regexp.MatchString(validMethodPattern, flagMethod)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if !match || flagMethod == "" {
+		prompt := &survey.Select{
+			Message: "HTTP method",
+			Options: []string{"GET", "HEAD", "POST", "PUT", "DELETE"},
+			Default: "GET",
+		}
+		if mode == "update" {
+			prompt.Default = currentCheck.Method
+		}
+		err := survey.AskOne(prompt, &flagMethod)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if !match {
-			prompt := &survey.Select{
-				Message: "HTTP method",
-				Options: []string{"GET", "HEAD", "POST", "PUT", "DELETE"},
-				Default: "GET",
-			}
-			err := survey.AskOne(prompt, &flagMethod)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
 		}
 	}
 
-	if mode == "update" && flagInterval == 0 {
-		// pass
-	} else {
-		// check if Interval is in supported range
-		if flagInterval < supportedIntervalMinimum || flagInterval > supportedIntervalMaximum {
-			validate := func(val interface{}) error {
-				var inputInt, _ = strconv.Atoi(val.(string))
-				if inputInt < supportedIntervalMinimum || inputInt > supportedIntervalMaximum {
-					return errors.New("Interval must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum))
-				}
-				return nil
+	if flagInterval < supportedIntervalMinimum || flagInterval > supportedIntervalMaximum {
+		validate := func(val interface{}) error {
+			var inputInt, _ = strconv.Atoi(val.(string))
+			if inputInt < supportedIntervalMinimum || inputInt > supportedIntervalMaximum {
+				return errors.New("Interval must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum))
 			}
-			prompt := &survey.Input{
-				Message: "Interval in seconds (must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
-				Default: "60",
-			}
-			err := survey.AskOne(prompt, &flagInterval, survey.WithValidator(validate))
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			return nil
+		}
+		prompt := &survey.Input{
+			Message: "Interval in seconds (must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
+			Default: "60",
+		}
+		if mode == "update" {
+			prompt.Default = fmt.Sprintf("%d", currentCheck.Interval)
+		}
+		err := survey.AskOne(prompt, &flagInterval, survey.WithValidator(validate))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 
-	if mode == "update" && flagTarget == 0 {
-		// pass
-	} else {
-		// check if Target is in supported range
-		if flagTarget < supportedTargetMinimum || flagTarget > supportedTargetMaximum {
-			validate := func(val interface{}) error {
-				var inputFloat, _ = strconv.ParseFloat(val.(string), 64)
-				if inputFloat < supportedTargetMinimum || inputFloat > supportedTargetMaximum {
-					return errors.New("Target Response Time must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum))
-				}
-				return nil
+	if flagTarget < supportedTargetMinimum || flagTarget > supportedTargetMaximum {
+		validate := func(val interface{}) error {
+			var inputFloat, _ = strconv.ParseFloat(val.(string), 64)
+			if inputFloat < supportedTargetMinimum || inputFloat > supportedTargetMaximum {
+				return errors.New("Target Response Time must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum))
 			}
-			prompt := &survey.Input{
-				Message: "Target Response Time in seconds (must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum) + ")",
-				Default: "1.20",
-			}
-			err := survey.AskOne(prompt, &flagTarget, survey.WithValidator(validate))
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+			return nil
+		}
+		prompt := &survey.Input{
+			Message: "Target Response Time in seconds (must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum) + ")",
+			Default: "1.20",
+		}
+		if mode == "update" {
+			prompt.Default = fmt.Sprintf("%.3f", currentCheck.Target)
+		}
+		err := survey.AskOne(prompt, &flagTarget, survey.WithValidator(validate))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 
@@ -1196,32 +1219,31 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	if mode == "update" && flagUpCodes == "" {
-		// pass
-	} else {
-		match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
+	match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if !match || flagUpCodes == "" {
+		validate := func(val interface{}) error {
+			match, err = regexp.MatchString(validUpCodePattern, val.(string))
+			if err != nil {
+				return err
+			} else if !match {
+				return errors.New("invalid input value")
+			}
+			return nil
+		}
+		prompt := &survey.Input{
+			Message: "What are the good (\"UP\") HTTP response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\"",
+			Default: "200-302",
+		}
+		if mode == "update" {
+			prompt.Default = currentCheck.UpCodes
+		}
+		err := survey.AskOne(prompt, &flagUpCodes, survey.WithValidator(validate))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if !match {
-			validate := func(val interface{}) error {
-				match, err = regexp.MatchString(validUpCodePattern, val.(string))
-				if err != nil {
-					return err
-				} else if !match {
-					return errors.New("invalid input value")
-				}
-				return nil
-			}
-			prompt := &survey.Input{
-				Message: "What are the good (\"UP\") HTTP response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\"",
-				Default: "200-302",
-			}
-			err := survey.AskOne(prompt, &flagUpCodes, survey.WithValidator(validate))
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
 		}
 	}
 
@@ -1271,7 +1293,48 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	// all clear, we can call the API and confirm adding new check!
+	spin.Start()
+	spin.Suffix = " loading channels..."
+	channels, err := fetchChannels(url.Values{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	spin.Stop()
+
+	match, err = regexp.MatchString(validChannelsIdentListPattern, strings.Join(flagAttach, ","))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if !match || len(flagAttach) == 0 {
+		var options = []string{}
+		for _, ch := range channels {
+			options = append(options, ch.Ident+" "+ch.Identity())
+		}
+		var defaultOptions = []string{}
+		if mode == "update" {
+			for _, cc := range currentCheck.Channels {
+				for _, ch := range channels {
+					if ch.Ident == cc {
+						defaultOption := ch.Ident + " " + ch.Identity()
+						defaultOptions = append(defaultOptions, defaultOption)
+					}
+				}
+			}
+		}
+		prompt := &survey.MultiSelect{
+			Message:  "Channels to attach (optional)",
+			Options:  options,
+			Default:  defaultOptions,
+			PageSize: 9,
+		}
+		err = survey.AskOne(prompt, &flagAttach)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+
 	check := Check{
 		Name:                       flagName,
 		URL:                        flagURL,
@@ -1288,10 +1351,6 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if bytes.Equal(postData, []byte("{}")) {
-		fmt.Printf("provide at least one parameter that you want to update\n")
-		os.Exit(1)
-	}
 	var reqURL, reqMethod string
 	if mode == "add" {
 		reqURL = "/checks"
@@ -1301,6 +1360,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		reqURL = "/checks/" + checkIdent
 		reqMethod = http.MethodPut
 	}
+	spin.Start()
+	spin.Suffix = " saving check..."
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		fmt.Println(err)
@@ -1319,12 +1380,44 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			checkDescription = check.URL
 		}
 		if mode == "add" {
-			tpl = "[" + check.Ident + "] " + checkDescription + ` added successfully
-`
+			tpl = "[" + check.Ident + "] " + checkDescription + ` added successfully`
 		}
 		if mode == "update" {
-			tpl = "[" + check.Ident + "] " + checkDescription + ` updated successfully
-`
+			tpl = "[" + check.Ident + "] " + checkDescription + ` updated successfully`
+		}
+		spin.Suffix = " attaching check to " + fmt.Sprintf("%d", len(flagAttach)) + " channel(s)..."
+		var detachChannelIdents = []string{}
+		for _, ch := range channels {
+			for _, cc := range ch.Checks {
+				if cc == check.Ident {
+					detachChannelIdents = append(detachChannelIdents, ch.Ident)
+				}
+			}
+		}
+		for _, ch := range detachChannelIdents {
+			deleteData, err := json.Marshal(ChannelAttachment{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			_, err = util.BinocsAPI("/channels/"+ch+"/check/"+check.Ident, http.MethodDelete, deleteData)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+		for _, fa := range flagAttach {
+			attachIdent := strings.Split(fa, " ")[0]
+			postData, err := json.Marshal(ChannelAttachment{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			_, err = util.BinocsAPI("/channels/"+attachIdent+"/check/"+check.Ident, http.MethodPost, postData)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 	} else {
 		if mode == "add" {
@@ -1336,7 +1429,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			os.Exit(1)
 		}
 	}
-	fmt.Print(tpl)
+	spin.Stop()
+	fmt.Println(tpl)
 }
 
 func reverse(s string) string {
