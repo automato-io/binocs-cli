@@ -21,13 +21,14 @@ import (
 
 // Channel comes from the API as a JSON
 type Channel struct {
-	ID        int    `json:"id,omitempty"`
-	Ident     string `json:"ident,omitempty"`
-	Type      string `json:"type,omitempty"`
-	Alias     string `json:"alias,omitempty"`
-	Handle    string `json:"handle,omitempty"`
-	UsedCount int    `json:"used_count,omitempty"`
-	LastUsed  string `json:"last_used,omitempty"`
+	ID        int      `json:"id,omitempty"`
+	Ident     string   `json:"ident,omitempty"`
+	Type      string   `json:"type,omitempty"`
+	Alias     string   `json:"alias"`
+	Handle    string   `json:"handle,omitempty"`
+	UsedCount int      `json:"used_count,omitempty"`
+	LastUsed  string   `json:"last_used,omitempty"`
+	Checks    []string `json:"checks,omitempty"`
 }
 
 // ChannelAttachment struct is used to attach/detach a channel to/trom a check
@@ -62,7 +63,8 @@ var (
 
 // `channel update` flags
 var (
-	channelUpdateFlagAlias string
+	channelUpdateFlagAlias  string
+	channelUpdateFlagAttach []string
 )
 
 const (
@@ -107,6 +109,8 @@ func init() {
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
 	channelUpdateCmd.Flags().StringVar(&channelUpdateFlagAlias, "alias", "", "channel alias (optional)")
+	channelUpdateCmd.Flags().StringSliceVar(&channelUpdateFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\" or a comma-separated list of check identifiers")
+	channelUpdateCmd.Flags().SortFlags = false
 }
 
 var channelCmd = &cobra.Command{
@@ -481,7 +485,6 @@ Update existing notification channel.
 	},
 }
 
-// mode = add|update
 func channelAddOrUpdate(mode string, channelIdent string) {
 	if mode != "add" && mode != "update" {
 		fmt.Println("Unknown mode: " + mode)
@@ -507,12 +510,29 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		flagAttach = channelAddFlagAttach
 	case "update":
 		flagAlias = channelUpdateFlagAlias
+		flagAttach = channelUpdateFlagAttach
+	}
+
+	var currentChannel Channel
+	if mode == "update" {
+		spin.Start()
+		spin.Suffix = " loading channel..."
+		respData, err := util.BinocsAPI("/channels/"+channelIdent, http.MethodGet, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = json.Unmarshal(respData, &currentChannel)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		spin.Stop()
 	}
 
 	if mode == "update" {
-		// pass
+		// pass; never update channel type
 	} else {
-		// check if Type is one from a set, empty not allowed
 		match, err = regexp.MatchString(validTypePattern, flagType)
 		if err != nil {
 			fmt.Println(err)
@@ -531,7 +551,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	}
 
 	if mode == "update" {
-		// pass
+		// pass; never update channel handle
 	} else {
 		if flagType == channelTypeEmail {
 			match, err = regexp.MatchString(validHandlePattern[channelTypeEmail], flagHandle)
@@ -612,31 +632,30 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		}
 	}
 
-	if mode == "update" && flagAlias == "" {
-		// pass
-	} else {
-		match, err = regexp.MatchString(validAliasPattern, flagAlias)
+	match, err = regexp.MatchString(validAliasPattern, flagAlias)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if !match || flagAlias == "" {
+		validate := func(val interface{}) error {
+			match, err = regexp.MatchString(validAliasPattern, val.(string))
+			if err != nil {
+				return err
+			} else if !match {
+				return errors.New("invalid alias format")
+			}
+			return nil
+		}
+		prompt := &survey.Input{
+			Message: "Channel alias (optional)",
+		}
+		if mode == "update" {
+			prompt.Default = currentChannel.Alias
+		}
+		err = survey.AskOne(prompt, &flagAlias, survey.WithValidator(validate))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if !match || flagAlias == "" {
-			validate := func(val interface{}) error {
-				match, err = regexp.MatchString(validAliasPattern, val.(string))
-				if err != nil {
-					return err
-				} else if !match {
-					return errors.New("invalid alias format")
-				}
-				return nil
-			}
-			prompt := &survey.Input{
-				Message: "Channel alias (optional)",
-			}
-			err = survey.AskOne(prompt, &flagAlias, survey.WithValidator(validate))
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
 		}
 	}
 
@@ -656,32 +675,39 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	}
 	spin.Stop()
 
-	if mode == "update" && len(flagAttach) == 0 {
-		// pass
-	} else {
-		match, err = regexp.MatchString(validChecksIdentListPattern, strings.Join(flagAttach, ","))
+	match, err = regexp.MatchString(validChecksIdentListPattern, strings.Join(flagAttach, ","))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else if !match || len(flagAttach) == 0 {
+		var options = []string{}
+		for _, c := range checksJSON {
+			options = append(options, c.Ident+" "+c.Identity())
+		}
+		var defaultOptions = []string{}
+		if mode == "update" {
+			for _, cc := range currentChannel.Checks {
+				for _, c := range checksJSON {
+					if c.Ident == cc {
+						defaultOption := c.Ident + " " + c.Identity()
+						defaultOptions = append(defaultOptions, defaultOption)
+					}
+				}
+			}
+		}
+		prompt := &survey.MultiSelect{
+			Message:  "Checks to attach (optional)",
+			Options:  options,
+			Default:  defaultOptions,
+			PageSize: 9,
+		}
+		err = survey.AskOne(prompt, &flagAttach)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if !match || len(flagAttach) == 0 {
-			var options = []string{}
-			for _, c := range checksJSON {
-				options = append(options, c.Ident+" "+c.Identity())
-			}
-			prompt := &survey.MultiSelect{
-				Message:  "Checks to attach (optional)",
-				Options:  options,
-				PageSize: 9,
-			}
-			err = survey.AskOne(prompt, &flagAttach)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
 		}
 	}
 
-	// all clear, we can call the API and confirm adding new channel
 	channel := Channel{
 		Alias:  flagAlias,
 		Handle: flagHandle,
@@ -690,10 +716,6 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	postData, err := json.Marshal(channel)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
-	}
-	if bytes.Equal(postData, []byte("{}")) {
-		fmt.Printf("provide at least one parameter that you want to update\n")
 		os.Exit(1)
 	}
 	var reqURL, reqMethod string
@@ -730,40 +752,38 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		if mode == "update" {
 			tpl = "[" + channel.Ident + "] " + channelDescription + ` updated successfully`
 		}
-		if len(flagAttach) > 0 {
-			spin.Suffix = " attaching channel to " + fmt.Sprintf("%d", len(flagAttach)) + " checks..."
-			var detachCheckIdents = []string{}
-			for _, c := range checksJSON {
-				for _, cc := range c.Channels {
-					if cc == channel.Ident {
-						detachCheckIdents = append(detachCheckIdents, c.Ident)
-					}
+		spin.Suffix = " attaching channel to " + fmt.Sprintf("%d", len(flagAttach)) + " check(s)..."
+		var detachCheckIdents = []string{}
+		for _, c := range checksJSON {
+			for _, cc := range c.Channels {
+				if cc == channel.Ident {
+					detachCheckIdents = append(detachCheckIdents, c.Ident)
 				}
 			}
-			for _, c := range detachCheckIdents {
-				deleteData, err := json.Marshal(ChannelAttachment{})
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+c, http.MethodDelete, deleteData)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
+		}
+		for _, c := range detachCheckIdents {
+			deleteData, err := json.Marshal(ChannelAttachment{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
-			for _, fa := range flagAttach {
-				attachIdent := strings.Split(fa, " ")[0]
-				postData, err := json.Marshal(ChannelAttachment{})
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+attachIdent, http.MethodPost, postData)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
+			_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+c, http.MethodDelete, deleteData)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+		for _, fa := range flagAttach {
+			attachIdent := strings.Split(fa, " ")[0]
+			postData, err := json.Marshal(ChannelAttachment{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+attachIdent, http.MethodPost, postData)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 	} else {
