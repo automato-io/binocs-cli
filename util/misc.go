@@ -47,3 +47,12 @@ func UtfSubstr(input string, start int, length int) string {
 	}
 	return string(asRunes[start : start+length])
 }
+
+func StringInSlice(needle string, haystack []string) bool {
+	for _, h := range haystack {
+		if needle == h {
+			return true
+		}
+	}
+	return false
+}
