@@ -101,7 +101,7 @@ func init() {
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
 	channelAddCmd.Flags().StringVar(&channelAddFlagHandle, "handle", "", "channel handle - an address for \"E-mail\" channel type; handles for Slack and Telegram will be obtained programmatically")
 	channelAddCmd.Flags().StringVar(&channelAddFlagAlias, "alias", "", "channel alias (optional)")
-	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this notification channel (optional); can be either \"all\" or a comma-separated list of check identifiers")
+	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\" or a comma-separated list of check identifiers")
 	channelAddCmd.Flags().SortFlags = false
 
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
