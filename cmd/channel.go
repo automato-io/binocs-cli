@@ -60,13 +60,13 @@ var (
 
 // `channel attach` flags
 var (
-	channelAttachFlagCheck string
+	channelAttachFlagCheck []string
 	channelAttachFlagAll   bool
 )
 
 // `channel detach` flags
 var (
-	channelDetachFlagCheck string
+	channelDetachFlagCheck []string
 	channelDetachFlagAll   bool
 )
 
@@ -101,24 +101,24 @@ func init() {
 	channelCmd.AddCommand(channelListCmd)
 	channelCmd.AddCommand(channelUpdateCmd)
 
-	channelAttachCmd.Flags().StringVarP(&channelAttachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
+	channelAttachCmd.Flags().StringSliceVarP(&channelAttachFlagCheck, "check", "c", []string{}, "check identifiers")
 	channelAttachCmd.Flags().BoolVarP(&channelAttachFlagAll, "all", "a", false, "attach all checks to this channel")
 	channelAttachCmd.Flags().SortFlags = false
 
-	channelDetachCmd.Flags().StringVarP(&channelDetachFlagCheck, "check", "c", "", "check identifier, using multiple comma-separated identifiers is supported")
+	channelDetachCmd.Flags().StringSliceVarP(&channelDetachFlagCheck, "check", "c", []string{}, "check identifiers")
 	channelDetachCmd.Flags().BoolVarP(&channelDetachFlagAll, "all", "a", false, "detach all checks from this channel")
 	channelDetachCmd.Flags().SortFlags = false
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
 	channelAddCmd.Flags().StringVar(&channelAddFlagHandle, "handle", "", "channel handle - an address for \"E-mail\" channel type; handles for Slack and Telegram will be obtained programmatically")
 	channelAddCmd.Flags().StringVar(&channelAddFlagAlias, "alias", "", "channel alias (optional)")
-	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\" or a comma-separated list of check identifiers")
+	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\", or one or more check identifiers")
 	channelAddCmd.Flags().SortFlags = false
 
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
 	channelUpdateCmd.Flags().StringVar(&channelUpdateFlagAlias, "alias", "", "channel alias (optional)")
-	channelUpdateCmd.Flags().StringSliceVar(&channelUpdateFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\" or a comma-separated list of check identifiers")
+	channelUpdateCmd.Flags().StringSliceVar(&channelUpdateFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\", or one or more check identifiers")
 	channelUpdateCmd.Flags().SortFlags = false
 }
 
@@ -198,7 +198,7 @@ Attach channel to check(s)
 				fmt.Println("Set at least one check to attach to the channel")
 				os.Exit(1)
 			}
-			checkIdents = strings.Split(channelAttachFlagCheck, ",")
+			checkIdents = channelAttachFlagCheck
 			for _, c := range checkIdents {
 				match, err = regexp.MatchString(validCheckIdentPattern, c)
 				if err != nil {
@@ -288,7 +288,7 @@ Detach channel from check(s)
 				fmt.Println("Set at least one check to detach from the channel")
 				os.Exit(1)
 			}
-			checkIdents = strings.Split(channelDetachFlagCheck, ",")
+			checkIdents = channelDetachFlagCheck
 			for _, c := range checkIdents {
 				match, err = regexp.MatchString(validCheckIdentPattern, c)
 				if err != nil {

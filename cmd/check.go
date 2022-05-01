@@ -211,7 +211,7 @@ func init() {
 	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent UP responses before triggering notifications")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent DOWN responses before triggering notifications")
-	checkAddCmd.Flags().StringSliceVar(&checkAddFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\" or a comma-separated list of channel identifiers")
+	checkAddCmd.Flags().StringSliceVar(&checkAddFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\", or one or more channel identifiers")
 	checkAddCmd.Flags().SortFlags = false
 
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "display values and charts for specified period")
@@ -229,7 +229,7 @@ func init() {
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent UP responses before triggering notifications")
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent DOWN responses before triggering notifications")
-	checkUpdateCmd.Flags().StringSliceVar(&checkUpdateFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\" or a comma-separated list of channel identifiers")
+	checkUpdateCmd.Flags().StringSliceVar(&checkUpdateFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\", or one or more channel identifiers")
 	checkUpdateCmd.Flags().SortFlags = false
 }
 
