@@ -92,7 +92,10 @@ var validHandlePattern = map[string]string{
 }
 
 func init() {
+	rootCmd.AddCommand(channelsCmd)
+
 	rootCmd.AddCommand(channelCmd)
+
 	channelCmd.AddCommand(channelAddCmd)
 	channelCmd.AddCommand(channelAttachCmd)
 	channelCmd.AddCommand(channelDetachCmd)
@@ -123,22 +126,19 @@ func init() {
 }
 
 var channelCmd = &cobra.Command{
-	Use:   "channel",
-	Short: "Manage notification channels",
-	Long: `
-Manage notification channels
-`,
-	Aliases:           []string{"channels"},
+	Use:               "channel",
+	Short:             "Manage notification channels",
+	DisableAutoGenTag: true,
+}
+
+var channelsCmd = &cobra.Command{
+	Use:               "channels",
+	Args:              cobra.NoArgs,
+	Short:             channelListCmd.Short,
+	Long:              channelListCmd.Long,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Run(channelListCmd, args)
-		} else if len(args) == 1 && true { // @todo true ~ channel id validity regex
-			cmd.Run(channelInspectCmd, args)
-		} else {
-			fmt.Println("Unsupported command/arguments combination, please see --help")
-			os.Exit(1)
-		}
+		channelListCmd.Run(cmd, args)
 	},
 }
 
