@@ -73,11 +73,10 @@ var rootCmd = &cobra.Command{
 	Long: `
 Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and APIs.
 
-Binocs servers continuously measure uptime and performance of http or tcp endpoints. 
+Binocs servers continuously measure uptime and performance of HTTP endpoints. 
 
-Get insight into current state of your endpoints and metrics history using this CLI tool. 
+Get insight into current state of your endpoints and metrics history, and receive notifications about any incidents in real-time.
 
-Receive notifications about any incidents in real-time.
 `,
 	DisableAutoGenTag: true,
 	// Uncomment the following line if your bare application
