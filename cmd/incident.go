@@ -77,6 +77,7 @@ func init() {
 	incidentCmd.AddCommand(incidentListCmd)
 	incidentCmd.AddCommand(incidentUpdateCmd)
 
+	incidentsCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
 	incidentListCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
 
 	incidentUpdateCmd.Flags().StringVarP(&incidentUpdateFlagNote, "note", "n", "", "incident note")
