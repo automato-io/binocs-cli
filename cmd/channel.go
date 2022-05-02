@@ -454,7 +454,7 @@ List all notification channels.
 
 		urlValues := url.Values{}
 		match, err := regexp.MatchString(validCheckIdentPattern, channelListFlagCheck)
-		if err == nil && !match {
+		if err == nil && match {
 			urlValues.Set("check", channelListFlagCheck)
 		}
 		channels, err := fetchChannels(urlValues)
