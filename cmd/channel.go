@@ -118,6 +118,7 @@ func init() {
 	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\", or one or more check identifiers")
 	channelAddCmd.Flags().SortFlags = false
 
+	channelsCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
 	channelUpdateCmd.Flags().StringVar(&channelUpdateFlagAlias, "alias", "", "channel alias (optional)")
