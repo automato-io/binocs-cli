@@ -1,11 +1,11 @@
 ## binocs channel delete
 
-Delete a notification channel
+Delete notification channel(s)
 
 ### Synopsis
 
 
-Delete a notification channel.
+Delete notification channel(s).
 
 
 ```

@@ -2,10 +2,6 @@
 
 Manage incidents
 
-```
-binocs incident [flags]
-```
-
 ### Options
 
 ```

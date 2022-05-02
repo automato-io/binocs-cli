@@ -2,16 +2,6 @@
 
 Manage notification channels
 
-### Synopsis
-
-
-Manage notification channels
-
-
-```
-binocs channel [flags]
-```
-
 ### Options
 
 ```
@@ -30,7 +20,7 @@ binocs channel [flags]
 * [binocs](binocs.md)	 - Monitoring tool for websites, applications and APIs
 * [binocs channel add](binocs_channel_add.md)	 - Add a new notifications channel
 * [binocs channel attach](binocs_channel_attach.md)	 - Attach channel to check(s)
-* [binocs channel delete](binocs_channel_delete.md)	 - Delete a notification channel
+* [binocs channel delete](binocs_channel_delete.md)	 - Delete notification channel(s)
 * [binocs channel detach](binocs_channel_detach.md)	 - Detach channel from check(s)
 * [binocs channel inspect](binocs_channel_inspect.md)	 - View channel details
 * [binocs channel list](binocs_channel_list.md)	 - List all notification channels

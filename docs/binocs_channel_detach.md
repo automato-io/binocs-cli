@@ -15,9 +15,9 @@ binocs channel detach [flags]
 ### Options
 
 ```
-  -c, --check string   check identifier, using multiple comma-separated identifiers is supported
-  -a, --all            detach all checks from this channel
-  -h, --help           help for detach
+  -c, --check strings   check identifiers
+  -a, --all             detach all checks from this channel
+  -h, --help            help for detach
 ```
 
 ### Options inherited from parent commands

@@ -18,7 +18,6 @@ binocs check inspect [flags]
   -h, --help            help for inspect
   -p, --period string   display values and charts for specified period (default "day")
   -r, --region string   display values and charts from the specified region only
-  -w, --watch           refresh output every 3 seconds
 ```
 
 ### Options inherited from parent commands

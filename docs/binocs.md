@@ -25,9 +25,12 @@ Receive notifications about any incidents in real-time.
 ### SEE ALSO
 
 * [binocs channel](binocs_channel.md)	 - Manage notification channels
+* [binocs channels](binocs_channels.md)	 - List all notification channels
 * [binocs check](binocs_check.md)	 - Manage your checks
+* [binocs checks](binocs_checks.md)	 - List all checks with status and metrics overview
 * [binocs completion](binocs_completion.md)	 - Generate the autocompletion script for the specified shell
 * [binocs incident](binocs_incident.md)	 - Manage incidents
+* [binocs incidents](binocs_incidents.md)	 - List all past and current incidents
 * [binocs login](binocs_login.md)	 - Login to binocs
 * [binocs logout](binocs_logout.md)	 - Logout
 * [binocs regions](binocs_regions.md)	 - List supported regions

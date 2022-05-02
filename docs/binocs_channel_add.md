@@ -15,10 +15,11 @@ binocs channel add [flags]
 ### Options
 
 ```
-  -t, --type string     channel type (E-mail, Slack, Telegram)
-      --handle string   channel handle - e-mail address for E-mail, Slack URL for Slack
-      --alias string    channel alias - how we're gonna refer to it; optional
-  -h, --help            help for add
+  -t, --type string      channel type (E-mail, Slack, Telegram)
+      --handle string    channel handle - an address for "E-mail" channel type; handles for Slack and Telegram will be obtained programmatically
+      --alias string     channel alias (optional)
+      --attach strings   checks to attach to this channel (optional); can be either "all", or one or more check identifiers
+  -h, --help             help for add
 ```
 
 ### Options inherited from parent commands

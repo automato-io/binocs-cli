@@ -15,9 +15,9 @@ binocs channel attach [flags]
 ### Options
 
 ```
-  -c, --check string   check identifier, using multiple comma-separated identifiers is supported
-  -a, --all            attach all checks to this channel
-  -h, --help           help for attach
+  -c, --check strings   check identifiers
+  -a, --all             attach all checks to this channel
+  -h, --help            help for attach
 ```
 
 ### Options inherited from parent commands
