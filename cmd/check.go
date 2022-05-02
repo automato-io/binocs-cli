@@ -191,7 +191,10 @@ var defaultRegions = []string{
 func init() {
 	loadSupportedRegions()
 
+	rootCmd.AddCommand(checksCmd)
+
 	rootCmd.AddCommand(checkCmd)
+
 	checkCmd.AddCommand(checkAddCmd)
 	checkCmd.AddCommand(checkInspectCmd)
 	checkCmd.AddCommand(checkListCmd)
@@ -217,6 +220,9 @@ func init() {
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "display values and charts for specified period")
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagRegion, "region", "r", "", "display values and charts from the specified region only")
 
+	checksCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
+	checksCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
+	checksCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
 	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
 	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
@@ -237,29 +243,20 @@ var checkCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Manage your checks",
 	Long: `
-Manage your checks. A command (one of "add", "delete", "inspect", "list" or "update") is optional.
+Manage your checks.
 
-If neither command nor argument are provided, assume "binocs checks list".
-	
-If an argument is provided without any command, assume "binocs checks inspect <arg>".
 `,
-	Aliases:           []string{"checks"},
-	Example:           "",
+	DisableAutoGenTag: true,
+}
+
+var checksCmd = &cobra.Command{
+	Use:               "checks",
+	Args:              cobra.NoArgs,
+	Short:             checkListCmd.Short,
+	Long:              checkListCmd.Long,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			checkListFlagPeriod = checkFlagPeriod
-			checkListFlagRegion = checkFlagRegion
-			checkListFlagStatus = checkFlagStatus
-			cmd.Run(checkListCmd, args)
-		} else if len(args) == 1 && true { // @todo true ~ check id validity regex
-			checkInspectFlagPeriod = checkFlagPeriod
-			checkInspectFlagRegion = checkFlagRegion
-			cmd.Run(checkInspectCmd, args)
-		} else {
-			fmt.Println("Unsupported command/arguments combination, please see --help")
-			os.Exit(1)
-		}
+		checkListCmd.Run(cmd, args)
 	},
 }
 
