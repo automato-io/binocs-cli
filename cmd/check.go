@@ -515,7 +515,7 @@ List all checks with status and metrics overview.
 			go makeCheckListRow(v, ch, &urlValues2)
 		}
 		for i := range checks {
-			spin.Suffix = " loading checks metrics... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(checks)) + ")"
+			spin.Suffix = " loading metrics... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(checks)) + ")"
 			tableData = append(tableData, <-ch)
 		}
 		sort.Slice(tableData, func(i, j int) bool {
