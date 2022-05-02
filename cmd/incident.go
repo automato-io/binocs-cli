@@ -69,7 +69,10 @@ const (
 )
 
 func init() {
+	rootCmd.AddCommand(incidentsCmd)
+
 	rootCmd.AddCommand(incidentCmd)
+
 	incidentCmd.AddCommand(incidentInspectCmd)
 	incidentCmd.AddCommand(incidentListCmd)
 	incidentCmd.AddCommand(incidentUpdateCmd)
@@ -82,18 +85,17 @@ func init() {
 var incidentCmd = &cobra.Command{
 	Use:               "incident",
 	Short:             "Manage incidents",
-	Long:              ``,
-	Aliases:           []string{"incidents"},
+	DisableAutoGenTag: true,
+}
+
+var incidentsCmd = &cobra.Command{
+	Use:               "incidents",
+	Args:              cobra.NoArgs,
+	Short:             incidentListCmd.Short,
+	Long:              incidentListCmd.Long,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Run(incidentListCmd, args)
-		} else if len(args) == 1 && true { // @todo true ~ incident id validity regex
-			cmd.Run(incidentInspectCmd, args)
-		} else {
-			fmt.Println("Unsupported command/arguments combination, please see --help")
-			os.Exit(1)
-		}
+		incidentListCmd.Run(cmd, args)
 	},
 }
 
