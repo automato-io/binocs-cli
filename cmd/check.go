@@ -241,9 +241,9 @@ func init() {
 
 var checkCmd = &cobra.Command{
 	Use:   "check",
-	Short: "Manage your checks",
+	Short: "Manage checks",
 	Long: `
-Manage your checks.
+Manage HTTP and HTTPS checks.
 
 `,
 	DisableAutoGenTag: true,
