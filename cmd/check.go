@@ -619,8 +619,7 @@ Delete existing check(s) and collected metrics.
 				continue
 			}
 			prompt := &survey.Confirm{
-				// @todo use Identity()
-				Message: "Delete " + respJSON.Ident + " " + respJSON.Name + " (" + respJSON.Resource + ")?",
+				Message: "Delete " + respJSON.Ident + " " + respJSON.Identity() + "?",
 			}
 			var yes bool
 			err = survey.AskOne(prompt, &yes)
