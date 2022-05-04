@@ -23,10 +23,11 @@ type Incident struct {
 	Ident         string    `json:"ident"`
 	CheckID       int       `json:"check_id"`
 	CheckIdent    string    `json:"check_ident"`
+	CheckName     string    `json:"check_name"`
+	CheckProtocol string    `json:"check_protocol"`
+	CheckResource string    `json:"check_resource"`
 	IncidentNote  string    `json:"incident_note"`
 	IncidentState string    `json:"incident_state"`
-	CheckName     string    `json:"check_name"`
-	CheckURL      string    `json:"check_url"`
 	Opened        string    `json:"opened"`
 	Closed        string    `json:"closed"`
 	Duration      string    `json:"duration"`
@@ -38,7 +39,8 @@ type Incident struct {
 type Request struct {
 	Region             string    `json:"region"`
 	Status             int       `json:"status"`
-	RequestURL         string    `json:"request_url"`
+	RequestProtocol    string    `json:"request_protocol"`
+	RequestResource    string    `json:"request_resource"`
 	RequestMethod      string    `json:"request_method"`
 	ResponseStatusCode string    `json:"response_status"`
 	Timings            Timings   `json:"timings"`
@@ -133,7 +135,7 @@ View incident details, notes and associated requests.
 
 		tableMainIncidentCellContent := `Check ID: ` + respJSON.CheckIdent + `
 Check: ` + respJSON.CheckName + ` 
-URL: ` + respJSON.CheckURL + `
+URL: ` + respJSON.CheckResource + `
 Incident State: ` + respJSON.IncidentState + `
 Response Codes: ` + strings.Join(respJSON.ResponseCodes, "\n") + `
 
@@ -165,7 +167,7 @@ Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
 			for _, request := range respJSON.Requests {
 				if strings.Contains(request.Timestamp.String(), "0001") {
 					placeholder := "~"
-					shortcut := request.RequestURL + " requests"
+					shortcut := request.RequestResource + " requests"
 					shortcut = strings.Repeat(placeholder, 2) + " " + shortcut
 					if len(shortcut) < 18 {
 						shortcut = shortcut + " " + strings.Repeat(placeholder, 19-len(shortcut)-1)
@@ -249,7 +251,7 @@ List all past and current incidents.
 				os.Exit(1)
 			}
 			tableRow := []string{
-				v.Ident, v.CheckName, util.Ellipsis(v.CheckURL, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"), v.IncidentNote,
+				v.Ident, v.CheckName, util.Ellipsis(v.CheckResource, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"), v.IncidentNote,
 			}
 			tableData = append(tableData, tableRow)
 		}

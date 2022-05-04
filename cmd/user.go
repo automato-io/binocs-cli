@@ -129,7 +129,7 @@ name, timezone
 				return nil
 			}
 			prompt := &survey.Input{
-				Message: "Enter your name",
+				Message: "Enter your name:",
 			}
 			err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
 			if err != nil {
@@ -151,7 +151,7 @@ name, timezone
 				return nil
 			}
 			prompt := &survey.Input{
-				Message: "Enter your timezone",
+				Message: "Enter your timezone:",
 			}
 			err = survey.AskOne(prompt, &flagTimezone, survey.WithValidator(validate))
 			if err != nil {
@@ -262,7 +262,7 @@ Use your Access Key and Secret Key and login to binocs
 	Run: func(cmd *cobra.Command, args []string) {
 		var accessKey, secretKey string
 		promptAccessKey := &survey.Input{
-			Message: "Enter Access Key",
+			Message: "Enter Access Key:",
 		}
 		err := survey.AskOne(promptAccessKey, &accessKey)
 		if err != nil {
@@ -271,7 +271,7 @@ Use your Access Key and Secret Key and login to binocs
 		}
 
 		promptSecretKey := &survey.Password{
-			Message: "Enter Secret Key",
+			Message: "Enter Secret Key:",
 		}
 		err = survey.AskOne(promptSecretKey, &secretKey)
 		if err != nil {

@@ -592,7 +592,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 					return nil
 				}
 				prompt := &survey.Input{
-					Message: "Enter a valid " + flagType + " handle",
+					Message: "Enter a valid " + flagType + " handle:",
 				}
 				err = survey.AskOne(prompt, &flagHandle, survey.WithValidator(validate))
 				if err != nil {
@@ -670,7 +670,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			return nil
 		}
 		prompt := &survey.Input{
-			Message: "Channel alias (optional)",
+			Message: "Channel alias (optional):",
 		}
 		if mode == "update" {
 			prompt.Default = currentChannel.Alias
@@ -712,7 +712,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			}
 		}
 		prompt := &survey.MultiSelect{
-			Message:  "Checks to attach (optional)",
+			Message:  "Checks to attach (optional):",
 			Options:  options,
 			Default:  defaultOptions,
 			PageSize: 9,

@@ -57,6 +57,13 @@ var supportedPeriods = map[string]time.Duration{
 	periodMonth: time.Duration(30 * 24 * time.Hour),
 }
 
+const (
+	protocolHTTP  = "HTTP"
+	protocolHTTPS = "HTTPS"
+	protocolICMP  = "ICMP"
+	protocolTCP   = "TCP"
+)
+
 // Verbose flag
 var Verbose bool
 

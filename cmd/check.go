@@ -25,7 +25,8 @@ type Check struct {
 	ID                         int      `json:"id,omitempty"`
 	Ident                      string   `json:"ident,omitempty"`
 	Name                       string   `json:"name"`
-	URL                        string   `json:"url,omitempty"`
+	Protocol                   string   `json:"protocol,omitempty"`
+	Resource                   string   `json:"resource,omitempty"`
 	Method                     string   `json:"method,omitempty"`
 	Interval                   int      `json:"interval,omitempty"`
 	Target                     float64  `json:"target,omitempty"`
@@ -43,12 +44,12 @@ type Check struct {
 	Channels                   []string `json:"channels,omitempty"`
 }
 
-// Identity method returns "Name (URL)" or "URL"
+// Identity method returns formatted Name + Resource
 func (c Check) Identity() string {
 	if len(c.Name) > 0 {
-		return c.Name + " (" + c.URL + ")"
+		return c.Name + " (" + c.Resource + ")"
 	}
-	return c.URL
+	return c.Resource
 }
 
 // MetricsResponse comes from the API as a JSON
@@ -117,7 +118,8 @@ var (
 // `check add` flags
 var (
 	checkAddFlagName                       string
-	checkAddFlagURL                        string
+	checkAddFlagProtocol                   string
+	checkAddFlagResource                   string
 	checkAddFlagMethod                     string
 	checkAddFlagInterval                   int
 	checkAddFlagTarget                     float64
@@ -147,9 +149,13 @@ const (
 	supportedTargetMinimum                 = 0.01
 	supportedTargetMaximum                 = 10.0
 	validNamePattern                       = `^[a-zA-Z0-9_\s\/\-\.]{0,25}$`
+	validProtocolPattern                   = `^(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolICMP + `|` + protocolTCP + `)$`
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
 	validUpCodePattern                     = `^([,]?([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))+$`
-	validURLPattern                        = `^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
+	validHTTPResourcePattern               = `^(http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
+	validHTTPSResourcePattern              = `^(https:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
+	validTCPResourcePattern                = `^(tcp:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
+	validICMPResourcePattern               = `^(icmp:\/\/)?(([-a-zA-Z0-9.]{1,256}\.[a-z]{2,4})|(((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
 	validPeriodPattern                     = `^hour|day|week|month$`
 	validChecksIdentListPattern            = `^(all|([a-f0-9]{7})(,[a-f0-9]{7})*)$`
@@ -203,17 +209,18 @@ func init() {
 
 	checkCmd.Flags().StringVarP(&checkFlagPeriod, "period", "p", "day", "display values and charts for specified period")
 	checkCmd.Flags().StringVarP(&checkFlagRegion, "region", "r", "", "display values and charts from the specified region only")
-	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
+	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
 
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "check name")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagURL, "url", "u", "", "URL to check")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "how often binocs checks the URL, in seconds")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagProtocol, "protocol", "p", "", "protocol (HTTP, HTTPS, ICMP, TCP)")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagResource, "resource", "r", "", "resource to check, a URL in case of HTTP(S), a hostname or IP address in case of ICMP, or a hostname:port in case of TCP")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP(S) method (GET, HEAD, POST, PUT, DELETE)")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "how often Binocs checks given resource, in seconds")
 	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "response time that accommodates Apdex=1.0, in seconds with up to 3 decimal places")
-	checkAddCmd.Flags().StringSliceVarP(&checkAddFlagRegions, "region", "r", []string{}, fmt.Sprintf("from where in the world we check the provided URL; choose one or more from: %v", strings.Join(supportedRegions, ", ")))
-	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent UP responses before triggering notifications")
-	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent DOWN responses before triggering notifications")
+	checkAddCmd.Flags().StringSliceVar(&checkAddFlagRegions, "region", []string{}, fmt.Sprintf("from where in the world Binocs checks given resource; choose one or more from: %v", strings.Join(supportedRegions, ", ")))
+	checkAddCmd.Flags().StringVarP(&checkAddFlagUpCodes, "up_codes", "", "200-302", "what are the good (\"up\") HTTP(S) response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 2, "how many subsequent \"up\" responses before triggering notifications")
+	checkAddCmd.Flags().IntVarP(&checkAddFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 2, "how many subsequent \"down\" responses before triggering notifications")
 	checkAddCmd.Flags().StringSliceVar(&checkAddFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\", or one or more channel identifiers")
 	checkAddCmd.Flags().SortFlags = false
 
@@ -222,19 +229,19 @@ func init() {
 
 	checksCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checksCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
-	checksCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
+	checksCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"up\" or \"dow\" checks, default \"all\"")
 	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
-	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"UP\" or \"DOWN\" checks, default \"all\"")
+	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "check name")
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP method (GET, HEAD, POST, PUT, DELETE)")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "how often we check the URL, in seconds")
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP(S) method (GET, HEAD, POST, PUT, DELETE)")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagInterval, "interval", "i", 0, "how often Binocs checks given resource, in seconds")
 	checkUpdateCmd.Flags().Float64VarP(&checkUpdateFlagTarget, "target", "t", 0, "response time that accommodates Apdex=1.0, in seconds with up to 3 decimal places")
-	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "region", "r", []string{}, fmt.Sprintf("from where in the world we check the provided URL; choose one or more from: %v", strings.Join(supportedRegions, ", ")))
-	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "what are the good (\"UP\") HTTP response codes, e.g. `2xx` or `200-302`, or `200,301`")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent UP responses before triggering notifications")
-	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent DOWN responses before triggering notifications")
+	checkUpdateCmd.Flags().StringSliceVarP(&checkUpdateFlagRegions, "region", "r", []string{}, fmt.Sprintf("from where in the world Binocs checks given resource; choose one or more from: %v", strings.Join(supportedRegions, ", ")))
+	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagUpCodes, "up_codes", "", "", "what are the good (\"up\") HTTP(S) response codes, e.g. `2xx` or `200-302`, or `200,301`")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagUpConfirmationsThreshold, "up_confirmations_threshold", "", 0, "how many subsequent \"up\" responses before triggering notifications")
+	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent \"down\" responses before triggering notifications")
 	checkUpdateCmd.Flags().StringSliceVar(&checkUpdateFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\", or one or more channel identifiers")
 	checkUpdateCmd.Flags().SortFlags = false
 }
@@ -345,7 +352,7 @@ View check status and metrics.
 		// Table "main"
 
 		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
-URL: ` + respJSON.URL + `
+URL: ` + respJSON.Resource + `
 Method: ` + respJSON.Method + `
 Response: ` + respJSON.LastStatusCode + `
 ` + statusName[respJSON.LastStatus] + " for " + util.OutputDurationWithDays(respJSON.LastStatusDuration)
@@ -570,7 +577,7 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 		apdexChart = ""
 	}
 	tableRow := []string{
-		check.Ident, check.Name, util.Ellipsis(check.URL, 40), check.Method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
+		check.Ident, check.Name, util.Ellipsis(check.Resource, 40), check.Method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
 		strconv.Itoa(len(check.Channels)), lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow
@@ -612,7 +619,8 @@ Delete existing check(s) and collected metrics.
 				continue
 			}
 			prompt := &survey.Confirm{
-				Message: "Delete " + respJSON.Ident + " " + respJSON.Name + " (" + respJSON.URL + ")?",
+				// @todo use Identity()
+				Message: "Delete " + respJSON.Ident + " " + respJSON.Name + " (" + respJSON.Resource + ")?",
 			}
 			var yes bool
 			err = survey.AskOne(prompt, &yes)
@@ -1014,6 +1022,15 @@ func drawTimeline(user *User, period string, dataPoints int, leftMargin string) 
 	return leftMargin + timeline[0]
 }
 
+func setProtocolPrefix(res, proto string) string {
+	var lcp = strings.ToLower(proto)
+	m, _ := regexp.MatchString(`^`+lcp+`:\/\/`, res)
+	if !m {
+		res = lcp + "://" + res
+	}
+	return res
+}
+
 func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode != "add" && mode != "update" {
 		fmt.Println("Unknown mode: " + mode)
@@ -1026,7 +1043,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 
 	var (
 		flagName                       string
-		flagURL                        string
+		flagProtocol                   string
+		flagResource                   string
 		flagMethod                     string
 		flagInterval                   int
 		flagTarget                     float64
@@ -1040,7 +1058,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	switch mode {
 	case "add":
 		flagName = checkAddFlagName
-		flagURL = checkAddFlagURL
+		flagProtocol = checkAddFlagProtocol
+		flagResource = checkAddFlagResource
 		flagMethod = checkAddFlagMethod
 		flagInterval = checkAddFlagInterval
 		flagTarget = checkAddFlagTarget
@@ -1093,7 +1112,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			return nil
 		}
 		prompt := &survey.Input{
-			Message: "Check name (optional)",
+			Message: "Check name (optional):",
 		}
 		if mode == "update" {
 			prompt.Default = currentCheck.Name
@@ -1106,26 +1125,19 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	}
 
 	if mode == "update" {
-		// pass; never update check URL
+		// pass; never update check protocol
 	} else {
-		match, err = regexp.MatchString(validURLPattern, flagURL)
+		match, err = regexp.MatchString(validProtocolPattern, flagProtocol)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		} else if !match {
-			validate := func(val interface{}) error {
-				match, err = regexp.MatchString(validURLPattern, val.(string))
-				if err != nil {
-					return err
-				} else if !match {
-					return errors.New("invalid URL format")
-				}
-				return nil
+		} else if !match || flagProtocol == "" {
+			prompt := &survey.Select{
+				Message: "Protocol:",
+				Options: []string{protocolHTTP, protocolHTTPS, protocolICMP, protocolTCP},
+				Default: protocolHTTPS,
 			}
-			prompt := &survey.Input{
-				Message: "URL to check",
-			}
-			err = survey.AskOne(prompt, &flagURL, survey.WithValidator(validate))
+			err := survey.AskOne(prompt, &flagProtocol)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -1133,23 +1145,71 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	match, err = regexp.MatchString(validMethodPattern, flagMethod)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	} else if !match || flagMethod == "" {
-		prompt := &survey.Select{
-			Message: "HTTP method",
-			Options: []string{"GET", "HEAD", "POST", "PUT", "DELETE"},
-			Default: "GET",
+	if mode == "update" {
+		// pass; never update check resource
+	} else {
+		var validResourcePattern string
+		var message string
+		switch flagProtocol {
+		case protocolHTTP:
+			validResourcePattern = validHTTPResourcePattern
+			message = "URL:"
+		case protocolHTTPS:
+			validResourcePattern = validHTTPSResourcePattern
+			message = "URL:"
+		case protocolICMP:
+			validResourcePattern = validICMPResourcePattern
+			message = "Hostname:"
+		case protocolTCP:
+			validResourcePattern = validTCPResourcePattern
+			message = "Hostname and port:"
 		}
-		if mode == "update" {
-			prompt.Default = currentCheck.Method
-		}
-		err := survey.AskOne(prompt, &flagMethod)
+		match, err = regexp.MatchString(validResourcePattern, flagResource)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
+		} else if !match {
+			validate := func(val interface{}) error {
+				match, err = regexp.MatchString(validResourcePattern, val.(string))
+				if err != nil {
+					return err
+				} else if !match {
+					return errors.New("invalid resource format")
+				}
+				return nil
+			}
+			prompt := &survey.Input{
+				Message: message,
+				// Help:    "",
+			}
+			err = survey.AskOne(prompt, &flagResource, survey.WithValidator(validate))
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+		flagResource = setProtocolPrefix(flagResource, flagProtocol)
+	}
+
+	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS {
+		match, err = regexp.MatchString(validMethodPattern, flagMethod)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		} else if !match || flagMethod == "" {
+			prompt := &survey.Select{
+				Message: "HTTP method:",
+				Options: []string{"GET", "HEAD", "POST", "PUT", "DELETE"},
+				Default: "GET",
+			}
+			if mode == "update" {
+				prompt.Default = currentCheck.Method
+			}
+			err := survey.AskOne(prompt, &flagMethod)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 	}
 
@@ -1162,7 +1222,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			return nil
 		}
 		prompt := &survey.Input{
-			Message: "Interval in seconds (must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum) + ")",
+			Message: "Interval in seconds:",
+			Help:    "Interval must be a value between " + strconv.Itoa(supportedIntervalMinimum) + " and " + strconv.Itoa(supportedIntervalMaximum),
 			Default: "60",
 		}
 		if mode == "update" {
@@ -1184,7 +1245,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			return nil
 		}
 		prompt := &survey.Input{
-			Message: "Target Response Time in seconds (must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum) + ")",
+			Message: "Target Response Time in seconds:",
+			Help:    "Target Response Time must be a value between " + fmt.Sprintf("%.3f", supportedTargetMinimum) + " and " + fmt.Sprintf("%.3f", supportedTargetMaximum),
 			Default: "1.20",
 		}
 		if mode == "update" {
@@ -1208,7 +1270,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		os.Exit(1)
 	} else if !match || len(flagRegions) == 0 {
 		prompt := &survey.MultiSelect{
-			Message:  "Regions to make requests from",
+			Message:  "Regions:",
 			Options:  supportedRegions,
 			PageSize: len(supportedRegions),
 		}
@@ -1238,7 +1300,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			return nil
 		}
 		prompt := &survey.Input{
-			Message: "What are the good (\"UP\") HTTP response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\"",
+			Message: "What are the good (\"up\") HTTP(S) response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\":",
 			Default: "200-302",
 		}
 		if mode == "update" {
@@ -1263,7 +1325,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				return nil
 			}
 			prompt := &survey.Input{
-				Message: "Up Confirmations Threshold (default: 2, must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum) + ")",
+				Message: "Up Confirmations Threshold:",
+				Help:    "Up Confirmations Threshold must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum),
 				Default: "2",
 			}
 			err := survey.AskOne(prompt, &flagUpConfirmationsThreshold, survey.WithValidator(validate))
@@ -1287,7 +1350,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				return nil
 			}
 			prompt := &survey.Input{
-				Message: "Down Confirmations Threshold (default: 2, must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum) + ")",
+				Message: "Down Confirmations Threshold:",
+				Help:    "Down Confirmations Threshold must be a value between " + strconv.Itoa(supportedConfirmationsThresholdMinimum) + " and " + strconv.Itoa(supportedConfirmationsThresholdMaximum),
 			}
 			err := survey.AskOne(prompt, &flagDownConfirmationsThreshold, survey.WithValidator(validate))
 			if err != nil {
@@ -1327,7 +1391,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 		}
 		prompt := &survey.MultiSelect{
-			Message:  "Channels to attach (optional)",
+			Message:  "Channels to attach (optional):",
 			Options:  options,
 			Default:  defaultOptions,
 			PageSize: 9,
@@ -1341,7 +1405,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 
 	check := Check{
 		Name:                       flagName,
-		URL:                        flagURL,
+		Protocol:                   flagProtocol,
+		Resource:                   flagResource,
 		Method:                     flagMethod,
 		Interval:                   flagInterval,
 		Target:                     flagTarget,
@@ -1379,9 +1444,9 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if check.ID > 0 {
 		var checkDescription string
 		if len(check.Name) > 0 {
-			checkDescription = check.Name + " (" + check.URL + ")"
+			checkDescription = check.Name + " (" + check.Resource + ")"
 		} else {
-			checkDescription = check.URL
+			checkDescription = check.Resource
 		}
 		if mode == "add" {
 			tpl = "[" + check.Ident + "] " + checkDescription + ` added successfully`
