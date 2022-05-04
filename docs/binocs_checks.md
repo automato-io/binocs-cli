@@ -18,7 +18,7 @@ binocs checks [flags]
   -h, --help            help for checks
   -p, --period string   display MRT, UPTIME, APDEX values and APDEX chart for specified period (default "day")
   -r, --region string   display MRT, UPTIME, APDEX values and APDEX chart from the specified region only
-  -s, --status string   list only "UP" or "DOWN" checks, default "all"
+  -s, --status string   list only "up" or "dow" checks, default "all"
 ```
 
 ### Options inherited from parent commands

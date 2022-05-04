@@ -1,11 +1,11 @@
 ## binocs check
 
-Manage your checks
+Manage checks
 
 ### Synopsis
 
 
-Manage your checks.
+Manage HTTP and HTTPS checks.
 
 
 
@@ -15,7 +15,7 @@ Manage your checks.
   -h, --help            help for check
   -p, --period string   display values and charts for specified period (default "day")
   -r, --region string   display values and charts from the specified region only
-  -s, --status string   list only "UP" or "DOWN" checks, default "all"
+  -s, --status string   list only "up" or "down" checks, default "all"
 ```
 
 ### Options inherited from parent commands

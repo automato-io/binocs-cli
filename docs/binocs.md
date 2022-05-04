@@ -7,11 +7,10 @@ Monitoring tool for websites, applications and APIs
 
 Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and APIs.
 
-Binocs servers continuously measure uptime and performance of http or tcp endpoints. 
+Binocs servers continuously measure uptime and performance of HTTP endpoints. 
 
-Get insight into current state of your endpoints and metrics history using this CLI tool. 
+Get insight into current state of your endpoints and metrics history, and receive notifications about any incidents in real-time.
 
-Receive notifications about any incidents in real-time.
 
 
 ### Options
@@ -26,7 +25,7 @@ Receive notifications about any incidents in real-time.
 
 * [binocs channel](binocs_channel.md)	 - Manage notification channels
 * [binocs channels](binocs_channels.md)	 - List all notification channels
-* [binocs check](binocs_check.md)	 - Manage your checks
+* [binocs check](binocs_check.md)	 - Manage checks
 * [binocs checks](binocs_checks.md)	 - List all checks with status and metrics overview
 * [binocs completion](binocs_completion.md)	 - Generate the autocompletion script for the specified shell
 * [binocs incident](binocs_incident.md)	 - Manage incidents

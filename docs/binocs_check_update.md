@@ -16,13 +16,13 @@ binocs check update [flags]
 
 ```
   -n, --name string                        check name
-  -m, --method string                      HTTP method (GET, HEAD, POST, PUT, DELETE)
-  -i, --interval int                       how often we check the URL, in seconds
+  -m, --method string                      HTTP(S) method (GET, HEAD, POST, PUT, DELETE)
+  -i, --interval int                       how often Binocs checks given resource, in seconds
   -t, --target float                       response time that accommodates Apdex=1.0, in seconds with up to 3 decimal places
-  -r, --region strings                     from where in the world we check the provided URL; choose one or more from: af-south-1, ap-east-1, ap-northeast-1, ap-south-1, ap-southeast-1, ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1
-      --up_codes 2xx                       what are the good ("UP") HTTP response codes, e.g. 2xx or `200-302`, or `200,301`
-      --up_confirmations_threshold int     how many subsequent UP responses before triggering notifications
-      --down_confirmations_threshold int   how many subsequent DOWN responses before triggering notifications
+  -r, --region strings                     from where in the world Binocs checks given resource; choose one or more from: af-south-1, ap-east-1, ap-northeast-1, ap-south-1, ap-southeast-1, ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1
+      --up_codes 2xx                       what are the good ("up") HTTP(S) response codes, e.g. 2xx or `200-302`, or `200,301`
+      --up_confirmations_threshold int     how many subsequent "up" responses before triggering notifications
+      --down_confirmations_threshold int   how many subsequent "down" responses before triggering notifications
       --attach strings                     channels to attach to this check (optional); can be either "all", or one or more channel identifiers
   -h, --help                               help for update
 ```
@@ -36,5 +36,5 @@ binocs check update [flags]
 
 ### SEE ALSO
 
-* [binocs check](binocs_check.md)	 - Manage your checks
+* [binocs check](binocs_check.md)	 - Manage checks
 

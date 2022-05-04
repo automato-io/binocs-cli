@@ -27,5 +27,5 @@ binocs check delete [flags]
 
 ### SEE ALSO
 
-* [binocs check](binocs_check.md)	 - Manage your checks
+* [binocs check](binocs_check.md)	 - Manage checks
 
