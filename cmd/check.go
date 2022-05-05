@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
@@ -152,15 +154,24 @@ const (
 	validProtocolPattern                   = `^(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolICMP + `|` + protocolTCP + `)$`
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
 	validUpCodePattern                     = `^([,]?([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))+$`
-	validHTTPResourcePattern               = `^(http:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
-	validHTTPSResourcePattern              = `^(https:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
-	validTCPResourcePattern                = `^(tcp:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$`
-	validICMPResourcePattern               = `^(icmp:\/\/)?(([-a-zA-Z0-9.]{1,256}\.[a-z]{2,4})|(((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)))$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
 	validPeriodPattern                     = `^hour|day|week|month$`
 	validChecksIdentListPattern            = `^(all|([a-f0-9]{7})(,[a-f0-9]{7})*)$`
 	supportedConfirmationsThresholdMinimum = 1
 	supportedConfirmationsThresholdMaximum = 10
+
+	maxURLRuneCount          = 2083
+	minURLRuneCount          = 3
+	validIPPattern           = `(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))`
+	validURLUsernamePattern  = `(\S+(:\S*)?@)`
+	validURLPathPattern      = `((\/|\?|#)[^\s]*)`
+	validURLPortPattern      = `(:(\d{1,5}))`
+	validURLIPPattern        = `([1-9]\d?|1\d\d|2[01]\d|22[0-3]|24\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){2}(?:\.([0-9]\d?|1\d\d|2[0-4]\d|25[0-5]))`
+	validURLSubdomainPattern = `((www\.)|([a-zA-Z0-9]+([-_\.]?[a-zA-Z0-9])*[a-zA-Z0-9]\.[a-zA-Z0-9]+))`
+	validDNSNamePattern      = `^([a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62}){1}(\.[a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62})*[\._]?$`
+
+	validHTTPResourcePattern  = `^((http):\/\/)` + validURLUsernamePattern + `?` + `((` + validURLIPPattern + `|(\[` + validIPPattern + `\])|(([a-zA-Z0-9]([a-zA-Z0-9-_]+)?[a-zA-Z0-9]([-\.][a-zA-Z0-9]+)*)|(` + validURLSubdomainPattern + `?))?(([a-zA-Z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-zA-Z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-zA-Z\x{00a1}-\x{ffff}]{1,}))?))\.?` + validURLPortPattern + `?` + validURLPathPattern + `?$`
+	validHTTPSResourcePattern = `^((https):\/\/)` + validURLUsernamePattern + `?` + `((` + validURLIPPattern + `|(\[` + validIPPattern + `\])|(([a-zA-Z0-9]([a-zA-Z0-9-_]+)?[a-zA-Z0-9]([-\.][a-zA-Z0-9]+)*)|(` + validURLSubdomainPattern + `?))?(([a-zA-Z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-zA-Z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-zA-Z\x{00a1}-\x{ffff}]{1,}))?))\.?` + validURLPortPattern + `?` + validURLPathPattern + `?$`
 )
 
 var supportedHTTPMethods = map[string]bool{
@@ -244,6 +255,90 @@ func init() {
 	checkUpdateCmd.Flags().IntVarP(&checkUpdateFlagDownConfirmationsThreshold, "down_confirmations_threshold", "", 0, "how many subsequent \"down\" responses before triggering notifications")
 	checkUpdateCmd.Flags().StringSliceVar(&checkUpdateFlagAttach, "attach", []string{}, "channels to attach to this check (optional); can be either \"all\", or one or more channel identifiers")
 	checkUpdateCmd.Flags().SortFlags = false
+}
+
+func isURL(str, protocol string) bool {
+	if str == "" || utf8.RuneCountInString(str) >= maxURLRuneCount || len(str) <= minURLRuneCount || strings.HasPrefix(str, ".") {
+		return false
+	}
+	u, err := url.Parse(str)
+	if err != nil {
+		return false
+	}
+	if strings.HasPrefix(u.Host, ".") {
+		return false
+	}
+	if u.Host == "" && (u.Path != "" && !strings.Contains(u.Path, ".")) {
+		return false
+	}
+	if protocol == protocolHTTP {
+		rxURL := regexp.MustCompile(validHTTPResourcePattern)
+		return rxURL.MatchString(str)
+	}
+	if protocol == protocolHTTPS {
+		rxURL := regexp.MustCompile(validHTTPSResourcePattern)
+		return rxURL.MatchString(str)
+	}
+	return false
+}
+
+func isIP(str string) bool {
+	return net.ParseIP(str) != nil
+}
+
+func isDNSName(str string) bool {
+	if str == "" || len(strings.Replace(str, ".", "", -1)) > 255 {
+		return false
+	}
+	rxDNSName := regexp.MustCompile(validDNSNamePattern)
+	return !isIP(str) && rxDNSName.MatchString(str)
+}
+
+func isPort(str string) bool {
+	if i, err := strconv.Atoi(str); err == nil && i > 0 && i < 65536 {
+		return true
+	}
+	return false
+}
+
+func isHost(str string) bool {
+	return isIP(str) || isDNSName(str)
+}
+
+func isValidHTTPResource(res string) bool {
+	if strings.HasPrefix(res, "http://") {
+		return isURL(res, protocolHTTP)
+	} else {
+		return isURL("http://"+res, protocolHTTP)
+	}
+}
+
+func isValidHTTPSResource(res string) bool {
+	if strings.HasPrefix(res, "https://") {
+		return isURL(res, protocolHTTPS)
+	} else {
+		return isURL("https://"+res, protocolHTTPS)
+	}
+}
+
+func isValidICMPResource(res string) bool {
+	if strings.HasPrefix(res, "icmp://") {
+		return isHost(res[7:])
+	}
+	return isHost(res)
+}
+
+func isValidTCPResource(res string) bool {
+	var rc []string
+	if strings.HasPrefix(res, "tcp://") {
+		rc = strings.Split(res[6:], ":")
+	} else {
+		rc = strings.Split(res, ":")
+	}
+	if len(rc) != 2 {
+		return false
+	}
+	return isHost(rc[0]) && isPort(rc[1])
 }
 
 var checkCmd = &cobra.Command{
@@ -1147,33 +1242,41 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode == "update" {
 		// pass; never update check resource
 	} else {
-		var validResourcePattern string
+		var isValidResource bool
 		var message string
 		switch flagProtocol {
 		case protocolHTTP:
-			validResourcePattern = validHTTPResourcePattern
+			isValidResource = isValidHTTPResource(flagResource)
 			message = "URL:"
 		case protocolHTTPS:
-			validResourcePattern = validHTTPSResourcePattern
+			isValidResource = isValidHTTPSResource(flagResource)
 			message = "URL:"
 		case protocolICMP:
-			validResourcePattern = validICMPResourcePattern
+			isValidResource = isValidICMPResource(flagResource)
 			message = "Hostname:"
 		case protocolTCP:
-			validResourcePattern = validTCPResourcePattern
+			isValidResource = isValidTCPResource(flagResource)
 			message = "Hostname and port:"
 		}
-		match, err = regexp.MatchString(validResourcePattern, flagResource)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		} else if !match {
+		if !isValidResource {
 			validate := func(val interface{}) error {
-				match, err = regexp.MatchString(validResourcePattern, val.(string))
-				if err != nil {
-					return err
-				} else if !match {
-					return errors.New("invalid resource format")
+				switch flagProtocol {
+				case protocolHTTP:
+					if !isValidHTTPResource(val.(string)) {
+						return errors.New("invalid HTTP URL")
+					}
+				case protocolHTTPS:
+					if !isValidHTTPSResource(val.(string)) {
+						return errors.New("invalid HTTPS URL")
+					}
+				case protocolICMP:
+					if !isValidICMPResource(val.(string)) {
+						return errors.New("invalid ICMP host")
+					}
+				case protocolTCP:
+					if !isValidTCPResource(val.(string)) {
+						return errors.New("invalid TCP <host>:<port>")
+					}
 				}
 				return nil
 			}
