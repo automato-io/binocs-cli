@@ -915,7 +915,9 @@ func drawApdexChart(apdex []ApdexResponse, dataPoints int, leftMargin string) st
 	for _, v := range apdex {
 		var vf, _ = strconv.ParseFloat(v.Apdex, 32)
 		for i := 0; i < numRows; i++ {
-			if vf > (float64(i)+1.0)/float64(numRows) {
+			if v.Apdex == "nil" {
+				rows[i] = rows[i] + " "
+			} else if vf > (float64(i)+1.0)/float64(numRows) {
 				rows[i] = rows[i] + " "
 			} else if vf <= (float64(i)+1.0)/float64(numRows) && vf >= float64(i)/float64(numRows) {
 				rows[i] = rows[i] + "▩"
