@@ -130,15 +130,19 @@ View incident details, notes and associated requests.
 			fmt.Println(err)
 			os.Exit(1)
 		}
+		var checkName string
+		if respJSON.CheckName == "" {
+			checkName = "-"
+		} else {
+			checkName = respJSON.CheckName
+		}
 
 		// Table "main"
 
 		tableMainIncidentCellContent := `Check ID: ` + respJSON.CheckIdent + `
-Check: ` + respJSON.CheckName + ` 
+Check: ` + checkName + ` 
 URL: ` + respJSON.CheckResource + `
 Incident State: ` + respJSON.IncidentState + `
-Responses: ` + strings.Join(respJSON.ResponseCodes, "\n") + `
-
 Opened: ` + respJSON.Opened + `
 Closed: ` + respJSON.Closed + `
 Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
@@ -160,7 +164,7 @@ Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
 		tableRequests := tablewriter.NewWriter(os.Stdout)
 		if len(respJSON.Requests) > 0 {
 			tz := respJSON.Requests[0].Timestamp.Format("-07:00")
-			tableRequests.SetHeader([]string{"CHECKED AT (" + tz + ")", "CHECKED FROM", "RESPONSE CODE", "RESPONSE TIME", "DNS LOOKUP", "CONNECTION", "TLS", "WAITING", "TRANSFER"})
+			tableRequests.SetHeader([]string{"CHECKED AT (" + tz + ")", "CHECKED FROM", "RESPONSE", "RESPONSE TIME", "DNS LOOKUP", "CONNECTION", "TLS", "WAITING", "TRANSFER"})
 			tableRequests.SetAutoWrapText(false)
 			tableRequests.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
@@ -250,8 +254,14 @@ List all past and current incidents.
 				fmt.Println(err)
 				os.Exit(1)
 			}
+			checkName := ""
+			if v.CheckName == "" {
+				checkName = "-"
+			} else {
+				checkName = v.CheckName
+			}
 			tableRow := []string{
-				v.Ident, v.CheckName, util.Ellipsis(v.CheckResource, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"), v.IncidentNote,
+				v.Ident, checkName, util.Ellipsis(v.CheckResource, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"), v.IncidentNote,
 			}
 			tableData = append(tableData, tableRow)
 		}

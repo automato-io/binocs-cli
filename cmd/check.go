@@ -448,7 +448,7 @@ View check status and metrics.
 
 		// Table "main"
 
-		var resourceTitle, methodLine, responseLine, upHTTPCodesLine string
+		var resourceTitle, methodLine, responseLine, upHTTPCodesLine, checkName string
 		switch respJSON.Protocol {
 		case protocolHTTP:
 		case protocolHTTPS:
@@ -464,7 +464,13 @@ UP HTTP Codes: ` + respJSON.UpCodes
 			resourceTitle = "Host"
 		}
 
-		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
+		if respJSON.Name == "" {
+			checkName = "-"
+		} else {
+			checkName = respJSON.Name
+		}
+
+		tableMainCheckCellContent := `Name: ` + checkName + `
 ` + resourceTitle + `: ` + respJSON.Resource + methodLine + responseLine + `
 ` + statusName[respJSON.LastStatus] + " for " + util.OutputDurationWithDays(respJSON.LastStatusDuration)
 
@@ -688,14 +694,19 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	if metrics.Apdex == "" {
 		apdexChart = ""
 	}
-	var method string
+	var method, name string
 	if check.Protocol == protocolHTTP || check.Protocol == protocolHTTPS {
 		method = check.Method
 	} else {
 		method = "-"
 	}
+	if check.Name == "" {
+		name = "-"
+	} else {
+		name = check.Name
+	}
 	tableRow := []string{
-		check.Ident, check.Name, util.Ellipsis(check.Resource, 40), method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
+		check.Ident, name, util.Ellipsis(check.Resource, 40), method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
 		strconv.Itoa(len(check.Channels)), lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow

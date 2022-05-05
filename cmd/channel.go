@@ -405,7 +405,7 @@ View channel details and attached checks.
 
 		// Table "main"
 
-		var handle, used, lastUsed string
+		var handle, used, lastUsed, alias string
 		if respJSON.Type == channelTypeEmail && respJSON.Verified == "nil" {
 			handle = respJSON.Handle + " (unverified)"
 		} else {
@@ -419,11 +419,16 @@ View channel details and attached checks.
 		} else {
 			used = fmt.Sprintf("%d x", respJSON.UsedCount)
 		}
+		if respJSON.Alias == "" {
+			alias = "-"
+		} else {
+			alias = respJSON.Alias
+		}
 
 		// @todo show ID field in check and incident detail as well
 		tableMainChannelCellContent := `ID: ` + respJSON.Ident + `
 Type: ` + respJSON.Type + `
-Alias: ` + respJSON.Alias + `
+Alias: ` + alias + `
 Handle: ` + handle + `
 Used: ` + used + lastUsed + ``
 
@@ -465,7 +470,7 @@ List all notification channels.
 
 		var tableData [][]string
 		for _, v := range channels {
-			var used, lastUsed, handle string
+			var used, lastUsed, handle, alias string
 			if v.UsedCount == 0 {
 				used = "never"
 				lastUsed = "n/a"
@@ -478,8 +483,13 @@ List all notification channels.
 			} else {
 				handle = util.Ellipsis(v.Handle, 50)
 			}
+			if v.Alias == "" {
+				alias = "-"
+			} else {
+				alias = v.Alias
+			}
 			tableRow := []string{
-				v.Ident, v.Type, v.Alias, handle, used, lastUsed,
+				v.Ident, v.Type, alias, handle, used, lastUsed,
 			}
 			tableData = append(tableData, tableRow)
 		}
