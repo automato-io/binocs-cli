@@ -388,6 +388,8 @@ View check status and metrics.
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		var decoder *json.Decoder
+
 		urlValues := url.Values{
 			"period": []string{"day"},
 		}
@@ -446,18 +448,31 @@ View check status and metrics.
 
 		// Table "main"
 
+		var resourceTitle, methodLine, responseLine, upHTTPCodesLine string
+		switch respJSON.Protocol {
+		case protocolHTTP:
+		case protocolHTTPS:
+			resourceTitle = "URL"
+			methodLine = `
+Method: ` + respJSON.Method
+			responseLine = `
+Response: ` + respJSON.LastStatusCode
+			upHTTPCodesLine = `
+UP HTTP Codes: ` + respJSON.UpCodes
+		case protocolICMP:
+		case protocolTCP:
+			resourceTitle = "Host"
+		}
+
 		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
-URL: ` + respJSON.Resource + `
-Method: ` + respJSON.Method + `
-Response: ` + respJSON.LastStatusCode + `
+` + resourceTitle + `: ` + respJSON.Resource + methodLine + responseLine + `
 ` + statusName[respJSON.LastStatus] + " for " + util.OutputDurationWithDays(respJSON.LastStatusDuration)
 
 		tableMainMetricsCellContent := `Uptime: ` + formatUptime(metrics.Uptime) + `
 Apdex: ` + formatApdex(metrics.Apdex) + `
 Mean Response Time: ` + formatMRT(metrics.MRT)
 
-		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + ` s 
-UP HTTP Codes: ` + respJSON.UpCodes + `
+		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + ` s ` + upHTTPCodesLine + `
 Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
 Confirmations thresholds: UP: ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN: ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + ` 
 Binocs regions: ` + strings.Join(respJSON.Regions, ", ")
@@ -478,23 +493,25 @@ Binocs regions: ` + strings.Join(respJSON.Regions, ", ")
 
 		// Sub-table "http response codes"
 
-		responseCodesData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/response-codes?"+urlValues.Encode(), http.MethodGet, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		responseCodes := make([]ResponseCodesResponse, 0)
-		decoder := json.NewDecoder(bytes.NewBuffer(responseCodesData))
-		err = decoder.Decode(&responseCodes)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+		if respJSON.Protocol == protocolHTTP || respJSON.Protocol == protocolHTTPS {
+			responseCodesData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/response-codes?"+urlValues.Encode(), http.MethodGet, []byte{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			responseCodes := make([]ResponseCodesResponse, 0)
+			decoder = json.NewDecoder(bytes.NewBuffer(responseCodesData))
+			err = decoder.Decode(&responseCodes)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 
-		responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "            ")
-		responseCodesChartTitle := drawChartTitle("HTTP RESPONSE CODES", responseCodesChart, periodTableTitle)
-		tableCharts.Append([]string{responseCodesChartTitle})
-		tableCharts.Append([]string{responseCodesChart})
+			responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "            ")
+			responseCodesChartTitle := drawChartTitle("HTTP RESPONSE CODES", responseCodesChart, periodTableTitle)
+			tableCharts.Append([]string{responseCodesChartTitle})
+			tableCharts.Append([]string{responseCodesChart})
+		}
 
 		// Sub-table "apdex trend"
 
@@ -626,7 +643,7 @@ List all checks with status and metrics overview.
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"ID", "NAME", "URL", "METHOD", "STATUS", "CHAN", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
+		table.SetHeader([]string{"ID", "NAME", "URL/HOST", "METHOD", "STATUS", "CHAN", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_RIGHT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
@@ -671,8 +688,14 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	if metrics.Apdex == "" {
 		apdexChart = ""
 	}
+	var method string
+	if check.Protocol == protocolHTTP || check.Protocol == protocolHTTPS {
+		method = check.Method
+	} else {
+		method = "-"
+	}
 	tableRow := []string{
-		check.Ident, check.Name, util.Ellipsis(check.Resource, 40), check.Method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
+		check.Ident, check.Name, util.Ellipsis(check.Resource, 40), method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
 		strconv.Itoa(len(check.Channels)), lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow
@@ -1313,6 +1336,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				os.Exit(1)
 			}
 		}
+	} else {
+		flagMethod = ""
 	}
 
 	if flagInterval < supportedIntervalMinimum || flagInterval > supportedIntervalMaximum {
@@ -1387,32 +1412,36 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	} else if !match || flagUpCodes == "" {
-		validate := func(val interface{}) error {
-			match, err = regexp.MatchString(validUpCodePattern, val.(string))
-			if err != nil {
-				return err
-			} else if !match {
-				return errors.New("invalid input value")
-			}
-			return nil
-		}
-		prompt := &survey.Input{
-			Message: "What are the good (\"up\") HTTP(S) response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\":",
-			Default: "200-302",
-		}
-		if mode == "update" {
-			prompt.Default = currentCheck.UpCodes
-		}
-		err := survey.AskOne(prompt, &flagUpCodes, survey.WithValidator(validate))
+	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS {
+		match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
+		} else if !match || flagUpCodes == "" {
+			validate := func(val interface{}) error {
+				match, err = regexp.MatchString(validUpCodePattern, val.(string))
+				if err != nil {
+					return err
+				} else if !match {
+					return errors.New("invalid input value")
+				}
+				return nil
+			}
+			prompt := &survey.Input{
+				Message: "What are the good (\"up\") HTTP(S) response codes, e.g. \"2xx\" or \"200-302\", or \"200,301\":",
+				Default: "200-302",
+			}
+			if mode == "update" {
+				prompt.Default = currentCheck.UpCodes
+			}
+			err := survey.AskOne(prompt, &flagUpCodes, survey.WithValidator(validate))
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
+	} else {
+		flagUpCodes = ""
 	}
 
 	if mode == "update" && flagUpConfirmationsThreshold == 0 {

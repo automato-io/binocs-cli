@@ -137,7 +137,7 @@ View incident details, notes and associated requests.
 Check: ` + respJSON.CheckName + ` 
 URL: ` + respJSON.CheckResource + `
 Incident State: ` + respJSON.IncidentState + `
-Response Codes: ` + strings.Join(respJSON.ResponseCodes, "\n") + `
+Responses: ` + strings.Join(respJSON.ResponseCodes, "\n") + `
 
 Opened: ` + respJSON.Opened + `
 Closed: ` + respJSON.Closed + `
@@ -257,7 +257,7 @@ List all past and current incidents.
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"ID", "CHECK", "URL", "STATE", "OPENED", "CLOSED", "DURATION", "RESPONSE CODES", "NOTE"})
+		table.SetHeader([]string{"ID", "CHECK", "URL/HOST", "STATE", "OPENED", "CLOSED", "DURATION", "RESPONSES", "NOTE"})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT})
 		for _, v := range tableData {
 			table.Append(v)
