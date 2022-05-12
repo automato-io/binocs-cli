@@ -151,7 +151,7 @@ const (
 	supportedTargetMinimum                 = 0.01
 	supportedTargetMaximum                 = 10.0
 	validNamePattern                       = `^[a-zA-Z0-9_\s\/\-\.]{0,25}$`
-	validProtocolPattern                   = `^(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolICMP + `|` + protocolTCP + `)$`
+	validProtocolPattern                   = `^(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolTCP + `)$`
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
 	validUpCodePattern                     = `^([,]?([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))+$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
@@ -223,8 +223,8 @@ func init() {
 	checkCmd.Flags().StringVarP(&checkFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
 
 	checkAddCmd.Flags().StringVarP(&checkAddFlagName, "name", "n", "", "check name")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagProtocol, "protocol", "p", "", "protocol (HTTP, HTTPS, ICMP, TCP)")
-	checkAddCmd.Flags().StringVarP(&checkAddFlagResource, "resource", "r", "", "resource to check, a URL in case of HTTP(S), a hostname or IP address in case of ICMP, or a hostname:port in case of TCP")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagProtocol, "protocol", "p", "", "protocol (HTTP, HTTPS or TCP)")
+	checkAddCmd.Flags().StringVarP(&checkAddFlagResource, "resource", "r", "", "resource to check, a URL in case of HTTP(S), or HOSTNAME:PORT in case of TCP")
 	checkAddCmd.Flags().StringVarP(&checkAddFlagMethod, "method", "m", "", "HTTP(S) method (GET, HEAD, POST, PUT, DELETE)")
 	checkAddCmd.Flags().IntVarP(&checkAddFlagInterval, "interval", "i", 60, "how often Binocs checks given resource, in seconds")
 	checkAddCmd.Flags().Float64VarP(&checkAddFlagTarget, "target", "t", 1.20, "response time that accommodates Apdex=1.0, in seconds with up to 3 decimal places")
@@ -1264,7 +1264,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		} else if !match || flagProtocol == "" {
 			prompt := &survey.Select{
 				Message: "Protocol:",
-				Options: []string{protocolHTTP, protocolHTTPS, protocolICMP, protocolTCP},
+				Options: []string{protocolHTTP, protocolHTTPS, protocolTCP},
 				Default: protocolHTTPS,
 			}
 			err := survey.AskOne(prompt, &flagProtocol)
