@@ -18,8 +18,8 @@ binocs check add [flags]
 
 ```
   -n, --name string                        check name
-  -p, --protocol string                    protocol (HTTP, HTTPS, ICMP, TCP)
-  -r, --resource string                    resource to check, a URL in case of HTTP(S), a hostname or IP address in case of ICMP, or a hostname:port in case of TCP
+  -p, --protocol string                    protocol (HTTP, HTTPS or TCP)
+  -r, --resource string                    resource to check, a URL in case of HTTP(S), or HOSTNAME:PORT in case of TCP
   -m, --method string                      HTTP(S) method (GET, HEAD, POST, PUT, DELETE)
   -i, --interval int                       how often Binocs checks given resource, in seconds (default 60)
   -t, --target float                       response time that accommodates Apdex=1.0, in seconds with up to 3 decimal places (default 1.2)

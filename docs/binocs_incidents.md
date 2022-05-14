@@ -17,6 +17,8 @@ binocs incidents [flags]
 ```
   -c, --check string   list only incidents of this check
   -h, --help           help for incidents
+      --open           list only open incidents
+      --resolved       list only resolved incidents
 ```
 
 ### Options inherited from parent commands
