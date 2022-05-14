@@ -58,7 +58,9 @@ type Timings struct {
 
 // `incident ls` flags
 var (
-	incidentListFlagCheck string
+	incidentListFlagCheck    string
+	incidentListFlagOpen     bool
+	incidentListFlagResolved bool
 )
 
 // `incident update` flags
@@ -80,7 +82,11 @@ func init() {
 	incidentCmd.AddCommand(incidentUpdateCmd)
 
 	incidentsCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
+	incidentsCmd.Flags().BoolVar(&incidentListFlagOpen, "open", false, "list only open incidents")
+	incidentsCmd.Flags().BoolVar(&incidentListFlagResolved, "resolved", false, "list only resolved incidents")
 	incidentListCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
+	incidentListCmd.Flags().BoolVar(&incidentListFlagOpen, "open", false, "list only open incidents")
+	incidentListCmd.Flags().BoolVar(&incidentListFlagResolved, "resolved", false, "list only resolved incidents")
 
 	incidentUpdateCmd.Flags().StringVarP(&incidentUpdateFlagNote, "note", "n", "", "incident note")
 }
@@ -248,6 +254,17 @@ List all past and current incidents.
 		match, err := regexp.MatchString(validCheckIdentPattern, incidentListFlagCheck)
 		if err == nil && match {
 			urlValues.Set("check", incidentListFlagCheck)
+		}
+		if incidentListFlagOpen && incidentListFlagResolved {
+			spin.Stop()
+			fmt.Println("Cannot use --open and --resolved flags together")
+			os.Exit(1)
+		}
+		if incidentListFlagOpen {
+			urlValues.Set("state", "open")
+		}
+		if incidentListFlagResolved {
+			urlValues.Set("state", "resolved")
 		}
 		incidents, err := fetchIncidents(urlValues)
 		if err != nil {
