@@ -1350,7 +1350,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		flagResource = setProtocolPrefix(flagResource, flagProtocol)
 	}
 
-	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS {
+	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS || currentCheck.Protocol == protocolHTTP || currentCheck.Protocol == protocolHTTPS {
 		match, err = regexp.MatchString(validMethodPattern, flagMethod)
 		if err != nil {
 			fmt.Println(err)
@@ -1446,7 +1446,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 	}
 
-	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS {
+	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS || currentCheck.Protocol == protocolHTTP || currentCheck.Protocol == protocolHTTPS {
 		match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
 		if err != nil {
 			fmt.Println(err)
