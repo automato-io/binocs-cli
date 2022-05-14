@@ -448,17 +448,18 @@ View check status and metrics.
 
 		// Table "main"
 
-		var resourceTitle, methodLine, responseLine, upHTTPCodesLine, checkName string
+		var resourceTitle, methodLine, responseLine, upHTTPCodesLine, checkName, statusLine string
 		switch respJSON.Protocol {
 		case protocolHTTP:
 		case protocolHTTPS:
 			resourceTitle = "URL"
-			methodLine = `
-Method: ` + respJSON.Method
-			responseLine = `
-Response: ` + respJSON.LastStatusCode
-			upHTTPCodesLine = `
-UP HTTP Codes: ` + respJSON.UpCodes
+			methodLine = "\nMethod: " + respJSON.Method
+			if len(respJSON.LastStatusCode) > 0 {
+				responseLine = "\nResponse: " + respJSON.LastStatusCode
+			} else {
+				responseLine = "\nResponse: [waiting for data]"
+			}
+			upHTTPCodesLine = "\nUP HTTP Codes: " + respJSON.UpCodes
 		case protocolICMP:
 		case protocolTCP:
 			resourceTitle = "Host"
@@ -470,13 +471,28 @@ UP HTTP Codes: ` + respJSON.UpCodes
 			checkName = respJSON.Name
 		}
 
+		if respJSON.LastStatus == statusUnknown {
+			statusLine = ""
+		} else {
+			statusLine = statusName[respJSON.LastStatus] + " for " + util.OutputDurationWithDays(respJSON.LastStatusDuration)
+		}
+
 		tableMainCheckCellContent := `Name: ` + checkName + `
 ` + resourceTitle + `: ` + respJSON.Resource + methodLine + responseLine + `
-` + statusName[respJSON.LastStatus] + " for " + util.OutputDurationWithDays(respJSON.LastStatusDuration)
+` + statusLine
 
-		tableMainMetricsCellContent := `Uptime: ` + formatUptime(metrics.Uptime) + `
-Apdex: ` + formatApdex(metrics.Apdex) + `
-Mean Response Time: ` + formatMRT(metrics.MRT)
+		uptimeValue := formatUptime(metrics.Uptime)
+		apdexValue := formatApdex(metrics.Apdex)
+		mrtValue := formatMRT(metrics.MRT)
+		if uptimeValue == "n/a" && apdexValue == "n/a" && mrtValue == "n/a" {
+			uptimeValue = "[waiting for data]"
+			apdexValue = "[waiting for data]"
+			mrtValue = "[waiting for data]"
+		}
+
+		tableMainMetricsCellContent := `Uptime: ` + uptimeValue + `
+Apdex: ` + apdexValue + `
+Mean Response Time: ` + mrtValue
 
 		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + ` s ` + upHTTPCodesLine + `
 Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
@@ -691,6 +707,11 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	tableValueMRT := formatMRT(metrics.MRT)
 	tableValueUptime := formatUptime(metrics.Uptime)
 	tableValueApdex := formatApdex(metrics.Apdex)
+	if tableValueMRT == "n/a" && tableValueUptime == "n/a" && tableValueApdex == "n/a" {
+		tableValueMRT = "[waiting for data]"
+		tableValueUptime = "[waiting for data]"
+		tableValueApdex = "[waiting for data]"
+	}
 	if metrics.Apdex == "" {
 		apdexChart = ""
 	}
@@ -809,14 +830,14 @@ func formatMRT(mrt string) string {
 }
 
 func formatUptime(uptime string) string {
-	if uptime == "" {
+	if uptime == "" || uptime == "nil" {
 		return "n/a"
 	}
 	return fmt.Sprintf("%v %%", uptime)
 }
 
 func formatApdex(apdex string) string {
-	if apdex == "" {
+	if apdex == "" || apdex == "nil" {
 		return "n/a"
 	}
 	return apdex
