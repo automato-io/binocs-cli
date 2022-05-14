@@ -139,13 +139,21 @@ View incident details, notes and associated requests.
 
 		// Table "main"
 
-		tableMainIncidentCellContent := `Check ID: ` + respJSON.CheckIdent + `
-Check: ` + checkName + ` 
-URL: ` + respJSON.CheckResource + `
-Incident State: ` + respJSON.IncidentState + `
+		var closedSnippet string
+		if len(respJSON.Closed) > 0 {
+			closedSnippet = respJSON.Closed
+		} else {
+			closedSnippet = "-"
+		}
+
+		tableMainIncidentCellContent := `Status: ` + respJSON.IncidentState + `
 Opened: ` + respJSON.Opened + `
-Closed: ` + respJSON.Closed + `
+Closed: ` + closedSnippet + `
 Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
+
+		tableMainCheckCellContent := `ID: ` + respJSON.CheckIdent + `
+Name: ` + checkName + ` 
+URL: ` + respJSON.CheckResource
 
 		tableMainNotesCellContent := respJSON.IncidentNote
 		if tableMainNotesCellContent == "" {
@@ -153,11 +161,11 @@ Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
 		}
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
-		tableMain.SetHeader([]string{"INCIDENT", "NOTES"})
+		tableMain.SetHeader([]string{"INCIDENT", "CHECK", "NOTES"})
 		tableMain.SetAutoWrapText(false)
 		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
-		tableMain.Append([]string{tableMainIncidentCellContent, tableMainNotesCellContent})
+		tableMain.Append([]string{tableMainIncidentCellContent, tableMainCheckCellContent, tableMainNotesCellContent})
 
 		// Table "requests"
 
