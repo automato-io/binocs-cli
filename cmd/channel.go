@@ -81,7 +81,7 @@ const (
 	validAliasPattern             = `^[a-zA-Z0-9_\s\/\-\.]{0,25}$`
 	validTypePattern              = `^(email|slack|telegram)$`
 	validChannelsIdentListPattern = `^(all|([a-f0-9]{5})(,[a-f0-9]{5})*)$`
-	validNotificationTypePattern  = `^(http-code-change|status)$`
+	validNotificationTypePattern  = `^(response-change|status)$`
 	channelTypeEmail              = "email"
 	channelTypeTelegram           = "telegram"
 	channelTypeSlack              = "slack"
