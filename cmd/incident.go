@@ -282,6 +282,7 @@ List all past and current incidents.
 			os.Exit(1)
 		}
 		var tableData [][]string
+		var timezone string
 		for _, v := range incidents {
 			// Mon Jan 2 15:04:05 -0700 MST 2006
 			opened, err := time.Parse("2006-01-02 15:04:05 -0700", v.Opened)
@@ -299,6 +300,7 @@ List all past and current incidents.
 			if v.Closed != "" {
 				closed = v.Closed
 			}
+			timezone = opened.Format(" (-07:00)")
 			tableRow := []string{
 				v.Ident, v.CheckIdent, checkName, util.Ellipsis(v.CheckResource, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"),
 			}
@@ -306,7 +308,7 @@ List all past and current incidents.
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"INCIDENT ID", "CHECK ID", "CHECK NAME", "URL/HOST", "STATE", "OPENED", "CLOSED", "DURATION", "RESPONSES"})
+		table.SetHeader([]string{"INCIDENT ID", "CHECK ID", "CHECK NAME", "URL/HOST", "STATE", "OPENED" + timezone, "CLOSED", "DURATION", "RESPONSES"})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT})
 		for _, v := range tableData {
 			table.Append(v)
