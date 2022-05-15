@@ -285,15 +285,19 @@ List all past and current incidents.
 			} else {
 				checkName = v.CheckName
 			}
+			closed := "-"
+			if v.Closed != "" {
+				closed = v.Closed
+			}
 			tableRow := []string{
-				v.Ident, checkName, util.Ellipsis(v.CheckResource, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), v.Closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"), v.IncidentNote,
+				v.Ident, v.CheckIdent, checkName, util.Ellipsis(v.CheckResource, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"),
 			}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"ID", "CHECK", "URL/HOST", "STATE", "OPENED", "CLOSED", "DURATION", "RESPONSES", "NOTE"})
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT})
+		table.SetHeader([]string{"INCIDENT ID", "CHECK ID", "CHECK NAME", "URL/HOST", "STATE", "OPENED", "CLOSED", "DURATION", "RESPONSES"})
+		table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT})
 		for _, v := range tableData {
 			table.Append(v)
 		}
