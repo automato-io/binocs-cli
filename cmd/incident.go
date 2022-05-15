@@ -145,15 +145,25 @@ View incident details, notes and associated requests.
 
 		// Table "main"
 
+		var openedSnippet string
+		opened, err := time.Parse("2006-01-02 15:04:05 -0700", respJSON.Opened)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		openedSnippet = opened.Format("2006-01-02 15:04:05 +07:00")
+
 		var closedSnippet string
-		if len(respJSON.Closed) > 0 {
-			closedSnippet = respJSON.Closed
-		} else {
+		closed, err := time.Parse("2006-01-02 15:04:05 -0700", respJSON.Closed)
+		if err != nil {
 			closedSnippet = "-"
+		} else {
+			closedSnippet = closed.Format("2006-01-02 15:04:05 +07:00")
 		}
 
-		tableMainIncidentCellContent := `Status: ` + respJSON.IncidentState + `
-Opened: ` + respJSON.Opened + `
+		tableMainIncidentCellContent := `ID: ` + respJSON.Ident + `
+Status: ` + respJSON.IncidentState + `
+Opened: ` + openedSnippet + `
 Closed: ` + closedSnippet + `
 Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
 
