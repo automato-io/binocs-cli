@@ -329,9 +329,8 @@ Log out of the binocs user on this machine
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		tpl := `You were successfully logged out of binocs
-`
-		fmt.Print(tpl)
+		tpl := `You were logged out of Binocs.`
+		fmt.Println(tpl)
 	},
 }
 
