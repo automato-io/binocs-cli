@@ -723,12 +723,12 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	if check.Protocol == protocolHTTP || check.Protocol == protocolHTTPS {
 		method = check.Method
 	} else {
-		method = "-"
+		method = colorFaint.Sprint("-")
 	}
 	if check.Name == "" {
-		name = "-"
+		name = colorFaint.Sprint("-")
 	} else {
-		name = check.Name
+		name = colorBold.Sprint(check.Name)
 	}
 	var identSnippet, statusSnippet, lastStatusCodeSnippet string
 	identSnippet = colorBold.Sprint(check.Ident)
