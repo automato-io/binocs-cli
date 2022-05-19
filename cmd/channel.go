@@ -470,7 +470,8 @@ List all notification channels.
 
 		var tableData [][]string
 		for _, v := range channels {
-			var used, lastUsed, handle, alias string
+			var used, lastUsed, handle, alias, identSnippet string
+			identSnippet = colorBold.Sprint(v.Ident)
 			if v.UsedCount == 0 {
 				used = "never"
 				lastUsed = "n/a"
@@ -489,13 +490,15 @@ List all notification channels.
 				alias = v.Alias
 			}
 			tableRow := []string{
-				v.Ident, v.Type, alias, handle, used, lastUsed,
+				identSnippet, v.Type, alias, handle, used, lastUsed,
 			}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 		table.SetHeader([]string{"ID", "TYPE", "ALIAS", "HANDLE", "USED", "LAST USED"})
+		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
 		for _, v := range tableData {
 			table.Append(v)
