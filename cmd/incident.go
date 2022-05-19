@@ -300,9 +300,9 @@ List all past and current incidents.
 			}
 			switch v.IncidentState {
 			case incidentStateOpen:
-				stateSnippet = color.YellowString(v.IncidentState)
+				stateSnippet = color.YellowString(strings.ToUpper(v.IncidentState))
 			case incidentStateResolved:
-				stateSnippet = color.GreenString(v.IncidentState)
+				stateSnippet = color.GreenString(strings.ToUpper(v.IncidentState))
 			}
 			if v.Closed == "" {
 				closedSnippet = colorFaint.Sprint("-")
