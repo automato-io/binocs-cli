@@ -302,7 +302,7 @@ Use your Access Key and Secret Key and login to binocs
 			printZeroCreditsWarning()
 		}
 
-		fmt.Println(`You are authenticated as ` + user.Name + ` (` + user.Email + `)`)
+		fmt.Println(`You are authenticated as ` + user.Name + ` (` + user.Email + `).`)
 	},
 }
 
