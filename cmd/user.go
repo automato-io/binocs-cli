@@ -75,23 +75,22 @@ Display information about your binocs user
 			os.Exit(1)
 		}
 
-		// Table "main"
+		tableCheckCellContent := colorBold.Sprint(`Name: `) + respJSON.Name + colorBold.Sprint(`
+E-mail: `) + respJSON.Email + colorBold.Sprint(`
+Timezone: `) + respJSON.Timezone + colorBold.Sprint(`
+Credit balance: `) + fmt.Sprint(respJSON.CreditBalance)
 
-		tableMainCheckCellContent := `Name: ` + respJSON.Name + `
-E-mail: ` + respJSON.Email + `
-Timezone: ` + respJSON.Timezone + `
-Credit balance: ` + fmt.Sprint(respJSON.CreditBalance) + ``
-
-		tableMain := tablewriter.NewWriter(os.Stdout)
-		tableMain.SetHeader([]string{"USER"})
-		tableMain.SetAutoWrapText(false)
-		tableMain.Append([]string{tableMainCheckCellContent})
-
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetAutoWrapText(false)
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+		table.SetHeader([]string{"USER"})
+		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold})
+		table.Append([]string{tableCheckCellContent})
 		spin.Stop()
 		if respJSON.CreditBalance == 0 {
 			printZeroCreditsWarning()
 		}
-		tableMain.Render()
+		table.Render()
 	},
 }
 
