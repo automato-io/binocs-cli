@@ -65,6 +65,11 @@ const (
 	protocolTCP   = "TCP"
 )
 
+const (
+	incidentStateOpen     = "open"
+	incidentStateResolved = "resolved"
+)
+
 // Verbose flag
 var Verbose bool
 

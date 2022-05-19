@@ -13,6 +13,7 @@ import (
 	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -290,25 +291,36 @@ List all past and current incidents.
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			checkName := ""
+			var identSnippet, checkNameSnippet, stateSnippet, closedSnippet, responseCodesSnippet string
+			identSnippet = colorBold.Sprint(v.Ident)
 			if v.CheckName == "" {
-				checkName = "-"
+				checkNameSnippet = colorFaint.Sprint("-")
 			} else {
-				checkName = v.CheckName
+				checkNameSnippet = colorBold.Sprint(v.CheckName)
 			}
-			closed := "-"
-			if v.Closed != "" {
-				closed = v.Closed
+			switch v.IncidentState {
+			case incidentStateOpen:
+				stateSnippet = color.YellowString(v.IncidentState)
+			case incidentStateResolved:
+				stateSnippet = color.GreenString(v.IncidentState)
 			}
+			if v.Closed == "" {
+				closedSnippet = colorFaint.Sprint("-")
+			} else {
+				closedSnippet = v.Closed
+			}
+			responseCodesSnippet = colorFaint.Sprint(strings.Join(v.ResponseCodes, "\n"))
 			timezone = opened.Format(" (-07:00)")
 			tableRow := []string{
-				v.Ident, v.CheckIdent, checkName, util.Ellipsis(v.CheckResource, 50), v.IncidentState, opened.Format("2006-01-02 15:04:05"), closed, util.OutputDurationWithDays(v.Duration), strings.Join(v.ResponseCodes, "\n"),
+				identSnippet, v.CheckIdent, checkNameSnippet, util.Ellipsis(v.CheckResource, 50), stateSnippet, opened.Format("2006-01-02 15:04:05"), closedSnippet, util.OutputDurationWithDays(v.Duration), responseCodesSnippet,
 			}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
 		table.SetHeader([]string{"INCIDENT ID", "CHECK ID", "CHECK NAME", "URL/HOST", "STATE", "OPENED" + timezone, "CLOSED", "DURATION", "RESPONSES"})
+		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold},
+			tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT})
 		for _, v := range tableData {
 			table.Append(v)
