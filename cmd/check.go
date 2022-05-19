@@ -18,6 +18,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -666,6 +667,9 @@ List all checks with status and metrics overview.
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
 		table.SetHeader([]string{"ID", "NAME", "URL/HOST", "METHOD", "STATUS", "CHAN", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
+		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold},
+			tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_RIGHT,
 			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
 		})
@@ -682,9 +686,9 @@ List all checks with status and metrics overview.
 
 func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	lastStatusCodeRegex, _ := regexp.Compile(`^[1-5]{1}[0-9]{2}`)
-	lastStatusCodeMatches := lastStatusCodeRegex.FindString(check.LastStatusCode)
-	if lastStatusCodeMatches == "" {
-		lastStatusCodeMatches = "-"
+	lastStatusCodeMatch := lastStatusCodeRegex.FindString(check.LastStatusCode)
+	if lastStatusCodeMatch == "" {
+		lastStatusCodeMatch = "-"
 	}
 	metrics, err := fetchMetrics(check.Ident, urlValues)
 	if err != nil {
@@ -703,7 +707,7 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	apdexChart := drawCompactApdexChart(apdex)
+	apdexChart := drawCompactApdexChart(apdex, metrics.Apdex)
 	tableValueMRT := formatMRT(metrics.MRT)
 	tableValueUptime := formatUptime(metrics.Uptime)
 	tableValueApdex := formatApdex(metrics.Apdex)
@@ -726,9 +730,26 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	} else {
 		name = check.Name
 	}
+	var identSnippet, statusSnippet, lastStatusCodeSnippet string
+	identSnippet = colorBold.Sprint(check.Ident)
+	lastStatusCodeSnippet = lastStatusCodeMatch
+	switch check.LastStatus {
+	case statusDown:
+		statusSnippet = color.RedString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
+		// lastStatusCodeSnippet = color.RedString(lastStatusCodeMatch)
+	case statusStepDown:
+		statusSnippet = color.YellowString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
+	case statusStepUp:
+		statusSnippet = color.YellowString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
+	case statusUnknown:
+		statusSnippet = color.YellowString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
+	case statusUp:
+		statusSnippet = color.GreenString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
+		// lastStatusCodeSnippet = color.GreenString(lastStatusCodeMatch)
+	}
 	tableRow := []string{
-		check.Ident, name, util.Ellipsis(check.Resource, 40), method, statusName[check.LastStatus] + " " + util.OutputDurationWithDays(check.LastStatusDuration),
-		strconv.Itoa(len(check.Channels)), lastStatusCodeMatches, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
+		identSnippet, name, util.Ellipsis(check.Resource, 40), colorFaint.Sprint(method), statusSnippet,
+		colorFaint.Sprint(strconv.Itoa(len(check.Channels))), lastStatusCodeSnippet, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow
 }
@@ -824,52 +845,50 @@ func fetchMetrics(ident string, urlValues *url.Values) (MetricsResponse, error) 
 
 func formatMRT(mrt string) string {
 	if mrt == "" || mrt == "nil" {
-		return "n/a"
+		return colorFaint.Sprint("n/a")
 	}
 	return mrt + " s"
 }
 
 func formatUptime(uptime string) string {
+	var empty = "n/a"
+	var uptimeFloat, err = strconv.ParseFloat(uptime, 32)
 	if uptime == "" || uptime == "nil" {
-		return "n/a"
+		return color.HiBlackString(empty)
 	}
-	return fmt.Sprintf("%v %%", uptime)
+	if err != nil {
+		return color.HiBlackString(empty)
+	}
+	if uptimeFloat == 100.0 {
+		return color.GreenString("%v %%", uptime)
+	}
+	if uptimeFloat > 99.9 {
+		return color.YellowString("%v %%", uptime)
+	}
+	return color.RedString("%v %%", uptime)
 }
 
 func formatApdex(apdex string) string {
+	var empty = "n/a"
+	var apdexFloat, err = strconv.ParseFloat(apdex, 32)
 	if apdex == "" || apdex == "nil" {
-		return "n/a"
+		return color.HiBlackString(empty)
 	}
-	return apdex
-}
-
-func loadSupportedRegions() {
-	respData, err := util.BinocsAPI("/regions", http.MethodGet, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return color.HiBlackString(empty)
 	}
-	regionsResponse := RegionsResponse{}
-	err = json.Unmarshal(respData, &regionsResponse)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	if apdexFloat == 1.00 {
+		return color.GreenString("%v", apdex)
 	}
-	supportedRegions = regionsResponse.Regions
-	sort.Strings(supportedRegions)
+	if apdexFloat >= 0.9 {
+		return color.YellowString("%v", apdex)
+	}
+	return color.RedString("%v", apdex)
 }
 
-func isSupportedRegion(region string) bool {
-	for _, r := range supportedRegions {
-		if r == region {
-			return true
-		}
-	}
-	return false
-}
-
-func drawCompactApdexChart(apdex []ApdexResponse) string {
+func drawCompactApdexChart(apdexChartData []ApdexResponse, currentApdex string) string {
 	var chart []rune
+	var chartSnippet string
 	var alphabet = map[string]rune{
 		"11": '⣀',
 		"12": '⣠',
@@ -889,7 +908,7 @@ func drawCompactApdexChart(apdex []ApdexResponse) string {
 		"44": '⣿',
 	}
 	var reverseApdex []ApdexResponse
-	for _, v := range apdex {
+	for _, v := range apdexChartData {
 		reverseApdex = append([]ApdexResponse{v}, reverseApdex...)
 	}
 	var assignChar = func(left, right float64) rune {
@@ -919,7 +938,20 @@ func drawCompactApdexChart(apdex []ApdexResponse) string {
 			chart = append(chart, assignChar(left, 0.0))
 		}
 	}
-	return reverse(string(chart))
+
+	chartSnippet = reverse(string(chart))
+
+	var apdexFloat, err = strconv.ParseFloat(currentApdex, 32)
+	if err != nil {
+		return color.HiBlackString(chartSnippet)
+	}
+	if apdexFloat == 1.00 {
+		return color.GreenString("%v", chartSnippet)
+	}
+	if apdexFloat >= 0.9 {
+		return color.YellowString("%v", chartSnippet)
+	}
+	return color.RedString("%v", chartSnippet)
 }
 
 func getApdexChartRowRange(i, numRows int) string {
@@ -1171,6 +1203,31 @@ func drawTimeline(user *User, period string, dataPoints int, leftMargin string) 
 		return leftMargin + timeline[0] + "\n" + leftMargin + timeline[1]
 	}
 	return leftMargin + timeline[0]
+}
+
+func loadSupportedRegions() {
+	respData, err := util.BinocsAPI("/regions", http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	regionsResponse := RegionsResponse{}
+	err = json.Unmarshal(respData, &regionsResponse)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	supportedRegions = regionsResponse.Regions
+	sort.Strings(supportedRegions)
+}
+
+func isSupportedRegion(region string) bool {
+	for _, r := range supportedRegions {
+		if r == region {
+			return true
+		}
+	}
+	return false
 }
 
 func setProtocolPrefix(res, proto string) string {

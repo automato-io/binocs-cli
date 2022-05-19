@@ -9,6 +9,7 @@ import (
 
 	"github.com/automato-io/s3update"
 	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
@@ -72,6 +73,10 @@ var AutoUpdateInterval = 3600 * 24 * 2
 var cfgFile string
 
 var spin = spinner.New(spinner.CharSets[7], 100*time.Millisecond)
+
+var colorBold = color.New(color.Bold)
+
+var colorFaint = color.New(color.Faint)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
