@@ -146,6 +146,14 @@ View incident details, notes and associated requests.
 
 		// Table "main"
 
+		var stateSnippet string
+		switch respJSON.IncidentState {
+		case incidentStateOpen:
+			stateSnippet = color.YellowString(strings.ToUpper(respJSON.IncidentState))
+		case incidentStateResolved:
+			stateSnippet = color.GreenString(strings.ToUpper(respJSON.IncidentState))
+		}
+
 		var openedSnippet string
 		opened, err := time.Parse("2006-01-02 15:04:05 -0700", respJSON.Opened)
 		if err != nil {
@@ -162,26 +170,27 @@ View incident details, notes and associated requests.
 			closedSnippet = closed.Format("2006-01-02 15:04:05 +07:00")
 		}
 
-		tableMainIncidentCellContent := `ID: ` + respJSON.Ident + `
-Status: ` + respJSON.IncidentState + `
-Opened: ` + openedSnippet + `
-Closed: ` + closedSnippet + `
-Duration: ` + util.OutputDurationWithDays(respJSON.Duration)
+		tableMainIncidentCellContent := colorBold.Sprint(`ID: `) + respJSON.Ident + "\n" +
+			colorBold.Sprint(`Status: `) + stateSnippet + "\n" +
+			colorBold.Sprint(`Opened: `) + openedSnippet + "\n" +
+			colorBold.Sprint(`Closed: `) + closedSnippet + "\n" +
+			colorBold.Sprint(`Duration: `) + util.OutputDurationWithDays(respJSON.Duration)
 
-		tableMainCheckCellContent := `ID: ` + respJSON.CheckIdent + `
-Name: ` + checkName + ` 
-URL: ` + respJSON.CheckResource
+		tableMainCheckCellContent := colorBold.Sprint(`ID: `) + respJSON.CheckIdent + "\n" +
+			colorBold.Sprint("Name: ") + checkName + "\n" +
+			colorBold.Sprint("URL: ") + respJSON.CheckResource
 
 		tableMainNotesCellContent := respJSON.IncidentNote
 		if tableMainNotesCellContent == "" {
-			tableMainNotesCellContent = "-"
+			tableMainNotesCellContent = colorFaint.Sprint("-")
 		}
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"INCIDENT", "CHECK", "NOTES"})
 		tableMain.SetAutoWrapText(false)
 		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
+		tableMain.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
+		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
 		tableMain.Append([]string{tableMainIncidentCellContent, tableMainCheckCellContent, tableMainNotesCellContent})
 
 		// Table "requests"
@@ -189,19 +198,39 @@ URL: ` + respJSON.CheckResource
 		tableRequests := tablewriter.NewWriter(os.Stdout)
 		if len(respJSON.Requests) > 0 {
 			tz := respJSON.Requests[0].Timestamp.Format("-07:00")
-			tableRequests.SetHeader([]string{"CHECKED AT (" + tz + ")", "CHECKED FROM", "RESPONSE", "RESPONSE TIME", "DNS LOOKUP", "CONNECTION", "TLS", "WAITING", "TRANSFER"})
+			checkedAtDateFormat := "2006-01-02 15:04:05"
 			tableRequests.SetAutoWrapText(false)
+			tableRequests.SetHeader([]string{"CHECKED AT (" + tz + ")", "CHECKED FROM", "RESPONSE", "RESPONSE TIME", "DNS LOOKUP",
+				"CONNECTION", "TLS", "WAITING", "TRANSFER"})
 			tableRequests.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
+			tableRequests.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold},
+				tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
+			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
+				tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
+			var placeholder = "·"
+			var fieldLengthCheckedAt = len(checkedAtDateFormat)
+			var fieldLengthCheckedFrom int
+			for _, request := range respJSON.Requests {
+				if fieldLengthCheckedFrom < len(request.Region) {
+					fieldLengthCheckedFrom = len(request.Region)
+				}
+			}
 			for _, request := range respJSON.Requests {
 				if strings.Contains(request.Timestamp.String(), "0001") {
-					placeholder := "~"
-					shortcut := request.RequestResource + " requests"
-					shortcut = strings.Repeat(placeholder, 2) + " " + shortcut
-					if len(shortcut) < 18 {
-						shortcut = shortcut + " " + strings.Repeat(placeholder, 19-len(shortcut)-1)
+					sameSameSpace := fieldLengthCheckedAt - len(request.RequestResource+" requests") - 2
+					sameSamePlaceholders := [2]int{0, 0}
+					if sameSameSpace > 0 {
+						if sameSameSpace%2 == 1 {
+							sameSamePlaceholders[0] = sameSameSpace/2 + 1
+							sameSamePlaceholders[1] = sameSameSpace / 2
+						} else {
+							sameSamePlaceholders[0] = sameSameSpace / 2
+							sameSamePlaceholders[1] = sameSameSpace / 2
+						}
 					}
-					tableRequests.Append([]string{shortcut, strings.Repeat(placeholder, 7), request.ResponseStatusCode, strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7), strings.Repeat(placeholder, 7)})
+					sameSame := fmt.Sprintf("%s %s requests %s", strings.Repeat(placeholder, sameSamePlaceholders[0]), request.RequestResource, strings.Repeat(placeholder, sameSamePlaceholders[1]))
+					tableRequests.Append([]string{sameSame, strings.Repeat(placeholder, fieldLengthCheckedFrom), request.ResponseStatusCode, strings.Repeat(placeholder, 7), colorFaint.Sprint(strings.Repeat(placeholder, 7)),
+						colorFaint.Sprint(strings.Repeat(placeholder, 7)), colorFaint.Sprint(strings.Repeat(placeholder, 7)), colorFaint.Sprint(strings.Repeat(placeholder, 7)), colorFaint.Sprint(strings.Repeat(placeholder, 7))})
 				} else {
 					var responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer string
 					var timingsDNSLookupFloat, timingsConnectionFloat, timingsTLSFloat, timingsWaitFloat, timingsTransferFloat float64
@@ -225,7 +254,8 @@ URL: ` + respJSON.CheckResource
 						timingsWait = "n/a"
 						timingsTransfer = "n/a"
 					}
-					tableRequests.Append([]string{request.Timestamp.Format("2006-01-02 15:04:05"), request.Region, request.ResponseStatusCode, responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer})
+					tableRequests.Append([]string{request.Timestamp.Format(checkedAtDateFormat), request.Region, request.ResponseStatusCode, responseTime, colorFaint.Sprint(timingsDNSLookup),
+						colorFaint.Sprint(timingsConnection), colorFaint.Sprint(timingsTLS), colorFaint.Sprint(timingsWait), colorFaint.Sprint(timingsTransfer)})
 				}
 			}
 		}
