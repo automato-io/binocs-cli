@@ -412,7 +412,7 @@ View channel details and attached checks.
 			handle = respJSON.Handle
 		}
 		if respJSON.UsedCount > 0 {
-			lastUsed = `, last time at ` + respJSON.LastUsed
+			lastUsed = `, most recently at ` + respJSON.LastUsed
 		}
 		if respJSON.UsedCount == 0 {
 			used = "never"
@@ -426,16 +426,17 @@ View channel details and attached checks.
 		}
 
 		// @todo show ID field in check and incident detail as well
-		tableMainChannelCellContent := `ID: ` + respJSON.Ident + `
-Type: ` + respJSON.Type + `
-Alias: ` + alias + `
-Handle: ` + handle + `
-Used: ` + used + lastUsed + ``
+		tableMainChannelCellContent := colorBold.Sprint(`ID: `) + respJSON.Ident + "\n" +
+			colorBold.Sprint(`Type: `) + respJSON.Type + "\n" +
+			colorBold.Sprint(`Alias: `) + alias + "\n" +
+			colorBold.Sprint(`Handle: `) + handle + "\n" +
+			colorBold.Sprint(`Used: `) + used + lastUsed
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHANNEL"})
 		tableMain.SetAutoWrapText(false)
 		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+		tableMain.SetHeaderColor(tablewriter.Colors{tablewriter.Bold})
 		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT})
 		tableMain.Append([]string{tableMainChannelCellContent})
 
@@ -473,11 +474,11 @@ List all notification channels.
 			var used, lastUsed, handle, alias, identSnippet string
 			identSnippet = colorBold.Sprint(v.Ident)
 			if v.UsedCount == 0 {
-				used = "never"
-				lastUsed = "n/a"
+				used = colorFaint.Sprint("never")
+				lastUsed = colorFaint.Sprint("n/a")
 			} else {
-				used = fmt.Sprintf("%d x", v.UsedCount)
-				lastUsed = v.LastUsed
+				used = colorFaint.Sprintf("%d x", v.UsedCount)
+				lastUsed = colorFaint.Sprint(v.LastUsed)
 			}
 			if v.Type == channelTypeEmail && v.Verified == "nil" {
 				handle = util.Ellipsis(v.Handle, 50) + " (unverified)"
