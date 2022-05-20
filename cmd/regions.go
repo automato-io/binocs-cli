@@ -33,8 +33,8 @@ List the regions Binocs makes requests from
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
 		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold})
 		table.SetHeader([]string{"REGIONS"})
+		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold})
 		for _, v := range tableData {
 			table.Append(v)
 		}
