@@ -83,6 +83,8 @@ var colorBold = color.New(color.Bold)
 
 var colorFaint = color.New(color.Faint)
 
+var colorFaintBold = color.New(color.Faint, color.Bold)
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "binocs",

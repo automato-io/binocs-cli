@@ -454,13 +454,13 @@ View check status and metrics.
 		case protocolHTTP:
 		case protocolHTTPS:
 			resourceTitle = "URL"
-			methodLine = "\nMethod: " + respJSON.Method
+			methodLine = colorBold.Sprint("Method: ") + respJSON.Method + "\n"
 			if len(respJSON.LastStatusCode) > 0 {
-				responseLine = "\nResponse: " + respJSON.LastStatusCode
+				responseLine = colorBold.Sprint("Response: ") + respJSON.LastStatusCode + "\n"
 			} else {
-				responseLine = "\nResponse: [waiting for data]"
+				responseLine = colorBold.Sprint("Response: ") + "[waiting for data]" + "\n"
 			}
-			upHTTPCodesLine = "\nUP HTTP Codes: " + respJSON.UpCodes
+			upHTTPCodesLine = colorFaintBold.Sprint("UP HTTP Codes: ") + colorFaint.Sprint(respJSON.UpCodes) + "\n"
 		case protocolICMP:
 		case protocolTCP:
 			resourceTitle = "Host"
@@ -475,12 +475,14 @@ View check status and metrics.
 		if respJSON.LastStatus == statusUnknown {
 			statusLine = ""
 		} else {
-			statusLine = statusName[respJSON.LastStatus] + " for " + util.OutputDurationWithDays(respJSON.LastStatusDuration)
+			statusLine = colorBold.Sprint("Status: ") + formatStatus(&respJSON) + "\n"
 		}
 
-		tableMainCheckCellContent := `Name: ` + checkName + `
-` + resourceTitle + `: ` + respJSON.Resource + methodLine + responseLine + `
-` + statusLine
+		tableMainCheckCellContent := statusLine +
+			colorBold.Sprint(`Name: `) + checkName + "\n" +
+			colorBold.Sprint(resourceTitle+`: `) + respJSON.Resource + "\n" +
+			methodLine +
+			responseLine
 
 		uptimeValue := formatUptime(metrics.Uptime)
 		apdexValue := formatApdex(metrics.Apdex)
@@ -491,19 +493,21 @@ View check status and metrics.
 			mrtValue = "[waiting for data]"
 		}
 
-		tableMainMetricsCellContent := `Uptime: ` + uptimeValue + `
-Apdex: ` + apdexValue + `
-Mean Response Time: ` + mrtValue
+		tableMainMetricsCellContent := colorBold.Sprint(`Uptime: `) + uptimeValue + "\n" +
+			colorBold.Sprint(`Apdex: `) + apdexValue + "\n" +
+			colorBold.Sprint(`MRT: `) + mrtValue
 
-		tableMainSettingsCellContent := `Checking interval: ` + strconv.Itoa(respJSON.Interval) + ` s ` + upHTTPCodesLine + `
-Target response time: ` + fmt.Sprintf("%.3f", respJSON.Target) + ` s
-Confirmations thresholds: UP: ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN: ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + ` 
-Binocs regions: ` + strings.Join(respJSON.Regions, ", ")
+		tableMainSettingsCellContent := colorFaintBold.Sprint(`Checking interval: `) + colorFaint.Sprint(strconv.Itoa(respJSON.Interval)+` s `) + "\n" +
+			upHTTPCodesLine +
+			colorFaintBold.Sprint(`Target response time: `) + colorFaintBold.Sprintf("%.3f", respJSON.Target) + ` s` + "\n" +
+			colorFaintBold.Sprint(`Thresholds: `) + colorFaintBold.Sprint(`UP - `+strconv.Itoa(respJSON.UpConfirmationsThreshold)+`, DOWN - `+strconv.Itoa(respJSON.DownConfirmationsThreshold)) + "\n" +
+			colorFaintBold.Sprint(`Binocs regions: `) + colorFaint.Sprint(strings.Join(respJSON.Regions, ", "))
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHECK", "METRICS (" + periodTableTitle + ")", "SETTINGS"})
 		tableMain.SetAutoWrapText(false)
 		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+		tableMain.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
 		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
 		tableMain.Append([]string{tableMainCheckCellContent, tableMainMetricsCellContent, tableMainSettingsCellContent})
 
@@ -732,21 +736,8 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	}
 	var identSnippet, statusSnippet, lastStatusCodeSnippet string
 	identSnippet = colorBold.Sprint(check.Ident)
+	statusSnippet = formatStatus(&check)
 	lastStatusCodeSnippet = lastStatusCodeMatch
-	switch check.LastStatus {
-	case statusDown:
-		statusSnippet = color.RedString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
-		// lastStatusCodeSnippet = color.RedString(lastStatusCodeMatch)
-	case statusStepDown:
-		statusSnippet = color.YellowString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
-	case statusStepUp:
-		statusSnippet = color.YellowString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
-	case statusUnknown:
-		statusSnippet = color.YellowString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
-	case statusUp:
-		statusSnippet = color.GreenString(statusName[check.LastStatus]) + " " + util.OutputDurationWithDays(check.LastStatusDuration)
-		// lastStatusCodeSnippet = color.GreenString(lastStatusCodeMatch)
-	}
 	tableRow := []string{
 		identSnippet, name, util.Ellipsis(check.Resource, 40), colorFaint.Sprint(method), statusSnippet,
 		colorFaint.Sprint(strconv.Itoa(len(check.Channels))), lastStatusCodeSnippet, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
@@ -841,6 +832,23 @@ func fetchMetrics(ident string, urlValues *url.Values) (MetricsResponse, error) 
 		metrics.Uptime = "100"
 	}
 	return metrics, nil
+}
+
+func formatStatus(c *Check) string {
+	var snippet string
+	switch c.LastStatus {
+	case statusDown:
+		snippet = color.RedString(statusName[c.LastStatus]) + " for " + util.OutputDurationWithDays(c.LastStatusDuration)
+	case statusStepDown:
+		snippet = color.YellowString(statusName[c.LastStatus]) + " for " + util.OutputDurationWithDays(c.LastStatusDuration)
+	case statusStepUp:
+		snippet = color.YellowString(statusName[c.LastStatus]) + " for " + util.OutputDurationWithDays(c.LastStatusDuration)
+	case statusUnknown:
+		snippet = color.YellowString(statusName[c.LastStatus]) + " for " + util.OutputDurationWithDays(c.LastStatusDuration)
+	case statusUp:
+		snippet = color.GreenString(statusName[c.LastStatus]) + " for " + util.OutputDurationWithDays(c.LastStatusDuration)
+	}
+	return snippet
 }
 
 func formatMRT(mrt string) string {
@@ -1128,7 +1136,7 @@ func drawChartTitle(title string, chart string, periodTitle string) string {
 	if len(title)+len(periodTitle)+1 < chartLineLen {
 		title = title + strings.Repeat(" ", spacerLen) + periodTitle
 	}
-	return title
+	return colorBold.Sprint(title)
 }
 
 func drawTimeline(user *User, period string, dataPoints int, leftMargin string) string {
