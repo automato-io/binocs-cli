@@ -75,10 +75,10 @@ Display information about your binocs user
 			os.Exit(1)
 		}
 
-		tableCheckCellContent := colorBold.Sprint(`Name: `) + respJSON.Name + colorBold.Sprint(`
-E-mail: `) + respJSON.Email + colorBold.Sprint(`
-Timezone: `) + respJSON.Timezone + colorBold.Sprint(`
-Credit balance: `) + fmt.Sprint(respJSON.CreditBalance)
+		tableCheckCellContent := colorBold.Sprint(`Name: `) + respJSON.Name + "\n" +
+			colorBold.Sprint(`E-mail: `) + respJSON.Email + "\n" +
+			colorBold.Sprint(`Timezone: `) + respJSON.Timezone + "\n" +
+			colorBold.Sprint(`Credit balance: `) + fmt.Sprint(respJSON.CreditBalance)
 
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetAutoWrapText(false)
