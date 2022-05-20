@@ -171,7 +171,8 @@ Attach channel to check(s)
 		var match bool
 
 		spin.Start()
-		spin.Suffix = " loading channel " + args[0]
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprintf(" loading channel %s", args[0])
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -223,7 +224,8 @@ Attach channel to check(s)
 		}
 		if yes {
 			spin.Start()
-			spin.Suffix = " attaching channel " + args[0] + " to " + strconv.Itoa(len(checkIdents)) + " checks"
+			defer spin.Stop()
+			spin.Suffix = colorFaint.Sprintf(" attaching channel %s to %d checks", args[0], len(checkIdents))
 			for _, c := range checkIdents {
 				postData, err := json.Marshal(ChannelAttachment{})
 				if err != nil {
@@ -257,7 +259,8 @@ Detach channel from check(s)
 		var match bool
 
 		spin.Start()
-		spin.Suffix = " loading channel " + args[0]
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprintf(" loading channel %s", args[0])
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -313,7 +316,8 @@ Detach channel from check(s)
 		}
 		if yes {
 			spin.Start()
-			spin.Suffix = " detaching channel " + args[0] + " from " + strconv.Itoa(len(checkIdents)) + " checks"
+			defer spin.Stop()
+			spin.Suffix = colorFaint.Sprintf(" detaching channel %s from %d checks", args[0], len(checkIdents))
 			for _, c := range checkIdents {
 				deleteData, err := json.Marshal(ChannelAttachment{})
 				if err != nil {
@@ -390,7 +394,8 @@ View channel details and attached checks.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
-		spin.Suffix = " loading channel..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading channel...")
 		respData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -457,7 +462,8 @@ List all notification channels.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
-		spin.Suffix = " loading channels..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading channels...")
 
 		urlValues := url.Values{}
 		match, err := regexp.MatchString(validCheckIdentPattern, channelListFlagCheck)
@@ -554,7 +560,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	var currentChannel Channel
 	if mode == "update" {
 		spin.Start()
-		spin.Suffix = " loading channel..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading channel...")
 		respData, err := util.BinocsAPI("/channels/"+channelIdent, http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -628,7 +635,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			fmt.Println("Visit the following URL to choose where we should send your notifications:")
 			fmt.Println(slackAuthorizeURL)
 			spin.Start()
-			spin.Suffix = " waiting for your action ..."
+			defer spin.Stop()
+			spin.Suffix = colorFaint.Sprint(" waiting for your action ...")
 			for {
 				pollResult, err := pollSlackIntegrationStatus(slackIntegrationToken.Token)
 				if err != nil {
@@ -652,7 +660,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			fmt.Println("Visit the following URL to add @binocs_bot to your Telegram:")
 			fmt.Println(telegramInstallURL)
 			spin.Start()
-			spin.Suffix = " waiting for your action ..."
+			defer spin.Stop()
+			spin.Suffix = colorFaint.Sprint(" waiting for your action ...")
 			for {
 				pollResult, err := pollTelegramIntegrationStatus(telegramIntegrationToken.Token)
 				if err != nil {
@@ -698,7 +707,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	}
 
 	spin.Start()
-	spin.Suffix = " loading checks..."
+	defer spin.Stop()
+	spin.Suffix = colorFaint.Sprint(" loading checks...")
 	checks, err := fetchChecks(url.Values{})
 	if err != nil {
 		fmt.Println(err)
@@ -764,7 +774,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		reqMethod = http.MethodPut
 	}
 	spin.Start()
-	spin.Suffix = " saving channel..."
+	defer spin.Stop()
+	spin.Suffix = colorFaint.Sprint(" saving channel...")
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		fmt.Println(err)
@@ -788,7 +799,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		if mode == "update" {
 			tpl = "[" + channel.Ident + "] " + channelDescription + ` updated successfully`
 		}
-		spin.Suffix = " attaching channel to " + fmt.Sprintf("%d", len(flagAttach)) + " check(s)..."
+		spin.Suffix = colorFaint.Sprintf(" attaching channel to %d check(s)...", len(flagAttach))
 		var detachCheckIdents = []string{}
 		for _, c := range checks {
 			for _, cc := range c.Channels {

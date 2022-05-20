@@ -77,7 +77,7 @@ var AutoUpdateInterval = 3600 * 24 * 2
 
 var cfgFile string
 
-var spin = spinner.New(spinner.CharSets[7], 100*time.Millisecond)
+var spin = spinner.New(spinner.CharSets[53], 100*time.Millisecond, spinner.WithColor("faint"))
 
 var colorBold = color.New(color.Bold)
 

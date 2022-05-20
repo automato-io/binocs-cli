@@ -421,7 +421,8 @@ View check status and metrics.
 		}
 
 		spin.Start()
-		spin.Suffix = " loading metrics..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading metrics...")
 
 		user, err := fetchUser()
 		if err != nil {
@@ -641,7 +642,8 @@ List all checks with status and metrics overview.
 		}
 
 		spin.Start()
-		spin.Suffix = " loading checks..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading checks...")
 
 		user, err := fetchUser()
 		if err != nil {
@@ -661,7 +663,7 @@ List all checks with status and metrics overview.
 			go makeCheckListRow(v, ch, &urlValues2)
 		}
 		for i := range checks {
-			spin.Suffix = " loading metrics... (" + strconv.Itoa(i+1) + "/" + strconv.Itoa(len(checks)) + ")"
+			spin.Suffix = colorFaint.Sprintf(" loading metrics... (%d/%d)", i+1, len(checks))
 			tableData = append(tableData, <-ch)
 		}
 		sort.Slice(tableData, func(i, j int) bool {
@@ -1299,7 +1301,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	var currentCheck Check
 	if mode == "update" {
 		spin.Start()
-		spin.Suffix = " loading check..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading check...")
 		respData, err := util.BinocsAPI("/checks/"+checkIdent, http.MethodGet, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -1592,7 +1595,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	}
 
 	spin.Start()
-	spin.Suffix = " loading channels..."
+	defer spin.Stop()
+	spin.Suffix = colorFaint.Sprint(" loading channels...")
 	channels, err := fetchChannels(url.Values{})
 	if err != nil {
 		fmt.Println(err)
@@ -1660,7 +1664,8 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		reqMethod = http.MethodPut
 	}
 	spin.Start()
-	spin.Suffix = " saving check..."
+	defer spin.Stop()
+	spin.Suffix = colorFaint.Sprint(" saving check...")
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		fmt.Println(err)
@@ -1684,7 +1689,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		if mode == "update" {
 			tpl = "[" + check.Ident + "] " + checkDescription + ` updated successfully`
 		}
-		spin.Suffix = " attaching check to " + fmt.Sprintf("%d", len(flagAttach)) + " channel(s)..."
+		spin.Suffix = colorFaint.Sprintf(" attaching check to %d channel(s)...", len(flagAttach))
 		var detachChannelIdents = []string{}
 		for _, ch := range channels {
 			for _, cc := range ch.Checks {

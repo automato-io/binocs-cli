@@ -67,7 +67,8 @@ Display information about your binocs user
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
-		spin.Suffix = " loading user..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading user...")
 		respJSON, err := fetchUser()
 		if err != nil {
 			spin.Stop()
@@ -194,7 +195,8 @@ Generate new Access ID and Secret Key
 	Run: func(cmd *cobra.Command, args []string) {
 		var tpl string
 		spin.Start()
-		spin.Suffix = " generating new key pair..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" generating new key pair...")
 		respData, err := util.BinocsAPI("/user/generate-key", http.MethodPost, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -229,7 +231,8 @@ Deny future login attempts using this key
 	Run: func(cmd *cobra.Command, args []string) {
 		var tpl string
 		spin.Start()
-		spin.Suffix = " invalidating key " + args[0]
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprintf(" invalidating key %s", args[0])
 		accessKey := AccessKeyPair{
 			AccessKey: args[0],
 		}

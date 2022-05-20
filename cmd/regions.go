@@ -20,15 +20,14 @@ List the regions Binocs makes requests from
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
-		spin.Suffix = " loading regions..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading regions...")
 
 		loadSupportedRegions()
 
 		var tableData [][]string
 		for _, v := range supportedRegions {
-			tableRow := []string{
-				v,
-			}
+			tableRow := []string{v}
 			tableData = append(tableData, tableRow)
 		}
 		table := tablewriter.NewWriter(os.Stdout)

@@ -120,7 +120,8 @@ View incident details, notes and associated requests.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
-		spin.Suffix = " loading incident..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading incident...")
 		user, err := fetchUser()
 		if err != nil {
 			fmt.Println(err)
@@ -283,7 +284,8 @@ List all past and current incidents.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		spin.Start()
-		spin.Suffix = " loading incidents..."
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading incidents...")
 		user, err := fetchUser()
 		if err != nil {
 			fmt.Println(err)
