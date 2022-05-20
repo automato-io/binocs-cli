@@ -499,8 +499,8 @@ View check status and metrics.
 
 		tableMainSettingsCellContent := colorFaintBold.Sprint(`Checking interval: `) + colorFaint.Sprint(strconv.Itoa(respJSON.Interval)+` s `) + "\n" +
 			upHTTPCodesLine +
-			colorFaintBold.Sprint(`Target response time: `) + colorFaintBold.Sprintf("%.3f", respJSON.Target) + ` s` + "\n" +
-			colorFaintBold.Sprint(`Thresholds: `) + colorFaintBold.Sprint(`UP - `+strconv.Itoa(respJSON.UpConfirmationsThreshold)+`, DOWN - `+strconv.Itoa(respJSON.DownConfirmationsThreshold)) + "\n" +
+			colorFaintBold.Sprint(`Target response time: `) + colorFaint.Sprintf("%.3f s", respJSON.Target) + "\n" +
+			colorFaintBold.Sprint(`Thresholds: `) + colorFaint.Sprint(`UP - `+strconv.Itoa(respJSON.UpConfirmationsThreshold)+`, DOWN - `+strconv.Itoa(respJSON.DownConfirmationsThreshold)) + "\n" +
 			colorFaintBold.Sprint(`Binocs regions: `) + colorFaint.Sprint(strings.Join(respJSON.Regions, ", "))
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
