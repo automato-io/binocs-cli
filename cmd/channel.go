@@ -412,7 +412,7 @@ View channel details and attached checks.
 			handle = respJSON.Handle
 		}
 		if respJSON.UsedCount > 0 {
-			lastUsed = `, most recently at ` + respJSON.LastUsed
+			lastUsed = respJSON.LastUsed
 		}
 		if respJSON.UsedCount == 0 {
 			used = "never"
@@ -430,7 +430,8 @@ View channel details and attached checks.
 			colorBold.Sprint(`Type: `) + respJSON.Type + "\n" +
 			colorBold.Sprint(`Alias: `) + alias + "\n" +
 			colorBold.Sprint(`Handle: `) + handle + "\n" +
-			colorBold.Sprint(`Used: `) + used + lastUsed
+			colorBold.Sprint(`Used: `) + used + "\n" +
+			colorBold.Sprint(`Last used: `) + lastUsed
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHANNEL"})
