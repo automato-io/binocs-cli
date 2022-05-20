@@ -417,7 +417,7 @@ View channel details and attached checks.
 		if respJSON.UsedCount == 0 {
 			used = "never"
 		} else {
-			used = fmt.Sprintf("%d x", respJSON.UsedCount)
+			used = fmt.Sprintf("%d ×", respJSON.UsedCount)
 		}
 		if respJSON.Alias == "" {
 			alias = "-"
@@ -478,7 +478,7 @@ List all notification channels.
 				used = colorFaint.Sprint("never")
 				lastUsed = colorFaint.Sprint("n/a")
 			} else {
-				used = colorFaint.Sprintf("%d x", v.UsedCount)
+				used = colorFaint.Sprintf("%d ×", v.UsedCount)
 				lastUsed = colorFaint.Sprint(v.LastUsed)
 			}
 			if v.Type == channelTypeEmail && v.Verified == "nil" {
