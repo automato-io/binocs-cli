@@ -154,7 +154,7 @@ const (
 	validNamePattern                       = `^[\p{L}\p{N}_\s\/\-\.]{0,25}$`
 	validProtocolPattern                   = `^(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolTCP + `)$`
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
-	validUpCodePattern                     = `^([,]?([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))+$`
+	validUpCodePattern                     = `^([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))){1}(,([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))*$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
 	validPeriodPattern                     = `^hour|day|week|month$`
 	validChecksIdentListPattern            = `^(all|([a-f0-9]{7})(,[a-f0-9]{7})*)$`
