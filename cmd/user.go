@@ -99,10 +99,11 @@ Display information about your binocs user
 
 var userUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update current binocs user",
+	Short: "Update current Binocs user",
 	Long: `
-Update any of the following parameters of the current binocs user: 
-name, timezone
+Update current Binocs user: 
+
+This command is interactive and asks user for parameters that were not provided as flags.
 `,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {

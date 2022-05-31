@@ -369,7 +369,7 @@ var checkAddCmd = &cobra.Command{
 	Long: `
 Add a check and start reporting on it. Check identifier is returned upon successful add operation.
 
-This command is interactive and asks user for parameters that were not provided as flags. See the flags overview below.
+This command is interactive and asks user for parameters that were not provided as flags.
 `,
 	Aliases:           []string{"create"},
 	Args:              cobra.NoArgs,
@@ -754,9 +754,11 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 
 var checkUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update existing check attributes",
+	Short: "Update attributes of an existing check",
 	Long: `
-Update existing check attributes.
+Update attributes of an existing check.
+
+This command is interactive and asks user for parameters that were not provided as flags.
 `,
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
@@ -771,6 +773,8 @@ var checkDeleteCmd = &cobra.Command{
 	Short: "Delete existing check(s) and collected metrics",
 	Long: `
 Delete existing check(s) and collected metrics.
+
+This command is interactive and asks user for confirmation.
 `,
 	Aliases:           []string{"del", "rm"},
 	Args:              cobra.MatchAll(),

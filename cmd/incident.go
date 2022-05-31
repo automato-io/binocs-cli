@@ -374,6 +374,8 @@ var incidentUpdateCmd = &cobra.Command{
 	Short: "Provide incident with a note",
 	Long: `
 Provide incident with a note. This note would be visible on incident page.
+
+This command is interactive and asks user for parameters that were not provided as flags.
 `,
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,

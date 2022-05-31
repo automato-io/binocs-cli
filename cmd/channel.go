@@ -147,7 +147,9 @@ var channelAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new notifications channel",
 	Long: `
-Add a new notifications channel
+Add a new notifications channel.
+
+This command is interactive and asks user for parameters that were not provided as flags.
 `,
 	Aliases:           []string{"create"},
 	Args:              cobra.NoArgs,
@@ -162,7 +164,9 @@ var channelAttachCmd = &cobra.Command{
 	Use:   "attach",
 	Short: "Attach channel to check(s)",
 	Long: `
-Attach channel to check(s)
+Attach channel to check(s).
+
+This command is interactive and asks user for confirmation.
 `,
 	Aliases:           []string{"att"},
 	Args:              cobra.ExactArgs(1),
@@ -257,7 +261,9 @@ var channelDetachCmd = &cobra.Command{
 	Use:   "detach",
 	Short: "Detach channel from check(s)",
 	Long: `
-Detach channel from check(s)
+Detach channel from check(s).
+
+This command is interactive and asks user for confirmation.
 `,
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
@@ -356,6 +362,8 @@ var channelDeleteCmd = &cobra.Command{
 	Short: "Delete notification channel(s)",
 	Long: `
 Delete notification channel(s).
+
+This command is interactive and asks for confirmation.
 `,
 	Aliases:           []string{"del", "rm"},
 	Args:              cobra.MatchAll(),
@@ -540,6 +548,8 @@ var channelUpdateCmd = &cobra.Command{
 	Short: "Update existing notification channel",
 	Long: `
 Update existing notification channel.
+
+This command is interactive and asks user for parameters that were not provided as flags.
 `,
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
