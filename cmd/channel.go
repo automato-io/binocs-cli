@@ -171,7 +171,11 @@ Attach channel to check(s)
 		util.VerifyAuthenticated()
 
 		var err error
-		var match bool
+
+		if channelAttachFlagAll && len(channelAttachFlagCheck) > 0 {
+			fmt.Println("Cannot combine --all and --check flags")
+			os.Exit(1)
+		}
 
 		spin.Start()
 		defer spin.Stop()
@@ -205,7 +209,7 @@ Attach channel to check(s)
 			}
 			checkIdents = channelAttachFlagCheck
 			for _, c := range checkIdents {
-				match, err = regexp.MatchString(validCheckIdentPattern, c)
+				match, err := regexp.MatchString(validCheckIdentPattern, c)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
@@ -261,7 +265,11 @@ Detach channel from check(s)
 		util.VerifyAuthenticated()
 
 		var err error
-		var match bool
+
+		if channelDetachFlagAll && len(channelDetachFlagCheck) > 0 {
+			fmt.Println("Cannot combine --all and --check flags")
+			os.Exit(1)
+		}
 
 		spin.Start()
 		defer spin.Stop()
@@ -299,7 +307,7 @@ Detach channel from check(s)
 			}
 			checkIdents = channelDetachFlagCheck
 			for _, c := range checkIdents {
-				match, err = regexp.MatchString(validCheckIdentPattern, c)
+				match, err := regexp.MatchString(validCheckIdentPattern, c)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
