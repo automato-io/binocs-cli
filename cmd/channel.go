@@ -78,7 +78,7 @@ var (
 
 const (
 	validChannelIdentPattern      = `^[a-f0-9]{5}$`
-	validAliasPattern             = `^[a-zA-Z0-9_\s\/\-\.]{0,25}$`
+	validAliasPattern             = `^[\p{L}\p{N}_\s\/\-\.]{0,25}$`
 	validTypePattern              = `^(email|slack|telegram)$`
 	validChannelsIdentListPattern = `^(all|([a-f0-9]{5})(,[a-f0-9]{5})*)$`
 	validNotificationTypePattern  = `^(response-change|status)$`

@@ -40,8 +40,9 @@ var (
 const (
 	// validAccessKeyPattern = `^[A-Z0-9]{10}$`
 	// validSecretKeyPattern = `^[a-z0-9]{16}$`
-	storageDir = ".binocs"
-	configFile = "config.json"
+	validUserNamePattern = `^[\p{L}\p{N}_\s\/\-\.]{0,100}$`
+	storageDir           = ".binocs"
+	configFile           = "config.json"
 )
 
 func init() {
@@ -130,13 +131,13 @@ This command is interactive and asks user for parameters that were not provided 
 		}
 		spin.Stop()
 
-		match, err = regexp.MatchString(validNamePattern, flagName)
+		match, err = regexp.MatchString(validUserNamePattern, flagName)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		} else if !match || flagName == "" {
 			validate := func(val interface{}) error {
-				match, err = regexp.MatchString(validNamePattern, val.(string))
+				match, err = regexp.MatchString(validUserNamePattern, val.(string))
 				if err != nil {
 					return err
 				} else if !match {
