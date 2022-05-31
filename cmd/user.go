@@ -59,9 +59,9 @@ func init() {
 
 var userCmd = &cobra.Command{
 	Use:   "user",
-	Short: "Display information about your binocs user",
+	Short: "Display information about current Binocs user",
 	Long: `
-Display information about your binocs user
+Display information about current Binocs user
 `,
 	Aliases:           []string{"account"},
 	DisableAutoGenTag: true,
@@ -101,7 +101,7 @@ var userUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update current Binocs user",
 	Long: `
-Update current Binocs user: 
+Update current Binocs user.
 
 This command is interactive and asks user for parameters that were not provided as flags.
 `,
@@ -205,9 +205,9 @@ This command is interactive and asks user for parameters that were not provided 
 
 var generateKeyCmd = &cobra.Command{
 	Use:   "generate-key",
-	Short: "Generate new Access ID and Secret Key",
+	Short: "Generate new Access Key and Secret Key",
 	Long: `
-Generate new Access ID and Secret Key
+Generate new Access Key and Secret Key.
 `,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -277,9 +277,11 @@ Deny future login attempts using this key
 
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Login to binocs",
+	Short: "Login to Binocs",
 	Long: `
-Use your Access Key and Secret Key and login to binocs
+Login to Binocs using your Access Key and Secret Key. 
+
+You can generate key pairs at https://binocs.sh/settings. Later when you're logged in, you can also use "binocs user generate-key" command to generate keys for your other devices.
 `,
 	Aliases:           []string{"auth"},
 	DisableAutoGenTag: true,
@@ -335,7 +337,7 @@ var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "Logout",
 	Long: `
-Log out of the binocs user on this machine
+Log out of Binocs on this machine.
 `,
 	Aliases:           []string{},
 	DisableAutoGenTag: true,
