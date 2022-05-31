@@ -66,6 +66,8 @@ Display information about your binocs user
 	Aliases:           []string{"account"},
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		spin.Start()
 		defer spin.Stop()
 		spin.Suffix = colorFaint.Sprint(" loading user...")
@@ -104,6 +106,8 @@ name, timezone
 `,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		var err error
 		var match bool
 		var tpl string
@@ -193,6 +197,8 @@ Generate new Access ID and Secret Key
 `,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		var tpl string
 		spin.Start()
 		defer spin.Stop()
@@ -229,6 +235,8 @@ Deny future login attempts using this key
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		var tpl string
 		spin.Start()
 		defer spin.Stop()
@@ -318,6 +326,8 @@ Log out of the binocs user on this machine
 	Aliases:           []string{},
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		var err error
 		viper.Set("access_key", "")
 		viper.Set("secret_key", "")

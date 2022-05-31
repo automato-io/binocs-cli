@@ -108,6 +108,14 @@ func ResetAccessToken() error {
 	return os.Remove(home + "/" + storageDir + "/" + jwtFile)
 }
 
+func VerifyAuthenticated() {
+	_, err := BinocsAPI("/authd", http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
 var binocsAPIAccessToken string
 
 func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int, error) {

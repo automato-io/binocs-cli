@@ -153,6 +153,7 @@ Add a new notifications channel
 	Args:              cobra.NoArgs,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
 		channelAddOrUpdate("add", "")
 	},
 }
@@ -167,6 +168,8 @@ Attach channel to check(s)
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		var err error
 		var match bool
 
@@ -255,6 +258,8 @@ Detach channel from check(s)
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		var err error
 		var match bool
 
@@ -348,6 +353,8 @@ Delete notification channel(s).
 	Args:              cobra.MatchAll(),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		for _, arg := range args {
 			respData, err := util.BinocsAPI("/channels/"+arg, http.MethodGet, []byte{})
 			if err != nil {
@@ -393,6 +400,8 @@ View channel details and attached checks.
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		spin.Start()
 		defer spin.Stop()
 		spin.Suffix = colorFaint.Sprint(" loading channel...")
@@ -461,6 +470,8 @@ List all notification channels.
 	Args:              cobra.NoArgs,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		spin.Start()
 		defer spin.Stop()
 		spin.Suffix = colorFaint.Sprint(" loading channels...")
@@ -525,6 +536,7 @@ Update existing notification channel.
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
 		channelAddOrUpdate("update", args[0])
 	},
 }

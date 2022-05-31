@@ -119,6 +119,8 @@ View incident details, notes and associated requests.
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		spin.Start()
 		defer spin.Stop()
 		spin.Suffix = colorFaint.Sprint(" loading incident...")
@@ -283,6 +285,8 @@ List all past and current incidents.
 	Args:              cobra.NoArgs,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		spin.Start()
 		defer spin.Stop()
 		spin.Suffix = colorFaint.Sprint(" loading incidents...")
@@ -374,6 +378,8 @@ Provide incident with a note. This note would be visible on incident page.
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		// @todo implement
 	},
 }

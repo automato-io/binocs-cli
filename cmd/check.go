@@ -375,6 +375,7 @@ This command is interactive and asks user for parameters that were not provided 
 	Args:              cobra.NoArgs,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
 		checkAddOrUpdate("add", "")
 	},
 }
@@ -389,6 +390,8 @@ View check status and metrics.
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		var decoder *json.Decoder
 
 		urlValues := url.Values{
@@ -606,6 +609,8 @@ List all checks with status and metrics overview.
 	Args:              cobra.NoArgs,
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
+
 		urlValues1 := url.Values{}
 		urlValues2 := url.Values{
 			"period": []string{"day"},
@@ -756,6 +761,7 @@ Update existing check attributes.
 	Args:              cobra.ExactArgs(1),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
 		checkAddOrUpdate("update", args[0])
 	},
 }
@@ -770,6 +776,7 @@ Delete existing check(s) and collected metrics.
 	Args:              cobra.MatchAll(),
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		util.VerifyAuthenticated()
 		for _, arg := range args {
 			respData, err := util.BinocsAPI("/checks/"+arg, http.MethodGet, []byte{})
 			if err != nil {
