@@ -118,6 +118,17 @@ name, timezone
 		flagName = userFlagName
 		flagTimezone = userFlagTimezone
 
+		spin.Start()
+		defer spin.Stop()
+		spin.Suffix = colorFaint.Sprint(" loading user...")
+		respJSON, err := fetchUser()
+		if err != nil {
+			spin.Stop()
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		spin.Stop()
+
 		match, err = regexp.MatchString(validNamePattern, flagName)
 		if err != nil {
 			fmt.Println(err)
@@ -134,6 +145,7 @@ name, timezone
 			}
 			prompt := &survey.Input{
 				Message: "Enter your name:",
+				Default: respJSON.Name,
 			}
 			err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
 			if err != nil {
@@ -156,6 +168,7 @@ name, timezone
 			}
 			prompt := &survey.Input{
 				Message: "Enter your timezone:",
+				Default: respJSON.Timezone,
 			}
 			err = survey.AskOne(prompt, &flagTimezone, survey.WithValidator(validate))
 			if err != nil {
