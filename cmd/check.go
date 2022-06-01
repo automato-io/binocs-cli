@@ -460,11 +460,11 @@ View check status and metrics.
 			resourceTitle = "URL"
 			methodLine = colorBold.Sprint("Method: ") + respJSON.Method + "\n"
 			if len(respJSON.LastStatusCode) > 0 {
-				responseLine = colorBold.Sprint("Response: ") + respJSON.LastStatusCode + "\n"
+				responseLine = colorBold.Sprint("Response: ") + respJSON.LastStatusCode
 			} else {
-				responseLine = colorBold.Sprint("Response: ") + "[waiting for data]" + "\n"
+				responseLine = colorBold.Sprint("Response: ") + "[waiting for data]"
 			}
-			upHTTPCodesLine = colorFaintBold.Sprint("UP HTTP Codes: ") + colorFaint.Sprint(respJSON.UpCodes) + "\n"
+			upHTTPCodesLine = colorBold.Sprint("UP HTTP Codes: ") + respJSON.UpCodes + "\n"
 		case protocolICMP:
 		case protocolTCP:
 			resourceTitle = "Host"
@@ -482,10 +482,10 @@ View check status and metrics.
 			statusLine = colorBold.Sprint("Status: ") + formatStatus(&respJSON) + "\n"
 		}
 
-		tableMainCheckCellContent := statusLine +
-			colorBold.Sprint(`Name: `) + checkName + "\n" +
+		tableMainCheckCellContent := colorBold.Sprint(`Name: `) + checkName + "\n" +
 			colorBold.Sprint(resourceTitle+`: `) + respJSON.Resource + "\n" +
 			methodLine +
+			statusLine +
 			responseLine
 
 		uptimeValue := formatUptime(metrics.Uptime)
@@ -501,11 +501,11 @@ View check status and metrics.
 			colorBold.Sprint(`Apdex: `) + apdexValue + "\n" +
 			colorBold.Sprint(`MRT: `) + mrtValue
 
-		tableMainSettingsCellContent := colorFaintBold.Sprint(`Checking interval: `) + colorFaint.Sprint(strconv.Itoa(respJSON.Interval)+` s `) + "\n" +
+		tableMainSettingsCellContent := colorBold.Sprint(`Checking interval: `) + strconv.Itoa(respJSON.Interval) + ` s ` + "\n" +
 			upHTTPCodesLine +
-			colorFaintBold.Sprint(`Target response time: `) + colorFaint.Sprintf("%.3f s", respJSON.Target) + "\n" +
-			colorFaintBold.Sprint(`Thresholds: `) + colorFaint.Sprint(`UP - `+strconv.Itoa(respJSON.UpConfirmationsThreshold)+`, DOWN - `+strconv.Itoa(respJSON.DownConfirmationsThreshold)) + "\n" +
-			colorFaintBold.Sprint(`Binocs regions: `) + colorFaint.Sprint(strings.Join(respJSON.Regions, ", "))
+			colorBold.Sprint(`Target response time: `) + fmt.Sprintf("%.3f s", respJSON.Target) + "\n" +
+			colorBold.Sprint(`Thresholds: `) + `UP - ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN - ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + "\n" +
+			colorBold.Sprint(`Binocs regions: `) + strings.Join(respJSON.Regions, ", ")
 
 		tableMain := tablewriter.NewWriter(os.Stdout)
 		tableMain.SetHeader([]string{"CHECK", "METRICS (" + periodTableTitle + ")", "SETTINGS"})
