@@ -79,9 +79,16 @@ Display information about current Binocs user
 			os.Exit(1)
 		}
 
+		timezone, err := time.LoadLocation(respJSON.Timezone)
+		if err != nil {
+			spin.Stop()
+			fmt.Println("Unknown timezone " + respJSON.Timezone)
+			os.Exit(1)
+		}
+
 		tableCheckCellContent := colorBold.Sprint(`Name: `) + respJSON.Name + "\n" +
 			colorBold.Sprint(`E-mail: `) + respJSON.Email + "\n" +
-			colorBold.Sprint(`Timezone: `) + respJSON.Timezone + "\n" +
+			colorBold.Sprint(`Timezone: `) + timezone.String() + "\n" +
 			colorBold.Sprint(`Credit balance: `) + fmt.Sprint(respJSON.CreditBalance)
 
 		table := tablewriter.NewWriter(os.Stdout)
@@ -158,21 +165,15 @@ This command is interactive and asks user for parameters that were not provided 
 
 		_, err = time.LoadLocation(flagTimezone)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Invalid timezone " + flagTimezone)
 			os.Exit(1)
-		} else if !match || flagTimezone == "" {
-			validate := func(val interface{}) error {
-				_, err := time.LoadLocation(val.(string))
-				if err != nil {
-					return errors.New("invalid timezone value")
-				}
-				return nil
-			}
-			prompt := &survey.Input{
+		} else if flagTimezone == "" {
+			prompt := &survey.Select{
 				Message: "Enter your timezone:",
+				Options: util.ListTimezones(),
 				Default: respJSON.Timezone,
 			}
-			err = survey.AskOne(prompt, &flagTimezone, survey.WithValidator(validate))
+			err = survey.AskOne(prompt, &flagTimezone)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
