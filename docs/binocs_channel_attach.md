@@ -5,7 +5,9 @@ Attach channel to check(s)
 ### Synopsis
 
 
-Attach channel to check(s)
+Attach channel to check(s).
+
+This command is interactive and asks user for confirmation.
 
 
 ```

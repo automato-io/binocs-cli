@@ -5,7 +5,9 @@ Add a new notifications channel
 ### Synopsis
 
 
-Add a new notifications channel
+Add a new notifications channel.
+
+This command is interactive and asks user for parameters that were not provided as flags.
 
 
 ```

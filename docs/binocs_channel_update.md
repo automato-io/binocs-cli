@@ -7,6 +7,8 @@ Update existing notification channel
 
 Update existing notification channel.
 
+This command is interactive and asks user for parameters that were not provided as flags.
+
 
 ```
 binocs channel update [flags]

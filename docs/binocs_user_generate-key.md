@@ -1,11 +1,11 @@
 ## binocs user generate-key
 
-Generate new Access ID and Secret Key
+Generate new Access Key and Secret Key
 
 ### Synopsis
 
 
-Generate new Access ID and Secret Key
+Generate new Access Key and Secret Key.
 
 
 ```
@@ -27,5 +27,5 @@ binocs user generate-key [flags]
 
 ### SEE ALSO
 
-* [binocs user](binocs_user.md)	 - Display information about your binocs user
+* [binocs user](binocs_user.md)	 - Display information about current Binocs user
 

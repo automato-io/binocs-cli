@@ -5,7 +5,7 @@ Logout
 ### Synopsis
 
 
-Log out of the binocs user on this machine
+Log out of Binocs on this machine.
 
 
 ```

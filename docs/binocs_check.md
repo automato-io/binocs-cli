@@ -32,5 +32,5 @@ Manage HTTP and HTTPS checks.
 * [binocs check delete](binocs_check_delete.md)	 - Delete existing check(s) and collected metrics
 * [binocs check inspect](binocs_check_inspect.md)	 - View check status and metrics
 * [binocs check list](binocs_check_list.md)	 - List all checks with status and metrics overview
-* [binocs check update](binocs_check_update.md)	 - Update existing check attributes
+* [binocs check update](binocs_check_update.md)	 - Update attributes of an existing check
 

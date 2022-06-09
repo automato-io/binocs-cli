@@ -7,7 +7,7 @@ Add a new endpoint that you want to check
 
 Add a check and start reporting on it. Check identifier is returned upon successful add operation.
 
-This command is interactive and asks user for parameters that were not provided as flags. See the flags overview below.
+This command is interactive and asks user for parameters that were not provided as flags.
 
 
 ```

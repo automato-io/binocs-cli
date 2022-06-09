@@ -1,11 +1,13 @@
 ## binocs login
 
-Login to binocs
+Login to Binocs
 
 ### Synopsis
 
 
-Use your Access Key and Secret Key and login to binocs
+Login to Binocs using your Access Key and Secret Key. 
+
+You can generate key pairs at https://binocs.sh/settings. Later when you're logged in, you can also use "binocs user generate-key" command to generate keys for your other devices.
 
 
 ```

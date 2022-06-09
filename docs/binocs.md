@@ -7,7 +7,7 @@ Monitoring tool for websites, applications and APIs
 
 Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and APIs.
 
-Binocs servers continuously measure uptime and performance of HTTP endpoints. 
+Binocs servers continuously measure uptime and performance of HTTP(S) or TCP endpoints. 
 
 Get insight into current state of your endpoints and metrics history, and receive notifications about any incidents in real-time.
 
@@ -30,9 +30,9 @@ Get insight into current state of your endpoints and metrics history, and receiv
 * [binocs completion](binocs_completion.md)	 - Generate the autocompletion script for the specified shell
 * [binocs incident](binocs_incident.md)	 - Manage incidents
 * [binocs incidents](binocs_incidents.md)	 - List all past and current incidents
-* [binocs login](binocs_login.md)	 - Login to binocs
+* [binocs login](binocs_login.md)	 - Login to Binocs
 * [binocs logout](binocs_logout.md)	 - Logout
 * [binocs regions](binocs_regions.md)	 - List supported regions
-* [binocs user](binocs_user.md)	 - Display information about your binocs user
+* [binocs user](binocs_user.md)	 - Display information about current Binocs user
 * [binocs version](binocs_version.md)	 - Print the Binocs version number
 

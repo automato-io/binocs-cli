@@ -1,12 +1,13 @@
 ## binocs user update
 
-Update current binocs user
+Update current Binocs user
 
 ### Synopsis
 
 
-Update any of the following parameters of the current binocs user: 
-name, timezone
+Update current Binocs user.
+
+This command is interactive and asks user for parameters that were not provided as flags.
 
 
 ```
@@ -30,5 +31,5 @@ binocs user update [flags]
 
 ### SEE ALSO
 
-* [binocs user](binocs_user.md)	 - Display information about your binocs user
+* [binocs user](binocs_user.md)	 - Display information about current Binocs user
 

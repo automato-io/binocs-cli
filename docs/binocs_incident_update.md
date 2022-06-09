@@ -7,6 +7,8 @@ Provide incident with a note
 
 Provide incident with a note. This note would be visible on incident page.
 
+This command is interactive and asks user for parameters that were not provided as flags.
+
 
 ```
 binocs incident update [flags]

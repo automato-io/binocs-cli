@@ -1,11 +1,11 @@
 ## binocs user
 
-Display information about your binocs user
+Display information about current Binocs user
 
 ### Synopsis
 
 
-Display information about your binocs user
+Display information about current Binocs user
 
 
 ```
@@ -28,7 +28,7 @@ binocs user [flags]
 ### SEE ALSO
 
 * [binocs](binocs.md)	 - Monitoring tool for websites, applications and APIs
-* [binocs user generate-key](binocs_user_generate-key.md)	 - Generate new Access ID and Secret Key
+* [binocs user generate-key](binocs_user_generate-key.md)	 - Generate new Access Key and Secret Key
 * [binocs user invalidate-key](binocs_user_invalidate-key.md)	 - Deny future login attempts using this key
-* [binocs user update](binocs_user_update.md)	 - Update current binocs user
+* [binocs user update](binocs_user_update.md)	 - Update current Binocs user
 

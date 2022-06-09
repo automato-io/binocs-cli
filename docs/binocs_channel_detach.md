@@ -5,7 +5,9 @@ Detach channel from check(s)
 ### Synopsis
 
 
-Detach channel from check(s)
+Detach channel from check(s).
+
+This command is interactive and asks user for confirmation.
 
 
 ```

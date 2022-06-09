@@ -7,6 +7,8 @@ Delete notification channel(s)
 
 Delete notification channel(s).
 
+This command is interactive and asks for confirmation.
+
 
 ```
 binocs channel delete [flags]

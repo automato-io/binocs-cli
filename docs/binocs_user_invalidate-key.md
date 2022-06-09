@@ -27,5 +27,5 @@ binocs user invalidate-key [flags]
 
 ### SEE ALSO
 
-* [binocs user](binocs_user.md)	 - Display information about your binocs user
+* [binocs user](binocs_user.md)	 - Display information about current Binocs user
 

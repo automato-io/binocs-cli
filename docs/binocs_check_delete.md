@@ -7,6 +7,8 @@ Delete existing check(s) and collected metrics
 
 Delete existing check(s) and collected metrics.
 
+This command is interactive and asks user for confirmation.
+
 
 ```
 binocs check delete [flags]

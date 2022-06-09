@@ -1,11 +1,13 @@
 ## binocs check update
 
-Update existing check attributes
+Update attributes of an existing check
 
 ### Synopsis
 
 
-Update existing check attributes.
+Update attributes of an existing check.
+
+This command is interactive and asks user for parameters that were not provided as flags.
 
 
 ```
