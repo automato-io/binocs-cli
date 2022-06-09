@@ -39,6 +39,7 @@ type Check struct {
 	UpConfirmations            int      `json:"up_confirmations,omitempty"`
 	DownConfirmationsThreshold int      `json:"down_confirmations_threshold,omitempty"`
 	DownConfirmations          int      `json:"down_confirmations,omitempty"`
+	LastChecked                string   `json:"last_checked,omitempty"`
 	LastStatus                 int      `json:"last_status,omitempty"`
 	LastStatusCode             string   `json:"last_status_code,omitempty"`
 	LastStatusDuration         string   `json:"last_status_duration,omitempty"`
@@ -453,16 +454,16 @@ View check status and metrics.
 
 		// Table "main"
 
-		var resourceTitle, methodLine, responseLine, upHTTPCodesLine, checkName, statusLine string
+		var resourceTitle, methodLine, responseLine, lastCheckedLine, upHTTPCodesLine, checkName, statusLine string
 		switch respJSON.Protocol {
 		case protocolHTTP:
 		case protocolHTTPS:
 			resourceTitle = "URL"
 			methodLine = colorBold.Sprint("Method: ") + respJSON.Method + "\n"
 			if len(respJSON.LastStatusCode) > 0 {
-				responseLine = colorBold.Sprint("Response: ") + respJSON.LastStatusCode
+				responseLine = colorBold.Sprint("Response: ") + respJSON.LastStatusCode + "\n"
 			} else {
-				responseLine = colorBold.Sprint("Response: ") + "[waiting for data]"
+				responseLine = colorBold.Sprint("Response: ") + "[waiting for data]" + "\n"
 			}
 			upHTTPCodesLine = colorBold.Sprint("UP HTTP Codes: ") + respJSON.UpCodes + "\n"
 		case protocolICMP:
@@ -476,6 +477,13 @@ View check status and metrics.
 			checkName = respJSON.Name
 		}
 
+		if respJSON.LastChecked != "nil" {
+			lastChecked, err := time.Parse("2006-01-02 15:04:05 -0700", respJSON.LastChecked)
+			if err == nil {
+				lastCheckedLine = colorBold.Sprint("Last checked: ") + time.Since(lastChecked).Round(1*time.Second).String() + " ago"
+			}
+		}
+
 		if respJSON.LastStatus == statusUnknown {
 			statusLine = ""
 		} else {
@@ -486,7 +494,8 @@ View check status and metrics.
 			colorBold.Sprint(resourceTitle+`: `) + respJSON.Resource + "\n" +
 			methodLine +
 			statusLine +
-			responseLine
+			responseLine +
+			lastCheckedLine
 
 		uptimeValue := formatUptime(metrics.Uptime)
 		apdexValue := formatApdex(metrics.Apdex)
