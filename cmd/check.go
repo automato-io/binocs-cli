@@ -1624,37 +1624,41 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	}
 	spin.Stop()
 
-	match, err = regexp.MatchString(validChannelsIdentListPattern, strings.Join(flagAttach, ","))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	} else if !match || len(flagAttach) == 0 {
-		var options = []string{}
-		for _, ch := range channels {
-			options = append(options, ch.Ident+" "+ch.Type+" "+ch.Identity())
-		}
-		var defaultOptions = []string{}
-		if mode == "update" {
-			for _, cc := range currentCheck.Channels {
-				for _, ch := range channels {
-					if ch.Ident == cc {
-						defaultOption := ch.Ident + " " + ch.Type + " " + ch.Identity()
-						defaultOptions = append(defaultOptions, defaultOption)
-					}
-				}
-			}
-		}
-		prompt := &survey.MultiSelect{
-			Message:  "Channels to attach (optional):",
-			Options:  options,
-			Default:  defaultOptions,
-			PageSize: 9,
-		}
-		err = survey.AskOne(prompt, &flagAttach)
+	if len(channels) > 0 {
+		match, err = regexp.MatchString(validChannelsIdentListPattern, strings.Join(flagAttach, ","))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
+		} else if !match || len(flagAttach) == 0 {
+			var options = []string{}
+			for _, ch := range channels {
+				options = append(options, ch.Ident+" "+ch.Type+" "+ch.Identity())
+			}
+			var defaultOptions = []string{}
+			if mode == "update" {
+				for _, cc := range currentCheck.Channels {
+					for _, ch := range channels {
+						if ch.Ident == cc {
+							defaultOption := ch.Ident + " " + ch.Type + " " + ch.Identity()
+							defaultOptions = append(defaultOptions, defaultOption)
+						}
+					}
+				}
+			}
+			prompt := &survey.MultiSelect{
+				Message:  "Channels to attach (optional):",
+				Options:  options,
+				Default:  defaultOptions,
+				PageSize: 9,
+			}
+			err = survey.AskOne(prompt, &flagAttach)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
+	} else {
+		fmt.Println("No notification channels configured. Skipping.")
 	}
 
 	check := Check{
