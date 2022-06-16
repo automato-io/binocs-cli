@@ -508,11 +508,11 @@ List all notification channels.
 			var used, lastUsed, handle, alias, identSnippet string
 			identSnippet = colorBold.Sprint(v.Ident)
 			if v.UsedCount == 0 {
-				used = colorFaint.Sprint("never")
-				lastUsed = colorFaint.Sprint("n/a")
+				used = "never"
+				lastUsed = "n/a"
 			} else {
-				used = colorFaint.Sprintf("%d ×", v.UsedCount)
-				lastUsed = colorFaint.Sprint(v.LastUsed)
+				used = fmt.Sprintf("%d ×", v.UsedCount)
+				lastUsed = v.LastUsed
 			}
 			if v.Type == channelTypeEmail && v.Verified == "nil" {
 				handle = util.Ellipsis(v.Handle, 50) + " (unverified)"
