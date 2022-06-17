@@ -531,15 +531,15 @@ List all notification channels.
 
 		var tableData [][]string
 		for _, v := range channels {
-			var used, lastUsed, handle, alias, identSnippet string
+			var attached, used, lastUsed, handle, alias, identSnippet string
 			identSnippet = colorBold.Sprint(v.Ident)
 			if v.UsedCount == 0 {
-				used = "never"
 				lastUsed = "n/a"
 			} else {
-				used = fmt.Sprintf("%d ×", v.UsedCount)
 				lastUsed = v.LastUsed
 			}
+			used = fmt.Sprintf("%d ×", v.UsedCount)
+			attached = fmt.Sprintf("%d check(s)", len(v.Checks))
 			if v.Type == channelTypeEmail && v.Verified == "nil" {
 				handle = util.Ellipsis(v.Handle, 50) + " (unverified)"
 			} else {
@@ -551,7 +551,7 @@ List all notification channels.
 				alias = v.Alias
 			}
 			tableRow := []string{
-				identSnippet, v.Type, alias, handle, used, lastUsed,
+				identSnippet, v.Type, alias, handle, attached, used, lastUsed,
 			}
 			tableData = append(tableData, tableRow)
 		}
@@ -576,6 +576,11 @@ List all notification channels.
 				Header:    "HANDLE",
 				Priority:  2,
 				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "ATTACHED",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
 			},
 			{
 				Header:    "USED",
