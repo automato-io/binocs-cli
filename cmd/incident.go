@@ -190,13 +190,13 @@ View incident details, notes and associated requests.
 
 		tableMainColumnDefinitions := []tableColumnDefinition{
 			{
-				Header:    "INCIDENT",
-				Priority:  1,
+				Header:    "CHECK",
+				Priority:  2,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
 			{
-				Header:    "CHECK",
-				Priority:  2,
+				Header:    "INCIDENT",
+				Priority:  1,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
 			{
@@ -207,7 +207,7 @@ View incident details, notes and associated requests.
 		}
 
 		var tableMainData [][]string
-		tableMainData = append(tableMainData, []string{tableMainIncidentCellContent, tableMainCheckCellContent, tableMainNotesCellContent})
+		tableMainData = append(tableMainData, []string{tableMainCheckCellContent, tableMainIncidentCellContent, tableMainNotesCellContent})
 		tableMain := composeTable(tableMainData, tableMainColumnDefinitions)
 
 		// Table "requests"
