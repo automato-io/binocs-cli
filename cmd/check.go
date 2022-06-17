@@ -696,7 +696,7 @@ List all checks with status and metrics overview.
 		ch := make(chan []string)
 		var tableData [][]string
 		for _, v := range checks {
-			go makeCheckListRow(v, ch, &urlValues2)
+			go makeCheckListRow(v, ch, &urlValues2, user.CreditBalance == 0)
 		}
 		for i := range checks {
 			spin.Suffix = colorFaint.Sprintf(" loading metrics... (%d/%d)", i+1, len(checks))
@@ -773,7 +773,7 @@ List all checks with status and metrics overview.
 	},
 }
 
-func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
+func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values, zeroCredits bool) {
 	lastStatusCodeRegex, _ := regexp.Compile(`^[1-5]{1}[0-9]{2}`)
 	lastStatusCodeMatch := lastStatusCodeRegex.FindString(check.LastStatusCode)
 	if lastStatusCodeMatch == "" {
@@ -823,6 +823,13 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values) {
 	identSnippet = colorBold.Sprint(check.Ident)
 	statusSnippet = formatStatus(&check)
 	lastStatusCodeSnippet = lastStatusCodeMatch
+	if zeroCredits {
+		statusSnippet = color.YellowString(statusName[statusUnknown])
+		lastStatusCodeSnippet = "n/a"
+		tableValueMRT = "n/a"
+		tableValueUptime = "n/a"
+		tableValueApdex = "n/a"
+	}
 	tableRow := []string{
 		identSnippet, name, util.Ellipsis(check.Resource, 40), colorFaint.Sprint(method), statusSnippet,
 		colorFaint.Sprint(strconv.Itoa(len(check.Channels))), lastStatusCodeSnippet, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
