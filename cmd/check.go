@@ -490,6 +490,11 @@ View check status and metrics.
 			statusLine = colorBold.Sprint("Status: ") + formatStatus(&respJSON) + "\n"
 		}
 
+		if user.CreditBalance == 0 {
+			statusLine = colorBold.Sprint("Status: ") + color.YellowString(statusName[statusUnknown]) + "\n"
+			responseLine = colorBold.Sprint("Response: ") + "n/a" + "\n"
+		}
+
 		tableMainCheckCellContent := colorBold.Sprint(`ID: `) + respJSON.Ident + "\n" +
 			colorBold.Sprint(`Name: `) + checkName + "\n" +
 			colorBold.Sprint(resourceTitle+`: `) + respJSON.Resource + "\n" +
@@ -505,6 +510,12 @@ View check status and metrics.
 			uptimeValue = "[waiting for data]"
 			apdexValue = "[waiting for data]"
 			mrtValue = "[waiting for data]"
+		}
+
+		if user.CreditBalance == 0 {
+			uptimeValue = "n/a"
+			apdexValue = "n/a"
+			mrtValue = "n/a"
 		}
 
 		tableMainMetricsCellContent := colorBold.Sprint(`Uptime: `) + uptimeValue + "\n" +
