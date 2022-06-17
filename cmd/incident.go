@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/fatih/color"
@@ -38,14 +37,14 @@ type Incident struct {
 
 // Request struct
 type Request struct {
-	Region             string    `json:"region"`
-	Status             int       `json:"status"`
-	RequestProtocol    string    `json:"request_protocol"`
-	RequestResource    string    `json:"request_resource"`
-	RequestMethod      string    `json:"request_method"`
-	ResponseStatusCode string    `json:"response_status"`
-	Timings            Timings   `json:"timings"`
-	Timestamp          time.Time `json:"timestamp"`
+	Region             string  `json:"region"`
+	Status             int     `json:"status"`
+	RequestProtocol    string  `json:"request_protocol"`
+	RequestResource    string  `json:"request_resource"`
+	RequestMethod      string  `json:"request_method"`
+	ResponseStatusCode string  `json:"response_status"`
+	Timings            Timings `json:"timings"`
+	Timestamp          string  `json:"timestamp"`
 }
 
 // Timings struct
@@ -157,20 +156,11 @@ View incident details, notes and associated requests.
 			stateSnippet = color.GreenString(strings.ToUpper(respJSON.IncidentState))
 		}
 
-		var openedSnippet string
-		opened, err := time.Parse("2006-01-02 15:04:05 -0700", respJSON.Opened)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		openedSnippet = opened.Format("2006-01-02 15:04:05 +07:00")
+		var openedSnippet = respJSON.Opened
 
-		var closedSnippet string
-		closed, err := time.Parse("2006-01-02 15:04:05 -0700", respJSON.Closed)
-		if err != nil {
+		var closedSnippet = respJSON.Closed
+		if closedSnippet == "" {
 			closedSnippet = "-"
-		} else {
-			closedSnippet = closed.Format("2006-01-02 15:04:05 +07:00")
 		}
 
 		tableMainIncidentCellContent := colorBold.Sprint(`ID: `) + respJSON.Ident + "\n" +
@@ -214,7 +204,7 @@ View incident details, notes and associated requests.
 
 		tableRequestsColumnDefinitions := []tableColumnDefinition{
 			{
-				Header:    "CHECKED AT (@TZ)",
+				Header:    "CHECKED AT",
 				Priority:  1,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
@@ -263,10 +253,8 @@ View incident details, notes and associated requests.
 		var tableRequests *tablewriter.Table
 		var tableRequestsData [][]string
 		if len(respJSON.Requests) > 0 {
-			// tz := respJSON.Requests[0].Timestamp.Format("-07:00")
-			checkedAtDateFormat := "2006-01-02 15:04:05"
+
 			var placeholder = "·"
-			var fieldLengthCheckedAt = len(checkedAtDateFormat)
 			var fieldLengthCheckedFrom int
 			for _, request := range respJSON.Requests {
 				if fieldLengthCheckedFrom < len(request.Region) {
@@ -274,8 +262,8 @@ View incident details, notes and associated requests.
 				}
 			}
 			for _, request := range respJSON.Requests {
-				if strings.Contains(request.Timestamp.String(), "0001") {
-					sameSameSpace := fieldLengthCheckedAt - len(request.RequestResource+" requests") - 2
+				if strings.Contains(request.Timestamp, "0001") {
+					sameSameSpace := len(request.Timestamp) - len(request.RequestResource+" requests") - 2
 					sameSamePlaceholders := [2]int{0, 0}
 					if sameSameSpace > 0 {
 						if sameSameSpace%2 == 1 {
@@ -312,7 +300,7 @@ View incident details, notes and associated requests.
 						timingsWait = "n/a"
 						timingsTransfer = "n/a"
 					}
-					tableRequestsData = append(tableRequestsData, []string{request.Timestamp.Format(checkedAtDateFormat), request.Region, request.ResponseStatusCode, responseTime, colorFaint.Sprint(timingsDNSLookup),
+					tableRequestsData = append(tableRequestsData, []string{request.Timestamp, request.Region, request.ResponseStatusCode, responseTime, colorFaint.Sprint(timingsDNSLookup),
 						colorFaint.Sprint(timingsConnection), colorFaint.Sprint(timingsTLS), colorFaint.Sprint(timingsWait), colorFaint.Sprint(timingsTransfer)})
 				}
 			}
