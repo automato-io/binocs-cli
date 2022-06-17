@@ -649,7 +649,7 @@ List all checks with status and metrics overview.
 		apdexPeriodTableTitle := "1 DAY"
 
 		match, err := regexp.MatchString(validPeriodPattern, checkListFlagPeriod)
-		if err == nil && match == true {
+		if err == nil && match {
 			urlValues2.Set("period", checkListFlagPeriod)
 			switch checkListFlagPeriod {
 			case "hour":
@@ -665,7 +665,7 @@ List all checks with status and metrics overview.
 
 		// @todo check against currently supported GET /regions
 		match, err = regexp.MatchString(validRegionPattern, checkListFlagRegion)
-		if len(checkListFlagRegion) > 0 && match == false {
+		if len(checkListFlagRegion) > 0 && !match {
 			fmt.Println("Invalid region provided")
 			os.Exit(1)
 		} else if err == nil && match {
