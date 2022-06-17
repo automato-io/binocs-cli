@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/automato-io/s3update"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
+	"github.com/muesli/reflow/ansi"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -206,9 +209,114 @@ func initAutoUpdater() {
 }
 
 func printZeroCreditsWarning() {
-	creditsBalanceWarning := "WARNING: Your credit balance reached zero and all your checks were paused.\nIf you wish to continue using Binocs, please visit the Settings page at https://binocs.sh/settings to purchase additional credits.\nYour checks will resume once you top up credits."
+	creditsBalanceWarning := color.RedString("WARNING: ") + "Your credit balance reached zero and all your checks were paused.\nIf you wish to continue using Binocs, please visit the Settings page at https://binocs.sh/settings to purchase additional credits.\nYour checks will resume once you top up credits."
 	tableCreditsBalanceWarning := tablewriter.NewWriter(os.Stdout)
+	tableCreditsBalanceWarning.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
+	tableCreditsBalanceWarning.SetCenterSeparator(colorFaint.Sprint("┼"))
+	tableCreditsBalanceWarning.SetColumnSeparator(colorFaint.Sprint("│"))
+	tableCreditsBalanceWarning.SetRowSeparator(colorFaint.Sprint("─"))
 	tableCreditsBalanceWarning.SetAutoWrapText(false)
 	tableCreditsBalanceWarning.Append([]string{creditsBalanceWarning})
 	tableCreditsBalanceWarning.Render()
+}
+
+type tableColumnDefinition struct {
+	Header    string
+	Priority  int8
+	Alignment int
+	hidden    bool
+}
+
+func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewriter.Table {
+	physicalWidth, _, _ := term.GetSize(int(os.Stdout.Fd()))
+	tableCellWidths := make([]int, len(columnDefs))
+	for _, v := range data {
+		for i, w := range v {
+			lines := regexp.MustCompile("\r?\n").Split(w, -1)
+			lineMaxWidth := ansi.PrintableRuneWidth(columnDefs[i].Header)
+			for _, line := range lines {
+				l := ansi.PrintableRuneWidth(line)
+				if l > lineMaxWidth {
+					lineMaxWidth = l
+				}
+			}
+			if tableCellWidths[i] < lineMaxWidth {
+				tableCellWidths[i] = lineMaxWidth
+			}
+		}
+	}
+	for {
+		currentColumnsCount := 0
+		currentTableWidth := 0
+		currentLowestPriority := 0
+		currentShortestWidth := 0
+		nextToHide := -1
+		for i, c := range columnDefs {
+			if !c.hidden {
+				currentColumnsCount++
+				currentTableWidth = currentTableWidth + tableCellWidths[i] + 2 // 2 for cell padding
+				if currentLowestPriority < int(c.Priority) {
+					currentLowestPriority = int(c.Priority)
+				}
+			}
+		}
+		currentTableWidth = currentTableWidth + currentColumnsCount + 1 // borders
+		if currentTableWidth <= physicalWidth {
+			break
+		}
+		for i, c := range columnDefs {
+			if !c.hidden && c.Priority == int8(currentLowestPriority) {
+				if currentShortestWidth == 0 || tableCellWidths[i] < currentShortestWidth {
+					currentShortestWidth = tableCellWidths[i]
+					nextToHide = i
+				}
+			}
+		}
+		if nextToHide < 0 {
+			fmt.Println("Error drawing a table, cannot hide another column")
+			os.Exit(1)
+		}
+		columnDefs[nextToHide].hidden = true
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
+	table.SetCenterSeparator(colorFaint.Sprint("┼"))
+	table.SetColumnSeparator(colorFaint.Sprint("│"))
+	table.SetRowSeparator(colorFaint.Sprint("─"))
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoWrapText(false)
+
+	var tableHeaders []string
+	var tableHeadersEnabled bool
+	var tableHeadersColor []tablewriter.Colors
+	var tableColumnAlignments []int
+	for _, c := range columnDefs {
+		if !c.hidden {
+			tableHeaders = append(tableHeaders, c.Header)
+			if len(c.Header) > 0 {
+				tableHeadersEnabled = true
+			}
+			tableHeadersColor = append(tableHeadersColor, tablewriter.Colors{tablewriter.Bold})
+			tableColumnAlignments = append(tableColumnAlignments, c.Alignment)
+		}
+	}
+
+	if tableHeadersEnabled {
+		table.SetHeader(tableHeaders)
+		table.SetHeaderColor(tableHeadersColor...)
+	}
+	table.SetColumnAlignment(tableColumnAlignments)
+
+	for _, v := range data {
+		row := []string{}
+		for i, c := range columnDefs {
+			if !c.hidden {
+				row = append(row, v[i])
+			}
+		}
+		table.Append(row)
+	}
+
+	return table
 }

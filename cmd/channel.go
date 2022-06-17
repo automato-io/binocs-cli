@@ -460,16 +460,32 @@ View channel details and attached checks.
 			colorBold.Sprint(`Type: `) + respJSON.Type + "\n" +
 			colorBold.Sprint(`Alias: `) + alias + "\n" +
 			colorBold.Sprint(`Handle: `) + handle + "\n" +
-			colorBold.Sprint(`Used: `) + used + "\n" +
-			colorBold.Sprint(`Last used: `) + lastUsed
+			colorBold.Sprint(`Last used: `) + lastUsed + "\n" +
+			colorBold.Sprint(`Used: `) + used
 
-		tableMain := tablewriter.NewWriter(os.Stdout)
-		tableMain.SetHeader([]string{"CHANNEL"})
-		tableMain.SetAutoWrapText(false)
-		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		tableMain.SetHeaderColor(tablewriter.Colors{tablewriter.Bold})
-		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT})
-		tableMain.Append([]string{tableMainChannelCellContent})
+		tableMainChecksCellContent := ""
+		if len(respJSON.Checks) > 0 {
+			tableMainChecksCellContent = strings.Join(respJSON.Checks, "\n")
+		} else {
+			tableMainChecksCellContent = "-"
+		}
+
+		columnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "CHANNEL",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "ATTACHED CHECKS",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+		}
+
+		var tableData [][]string
+		tableData = append(tableData, []string{tableMainChannelCellContent, tableMainChecksCellContent})
+		tableMain := composeTable(tableData, columnDefinitions)
 
 		spin.Stop()
 		tableMain.Render()
@@ -529,15 +545,41 @@ List all notification channels.
 			}
 			tableData = append(tableData, tableRow)
 		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetHeader([]string{"ID", "TYPE", "ALIAS", "HANDLE", "USED", "LAST USED"})
-		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
-		for _, v := range tableData {
-			table.Append(v)
+
+		columnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "ID",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "TYPE",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "ALIAS",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "HANDLE",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "USED",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "LAST USED",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
 		}
+
+		table := composeTable(tableData, columnDefinitions)
 		spin.Stop()
 		table.Render()
 	},

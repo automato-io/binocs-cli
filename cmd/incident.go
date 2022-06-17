@@ -188,28 +188,83 @@ View incident details, notes and associated requests.
 			tableMainNotesCellContent = colorFaint.Sprint("-")
 		}
 
-		tableMain := tablewriter.NewWriter(os.Stdout)
-		tableMain.SetHeader([]string{"INCIDENT", "CHECK", "NOTES"})
-		tableMain.SetAutoWrapText(false)
-		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		tableMain.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
-		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
-		tableMain.Append([]string{tableMainIncidentCellContent, tableMainCheckCellContent, tableMainNotesCellContent})
+		tableMainColumnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "INCIDENT",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "CHECK",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "NOTES",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+		}
+
+		var tableMainData [][]string
+		tableMainData = append(tableMainData, []string{tableMainIncidentCellContent, tableMainCheckCellContent, tableMainNotesCellContent})
+		tableMain := composeTable(tableMainData, tableMainColumnDefinitions)
 
 		// Table "requests"
 
-		tableRequests := tablewriter.NewWriter(os.Stdout)
+		tableRequestsColumnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "CHECKED AT (@TZ)",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "CHECKED FROM",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "RESPONSE",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "RESPONSE TIME",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "DNS LOOKUP",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "CONNECTION",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "TLS",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "WAITING",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "TRANSFER",
+				Priority:  4,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+		}
+
+		var tableRequests *tablewriter.Table
+		var tableRequestsData [][]string
 		if len(respJSON.Requests) > 0 {
-			tz := respJSON.Requests[0].Timestamp.Format("-07:00")
+			// tz := respJSON.Requests[0].Timestamp.Format("-07:00")
 			checkedAtDateFormat := "2006-01-02 15:04:05"
-			tableRequests.SetAutoWrapText(false)
-			tableRequests.SetHeader([]string{"CHECKED AT (" + tz + ")", "CHECKED FROM", "RESPONSE", "RESPONSE TIME", "DNS LOOKUP",
-				"CONNECTION", "TLS", "WAITING", "TRANSFER"})
-			tableRequests.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-			tableRequests.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold},
-				tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
-			tableRequests.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
-				tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT})
 			var placeholder = "·"
 			var fieldLengthCheckedAt = len(checkedAtDateFormat)
 			var fieldLengthCheckedFrom int
@@ -232,7 +287,7 @@ View incident details, notes and associated requests.
 						}
 					}
 					sameSame := fmt.Sprintf("%s %s requests %s", strings.Repeat(placeholder, sameSamePlaceholders[0]), request.RequestResource, strings.Repeat(placeholder, sameSamePlaceholders[1]))
-					tableRequests.Append([]string{sameSame, strings.Repeat(placeholder, fieldLengthCheckedFrom), request.ResponseStatusCode, strings.Repeat(placeholder, 7), colorFaint.Sprint(strings.Repeat(placeholder, 7)),
+					tableRequestsData = append(tableRequestsData, []string{sameSame, strings.Repeat(placeholder, fieldLengthCheckedFrom), request.ResponseStatusCode, strings.Repeat(placeholder, 7), colorFaint.Sprint(strings.Repeat(placeholder, 7)),
 						colorFaint.Sprint(strings.Repeat(placeholder, 7)), colorFaint.Sprint(strings.Repeat(placeholder, 7)), colorFaint.Sprint(strings.Repeat(placeholder, 7)), colorFaint.Sprint(strings.Repeat(placeholder, 7))})
 				} else {
 					var responseTime, timingsDNSLookup, timingsConnection, timingsTLS, timingsWait, timingsTransfer string
@@ -257,10 +312,11 @@ View incident details, notes and associated requests.
 						timingsWait = "n/a"
 						timingsTransfer = "n/a"
 					}
-					tableRequests.Append([]string{request.Timestamp.Format(checkedAtDateFormat), request.Region, request.ResponseStatusCode, responseTime, colorFaint.Sprint(timingsDNSLookup),
+					tableRequestsData = append(tableRequestsData, []string{request.Timestamp.Format(checkedAtDateFormat), request.Region, request.ResponseStatusCode, responseTime, colorFaint.Sprint(timingsDNSLookup),
 						colorFaint.Sprint(timingsConnection), colorFaint.Sprint(timingsTLS), colorFaint.Sprint(timingsWait), colorFaint.Sprint(timingsTransfer)})
 				}
 			}
+			tableRequests = composeTable(tableRequestsData, tableRequestsColumnDefinitions)
 		}
 
 		spin.Stop()
@@ -269,7 +325,6 @@ View incident details, notes and associated requests.
 		}
 		tableMain.Render()
 		if len(respJSON.Requests) > 0 {
-			fmt.Println()
 			tableRequests.Render()
 		}
 	},
@@ -313,6 +368,7 @@ List all past and current incidents.
 		if incidentListFlagResolved {
 			urlValues.Set("state", "resolved")
 		}
+
 		incidents, err := fetchIncidents(urlValues)
 		if err != nil {
 			fmt.Println(err)
@@ -352,15 +408,57 @@ List all past and current incidents.
 			}
 			tableData = append(tableData, tableRow)
 		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"INCIDENT ID", "CHECK ID", "CHECK NAME", "URL/HOST", "STATE", "OPENED" + timezone, "CLOSED", "DURATION", "RESPONSES"})
-		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold},
-			tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_LEFT, tablewriter.ALIGN_DEFAULT})
-		for _, v := range tableData {
-			table.Append(v)
+
+		columnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "INCIDENT ID",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "CHECK ID",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "CHECK NAME",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "URL/HOST",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "STATE",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "OPENED" + timezone,
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "CLOSED",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "DURATION",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "RESPONSES",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
 		}
+
+		table := composeTable(tableData, columnDefinitions)
+
 		spin.Stop()
 		if user.CreditBalance == 0 {
 			printZeroCreditsWarning()

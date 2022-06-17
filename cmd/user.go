@@ -91,12 +91,18 @@ Display information about current Binocs user
 			colorBold.Sprint(`Timezone: `) + timezone.String() + "\n" +
 			colorBold.Sprint(`Credit balance: `) + fmt.Sprint(respJSON.CreditBalance)
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetHeader([]string{"USER"})
-		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold})
-		table.Append([]string{tableCheckCellContent})
+		var tableData [][]string
+		tableData = append(tableData, []string{tableCheckCellContent})
+
+		columnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "USER",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+		}
+
+		table := composeTable(tableData, columnDefinitions)
 		spin.Stop()
 		if respJSON.CreditBalance == 0 {
 			printZeroCreditsWarning()

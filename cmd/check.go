@@ -516,20 +516,39 @@ View check status and metrics.
 			colorBold.Sprint(`Thresholds: `) + `UP - ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN - ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + "\n" +
 			colorBold.Sprint(`Binocs regions: `) + strings.Join(respJSON.Regions, ", ")
 
-		tableMain := tablewriter.NewWriter(os.Stdout)
-		tableMain.SetHeader([]string{"CHECK", "METRICS (" + periodTableTitle + ")", "SETTINGS"})
-		tableMain.SetAutoWrapText(false)
-		tableMain.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		tableMain.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
-		tableMain.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT})
-		tableMain.Append([]string{tableMainCheckCellContent, tableMainMetricsCellContent, tableMainSettingsCellContent})
+		tableMainColumnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "CHECK",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "METRICS (" + periodTableTitle + ")",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "SETTINGS",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+		}
+
+		var tableMainData [][]string
+		tableMainData = append(tableMainData, []string{tableMainCheckCellContent, tableMainMetricsCellContent, tableMainSettingsCellContent})
+		tableMain := composeTable(tableMainData, tableMainColumnDefinitions)
 
 		// Combined table
 
-		tableCharts := tablewriter.NewWriter(os.Stdout)
-		tableCharts.SetAutoWrapText(false)
-		tableCharts.SetRowLine(true)
-		tableCharts.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT})
+		tableChartsColumnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+		}
+
+		var tableChartsData [][]string
 
 		// Sub-table "http response codes"
 
@@ -549,8 +568,8 @@ View check status and metrics.
 
 			responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "            ")
 			responseCodesChartTitle := drawChartTitle("HTTP RESPONSE CODES", responseCodesChart, periodTableTitle)
-			tableCharts.Append([]string{responseCodesChartTitle})
-			tableCharts.Append([]string{responseCodesChart})
+			tableChartsData = append(tableChartsData, []string{responseCodesChartTitle})
+			tableChartsData = append(tableChartsData, []string{responseCodesChart})
 		}
 
 		// Sub-table "apdex trend"
@@ -570,8 +589,8 @@ View check status and metrics.
 
 		apdexChart := drawApdexChart(apdex, aggregateMetricsDataPoints[urlValues.Get("period")], "      ")
 		apdexChartTitle := drawChartTitle("APDEX TREND", apdexChart, periodTableTitle)
-		tableCharts.Append([]string{apdexChartTitle})
-		tableCharts.Append([]string{apdexChart})
+		tableChartsData = append(tableChartsData, []string{apdexChartTitle})
+		tableChartsData = append(tableChartsData, []string{apdexChart})
 
 		// Sub-table "response times heatmap"
 
@@ -590,20 +609,22 @@ View check status and metrics.
 
 		responseTimeHeatmapChart := drawResponseTimeHeatmapChart(responseTimeHeatmap, aggregateMetricsDataPoints[urlValues.Get("period")], "")
 		responseTimeHeatmapChartTitle := drawChartTitle("RESPONSE TIME HEATMAP", responseTimeHeatmapChart, periodTableTitle)
-		tableCharts.Append([]string{responseTimeHeatmapChartTitle})
-		tableCharts.Append([]string{responseTimeHeatmapChart})
+		tableChartsData = append(tableChartsData, []string{responseTimeHeatmapChartTitle})
+		tableChartsData = append(tableChartsData, []string{responseTimeHeatmapChart})
 
 		// Timeline
 
 		timeline := drawTimeline(&user, urlValues.Get("period"), aggregateMetricsDataPoints[urlValues.Get("period")], "                ")
-		tableCharts.Append([]string{timeline})
+		tableChartsData = append(tableChartsData, []string{timeline})
+
+		tableCharts := composeTable(tableChartsData, tableChartsColumnDefinitions)
+		tableCharts.SetRowLine(true)
 
 		spin.Stop()
 		if user.CreditBalance == 0 {
 			printZeroCreditsWarning()
 		}
 		tableMain.Render()
-		fmt.Println()
 		tableCharts.Render()
 	},
 }
@@ -684,18 +705,65 @@ List all checks with status and metrics overview.
 			return strings.ToLower(tableData[i][1]) < strings.ToLower(tableData[j][1])
 		})
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"ID", "NAME", "URL/HOST", "METHOD", "STATUS", "CHAN", "HTTP", "MRT", "UPTIME", "APDEX", "APDEX " + apdexPeriodTableTitle})
-		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold},
-			tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold}, tablewriter.Colors{tablewriter.Bold})
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_DEFAULT, tablewriter.ALIGN_RIGHT,
-			tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT, tablewriter.ALIGN_RIGHT,
-		})
-		for _, v := range tableData {
-			table.Append(v)
+		columnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "ID",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "NAME",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "URL/HOST",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "METHOD",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "STATUS",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "CHAN",
+				Priority:  4,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
+				Header:    "HTTP",
+				Priority:  3,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "MRT",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "UPTIME",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "APDEX",
+				Priority:  2,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
+			{
+				Header:    "APDEX " + apdexPeriodTableTitle,
+				Priority:  4,
+				Alignment: tablewriter.ALIGN_RIGHT,
+			},
 		}
+
+		table := composeTable(tableData, columnDefinitions)
 		spin.Stop()
 		if user.CreditBalance == 0 {
 			printZeroCreditsWarning()

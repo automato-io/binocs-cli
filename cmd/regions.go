@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -30,14 +28,16 @@ List the regions Binocs makes requests from
 			tableRow := []string{v}
 			tableData = append(tableData, tableRow)
 		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetHeader([]string{"REGIONS"})
-		table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold})
-		for _, v := range tableData {
-			table.Append(v)
+
+		columnDefinitions := []tableColumnDefinition{
+			{
+				Header:    "REGIONS",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
 		}
+
+		table := composeTable(tableData, columnDefinitions)
 		spin.Stop()
 		table.Render()
 	},
