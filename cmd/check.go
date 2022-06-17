@@ -490,7 +490,8 @@ View check status and metrics.
 			statusLine = colorBold.Sprint("Status: ") + formatStatus(&respJSON) + "\n"
 		}
 
-		tableMainCheckCellContent := colorBold.Sprint(`Name: `) + checkName + "\n" +
+		tableMainCheckCellContent := colorBold.Sprint(`ID: `) + respJSON.Ident + "\n" +
+			colorBold.Sprint(`Name: `) + checkName + "\n" +
 			colorBold.Sprint(resourceTitle+`: `) + respJSON.Resource + "\n" +
 			methodLine +
 			statusLine +

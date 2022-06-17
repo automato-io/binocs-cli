@@ -455,7 +455,6 @@ View channel details and attached checks.
 			alias = respJSON.Alias
 		}
 
-		// @todo show ID field in check and incident detail as well
 		tableMainChannelCellContent := colorBold.Sprint(`ID: `) + respJSON.Ident + "\n" +
 			colorBold.Sprint(`Type: `) + respJSON.Type + "\n" +
 			colorBold.Sprint(`Alias: `) + alias + "\n" +
