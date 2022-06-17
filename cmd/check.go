@@ -667,7 +667,7 @@ List all checks with status and metrics overview.
 		if len(checkListFlagRegion) > 0 && match == false {
 			fmt.Println("Invalid region provided")
 			os.Exit(1)
-		} else if err == nil && match == true {
+		} else if err == nil && match {
 			urlValues2.Set("region", checkListFlagRegion)
 		}
 

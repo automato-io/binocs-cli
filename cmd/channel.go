@@ -463,11 +463,22 @@ View channel details and attached checks.
 			colorBold.Sprint(`Last used: `) + lastUsed + "\n" +
 			colorBold.Sprint(`Used: `) + used
 
-		tableMainChecksCellContent := ""
+		var tableMainChecksCellContent []string
 		if len(respJSON.Checks) > 0 {
-			tableMainChecksCellContent = strings.Join(respJSON.Checks, "\n")
+			checks, err := fetchChecks(url.Values{})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			for _, c := range checks {
+				for _, cc := range respJSON.Checks {
+					if c.Ident == cc {
+						tableMainChecksCellContent = append(tableMainChecksCellContent, c.Ident+" - "+c.Identity())
+					}
+				}
+			}
 		} else {
-			tableMainChecksCellContent = "-"
+			tableMainChecksCellContent = []string{"-"}
 		}
 
 		columnDefinitions := []tableColumnDefinition{
@@ -484,7 +495,7 @@ View channel details and attached checks.
 		}
 
 		var tableData [][]string
-		tableData = append(tableData, []string{tableMainChannelCellContent, tableMainChecksCellContent})
+		tableData = append(tableData, []string{tableMainChannelCellContent, strings.Join(tableMainChecksCellContent, "\n")})
 		tableMain := composeTable(tableData, columnDefinitions)
 
 		spin.Stop()
