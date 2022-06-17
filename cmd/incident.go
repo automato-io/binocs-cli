@@ -375,14 +375,7 @@ List all past and current incidents.
 			os.Exit(1)
 		}
 		var tableData [][]string
-		var timezone string
 		for _, v := range incidents {
-			// Mon Jan 2 15:04:05 -0700 MST 2006
-			opened, err := time.Parse("2006-01-02 15:04:05 -0700", v.Opened)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
 			var identSnippet, checkNameSnippet, stateSnippet, closedSnippet, responseCodesSnippet string
 			identSnippet = colorBold.Sprint(v.Ident)
 			if v.CheckName == "" {
@@ -402,9 +395,9 @@ List all past and current incidents.
 				closedSnippet = v.Closed
 			}
 			responseCodesSnippet = colorFaint.Sprint(strings.Join(v.ResponseCodes, "\n"))
-			timezone = opened.Format(" (-07:00)")
+
 			tableRow := []string{
-				identSnippet, v.CheckIdent, checkNameSnippet, util.Ellipsis(v.CheckResource, 50), stateSnippet, opened.Format("2006-01-02 15:04:05"), closedSnippet, util.OutputDurationWithDays(v.Duration), responseCodesSnippet,
+				identSnippet, v.CheckIdent, checkNameSnippet, util.Ellipsis(v.CheckResource, 50), stateSnippet, v.Opened, closedSnippet, util.OutputDurationWithDays(v.Duration), responseCodesSnippet,
 			}
 			tableData = append(tableData, tableRow)
 		}
@@ -436,7 +429,7 @@ List all past and current incidents.
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
 			{
-				Header:    "OPENED" + timezone,
+				Header:    "OPENED",
 				Priority:  2,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
