@@ -86,6 +86,8 @@ var colorBold = color.New(color.Bold)
 
 var colorFaint = color.New(color.Faint)
 
+var colorUnderline = color.New(color.Underline)
+
 var colorFaintBold = color.New(color.Faint, color.Bold)
 
 // rootCmd represents the base command when called without any subcommands
@@ -209,7 +211,7 @@ func initAutoUpdater() {
 }
 
 func printZeroCreditsWarning() {
-	creditsBalanceWarning := color.RedString("WARNING: ") + "Your credit balance reached zero and all your checks were paused.\nIf you wish to continue using Binocs, please visit the Settings page at https://binocs.sh/settings to purchase additional credits.\nYour checks will resume once you top up credits."
+	creditsBalanceWarning := color.RedString("WARNING: ") + "Your credit balance reached zero and all your checks were paused.\nIf you wish to continue using Binocs, please visit the Settings page at " + colorUnderline.Sprint("https://binocs.sh/settings") + " to purchase additional credits.\nYour checks will resume once you top up credits."
 	tableCreditsBalanceWarning := tablewriter.NewWriter(os.Stdout)
 	tableCreditsBalanceWarning.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
 	tableCreditsBalanceWarning.SetCenterSeparator(colorFaint.Sprint("┼"))
