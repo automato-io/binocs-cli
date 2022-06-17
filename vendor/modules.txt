@@ -3,7 +3,7 @@
 github.com/AlecAivazis/survey/v2
 github.com/AlecAivazis/survey/v2/core
 github.com/AlecAivazis/survey/v2/terminal
-# github.com/automato-io/s3update v0.1.1-0.20201020183735-c3f312c610b6 => /Users/jrslv/Code/go/src/github.com/automato-io/s3update
+# github.com/automato-io/s3update v0.1.1-0.20201020183735-c3f312c610b6
 ## explicit; go 1.15
 github.com/automato-io/s3update
 # github.com/briandowns/spinner v1.18.1
@@ -126,4 +126,3 @@ gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
-# github.com/automato-io/s3update => /Users/jrslv/Code/go/src/github.com/automato-io/s3update
