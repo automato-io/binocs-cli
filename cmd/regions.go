@@ -25,7 +25,8 @@ List the regions Binocs makes requests from
 
 		var tableData [][]string
 		for _, v := range supportedRegions {
-			tableRow := []string{v}
+			regionAlias := regionAliases[v]
+			tableRow := []string{regionAlias}
 			tableData = append(tableData, tableRow)
 		}
 
