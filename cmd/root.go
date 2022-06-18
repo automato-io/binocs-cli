@@ -80,6 +80,31 @@ var (
 	colorFaintBold = color.New(color.Faint, color.Bold)
 )
 
+var (
+	supportedRegions = []string{}
+	defaultRegions   = []string{ // @todo fetch via API
+		"us-east-1",
+		"us-west-1",
+		"ap-northeast-1",
+		"ap-southeast-1",
+		"eu-central-1",
+		"eu-west-1",
+	}
+	regionAliases = map[string]string{
+		"af-south-1":     "South Africa",
+		"ap-east-1":      "Hong Kong",
+		"ap-northeast-1": "Japan",
+		"ap-south-1":     "India",
+		"ap-southeast-1": "Singapore",
+		"ap-southeast-2": "Australia",
+		"eu-central-1":   "Germany",
+		"eu-west-1":      "Ireland",
+		"sa-east-1":      "Brazil",
+		"us-east-1":      "US East",
+		"us-west-1":      "US West",
+	}
+)
+
 // Verbose flag
 var Verbose bool
 

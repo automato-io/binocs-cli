@@ -195,18 +195,6 @@ var aggregateMetricsDataPoints = map[string]int{
 	periodMonth: 120,
 }
 
-var supportedRegions = []string{}
-
-// @todo fetch via API
-var defaultRegions = []string{
-	"us-east-1",
-	"us-west-1",
-	"ap-northeast-1",
-	"ap-southeast-1",
-	"eu-central-1",
-	"eu-west-1",
-}
-
 func init() {
 	loadSupportedRegions()
 
