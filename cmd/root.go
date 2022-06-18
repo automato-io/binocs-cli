@@ -73,6 +73,13 @@ const (
 	incidentStateResolved = "resolved"
 )
 
+var (
+	colorBold      = color.New(color.Bold)
+	colorFaint     = color.New(color.Faint)
+	colorUnderline = color.New(color.Underline)
+	colorFaintBold = color.New(color.Faint, color.Bold)
+)
+
 // Verbose flag
 var Verbose bool
 
@@ -81,14 +88,6 @@ var AutoUpdateInterval = 3600 * 24 * 2
 var cfgFile string
 
 var spin = spinner.New(spinner.CharSets[53], 100*time.Millisecond, spinner.WithColor("faint"))
-
-var colorBold = color.New(color.Bold)
-
-var colorFaint = color.New(color.Faint)
-
-var colorUnderline = color.New(color.Underline)
-
-var colorFaintBold = color.New(color.Faint, color.Bold)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
