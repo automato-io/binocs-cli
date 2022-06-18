@@ -510,11 +510,24 @@ View check status and metrics.
 			colorBold.Sprint(`Apdex: `) + apdexValue + "\n" +
 			colorBold.Sprint(`MRT: `) + mrtValue
 
+		regions := ""
+		for i, v := range respJSON.Regions {
+			if len(regions) > 0 {
+				if i%4 == 0 {
+					regions = regions + ",\n" + regionAliases[v]
+				} else {
+					regions = regions + ", " + regionAliases[v]
+				}
+			} else {
+				regions = regionAliases[v]
+			}
+		}
+
 		tableMainSettingsCellContent := colorBold.Sprint(`Checking interval: `) + strconv.Itoa(respJSON.Interval) + ` s ` + "\n" +
 			upHTTPCodesLine +
 			colorBold.Sprint(`Target response time: `) + fmt.Sprintf("%.3f s", respJSON.Target) + "\n" +
 			colorBold.Sprint(`Thresholds: `) + `UP - ` + strconv.Itoa(respJSON.UpConfirmationsThreshold) + `, DOWN - ` + strconv.Itoa(respJSON.DownConfirmationsThreshold) + "\n" +
-			colorBold.Sprint(`Binocs regions: `) + strings.Join(respJSON.Regions, ", ")
+			colorBold.Sprint(`Binocs regions: `) + regions
 
 		tableMainColumnDefinitions := []tableColumnDefinition{
 			{
