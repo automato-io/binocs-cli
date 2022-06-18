@@ -675,13 +675,12 @@ List all checks with status and metrics overview.
 			}
 		}
 
-		// @todo check against currently supported GET /regions
-		match, err = regexp.MatchString(validRegionPattern, checkListFlagRegion)
+		match = isValidRegionAlias(checkListFlagRegion)
 		if len(checkListFlagRegion) > 0 && !match {
-			fmt.Println("Invalid region provided")
+			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getRegionAliases(), ", "))
 			os.Exit(1)
 		} else if err == nil && match {
-			urlValues2.Set("region", checkListFlagRegion)
+			urlValues2.Set("region", getRegionByAlias(checkListFlagRegion))
 		}
 
 		checkListFlagStatus = strings.ToUpper(checkListFlagStatus)
