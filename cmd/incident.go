@@ -209,7 +209,7 @@ View incident details, notes and associated requests.
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
 			{
-				Header:    "CHECKED FROM",
+				Header:    "FROM",
 				Priority:  2,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
@@ -253,12 +253,11 @@ View incident details, notes and associated requests.
 		var tableRequests *tablewriter.Table
 		var tableRequestsData [][]string
 		if len(respJSON.Requests) > 0 {
-
 			var placeholder = "·"
 			var fieldLengthCheckedFrom int
 			for _, request := range respJSON.Requests {
-				if fieldLengthCheckedFrom < len(request.Region) {
-					fieldLengthCheckedFrom = len(request.Region)
+				if fieldLengthCheckedFrom < len(regionAliases[request.Region]) {
+					fieldLengthCheckedFrom = len(regionAliases[request.Region])
 				}
 			}
 			for _, request := range respJSON.Requests {
@@ -300,7 +299,7 @@ View incident details, notes and associated requests.
 						timingsWait = "n/a"
 						timingsTransfer = "n/a"
 					}
-					tableRequestsData = append(tableRequestsData, []string{request.Timestamp, request.Region, request.ResponseStatusCode, responseTime, colorFaint.Sprint(timingsDNSLookup),
+					tableRequestsData = append(tableRequestsData, []string{request.Timestamp, regionAliases[request.Region], request.ResponseStatusCode, responseTime, colorFaint.Sprint(timingsDNSLookup),
 						colorFaint.Sprint(timingsConnection), colorFaint.Sprint(timingsTLS), colorFaint.Sprint(timingsWait), colorFaint.Sprint(timingsTransfer)})
 				}
 			}
