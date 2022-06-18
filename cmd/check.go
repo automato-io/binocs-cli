@@ -403,13 +403,12 @@ View check status and metrics.
 			}
 		}
 
-		// @todo check against currently supported GET /regions
-		match, err = regexp.MatchString(validRegionPattern, checkInspectFlagRegion)
+		match = isValidRegionAlias(checkInspectFlagRegion)
 		if len(checkInspectFlagRegion) > 0 && !match {
-			fmt.Println("Invalid region provided")
+			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getRegionAliases(), ", "))
 			os.Exit(1)
 		} else if err == nil && match {
-			urlValues.Set("region", checkInspectFlagRegion)
+			urlValues.Set("region", getRegionByAlias(checkInspectFlagRegion))
 		}
 
 		spin.Start()
