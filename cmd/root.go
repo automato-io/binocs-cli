@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/automato-io/s3update"
@@ -345,4 +346,30 @@ func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewri
 	}
 
 	return table
+}
+
+func getRegionAliases() []string {
+	v := []string{}
+	for _, a := range regionAliases {
+		v = append(v, a)
+	}
+	return v
+}
+
+func isValidRegionAlias(a string) bool {
+	for _, v := range regionAliases {
+		if strings.EqualFold(v, a) {
+			return true
+		}
+	}
+	return false
+}
+
+func getRegionByAlias(a string) string {
+	for r, v := range regionAliases {
+		if strings.EqualFold(v, a) {
+			return r
+		}
+	}
+	return ""
 }
