@@ -381,7 +381,11 @@ List all past and current incidents.
 			} else {
 				closedSnippet = v.Closed
 			}
-			responseCodesSnippet = colorFaint.Sprint(strings.Join(v.ResponseCodes, "\n"))
+			responseCodes := []string{}
+			for _, r := range v.ResponseCodes {
+				responseCodes = append(responseCodes, colorFaint.Sprint(r))
+			}
+			responseCodesSnippet = strings.Join(responseCodes, "\n")
 
 			tableRow := []string{
 				identSnippet, v.CheckIdent, checkNameSnippet, util.Ellipsis(v.CheckResource, 50), stateSnippet, v.Opened, closedSnippet, util.OutputDurationWithDays(v.Duration), responseCodesSnippet,
