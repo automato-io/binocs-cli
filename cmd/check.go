@@ -994,10 +994,10 @@ func formatApdex(apdex string) string {
 	if err != nil {
 		return color.HiBlackString(empty)
 	}
-	if apdexFloat == 1.00 {
+	if apdexFloat >= 0.8 {
 		return color.GreenString("%v", apdex)
 	}
-	if apdexFloat >= 0.9 {
+	if apdexFloat >= 0.6 {
 		return color.YellowString("%v", apdex)
 	}
 	return color.RedString("%v", apdex)
@@ -1062,10 +1062,10 @@ func drawCompactApdexChart(apdexChartData []ApdexResponse, currentApdex string) 
 	if err != nil {
 		return color.HiBlackString(chartSnippet)
 	}
-	if apdexFloat == 1.00 {
+	if apdexFloat >= 0.9 {
 		return color.GreenString("%v", chartSnippet)
 	}
-	if apdexFloat >= 0.9 {
+	if apdexFloat >= 0.6 {
 		return color.YellowString("%v", chartSnippet)
 	}
 	return color.RedString("%v", chartSnippet)
