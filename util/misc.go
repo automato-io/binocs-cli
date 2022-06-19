@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -55,6 +57,59 @@ func StringInSlice(needle string, haystack []string) bool {
 		}
 	}
 	return false
+}
+
+// @todo candidate for shared code lib (core,cli)
+func IsCodeInRange(c int, r string) (bool, error) {
+	var match bool
+	var err error
+	cs := strconv.Itoa(c)
+
+	match, err = regexp.MatchString(`^[1-5]{1}xx$`, r)
+	if err != nil {
+		return false, err
+	}
+	if match {
+		return cs[0] == r[0], nil
+	}
+
+	match, err = regexp.MatchString(`^[1-5]{1}[0-9]{1}x$`, r)
+	if err != nil {
+		return false, err
+	}
+	if match {
+		return cs[0] == r[0] && cs[1] == r[1], nil
+	}
+
+	match, err = regexp.MatchString(`^[1-5]{1}[0-9]{2}$`, r)
+	if err != nil {
+		return false, err
+	}
+	if match {
+		return cs == r, nil
+	}
+
+	_, err = regexp.MatchString(`^[1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}$`, r)
+	if err != nil {
+		return false, err
+	}
+	bounds := strings.Split(r, "-")
+	if len(bounds) != 2 {
+		return false, fmt.Errorf("invalid http code range: %v", r)
+	}
+	rangeFrom, err := strconv.Atoi(bounds[0])
+	if err != nil {
+		return false, err
+	}
+	rangeTo, err := strconv.Atoi(bounds[1])
+	if err != nil {
+		return false, err
+	}
+	if c >= rangeFrom && c <= rangeTo {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func ListTimezones() []string {

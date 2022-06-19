@@ -579,7 +579,7 @@ View check status and metrics.
 				os.Exit(1)
 			}
 
-			responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], "            ")
+			responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], respJSON.UpCodes, "            ")
 			responseCodesChartTitle := drawChartTitle("HTTP RESPONSE CODES", responseCodesChart, periodTableTitle)
 			tableChartsData = append(tableChartsData, []string{responseCodesChartTitle})
 			tableChartsData = append(tableChartsData, []string{responseCodesChart})
@@ -1108,7 +1108,7 @@ func drawApdexChart(apdex []ApdexResponse, dataPoints int, leftMargin string) st
 	return chart
 }
 
-func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints int, leftMargin string) string {
+func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints int, upCodes string, leftMargin string) string {
 	var rows [4]string
 	var chart string
 	for _, v := range responseCodes {
@@ -1139,7 +1139,12 @@ func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints in
 		}
 	}
 	for i := 0; i < 4; i++ {
-		chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + rows[i] + "\n"
+		// @todo we should distinguish between a green code (in range and up), and a yellow code (in range and down, e.g. 303 in default range setup)
+		if ok, _ := util.IsCodeInRange((i+2)*100, upCodes); ok {
+			chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + color.GreenString(rows[i]) + "\n"
+		} else {
+			chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + color.RedString(rows[i]) + "\n"
+		}
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
