@@ -1727,7 +1727,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		Method:                     flagMethod,
 		Interval:                   flagInterval,
 		Target:                     flagTarget,
-		Regions:                    flagRegions,
+		Regions:                    getRegionIdsByAliases(flagRegions),
 		UpCodes:                    flagUpCodes,
 		UpConfirmationsThreshold:   flagUpConfirmationsThreshold,
 		DownConfirmationsThreshold: flagDownConfirmationsThreshold,

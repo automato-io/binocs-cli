@@ -407,6 +407,16 @@ func getRegionIdByAlias(a string) string {
 	return ""
 }
 
+func getRegionIdsByAliases(as []string) []string {
+	v := []string{}
+	for k, a := range regionAliases {
+		if util.StringInSlice(k, supportedRegions) && util.StringInSlice(a, as) {
+			v = append(v, k)
+		}
+	}
+	return v
+}
+
 func isValidRegionAlias(a string) bool {
 	for k, v := range regionAliases {
 		if strings.EqualFold(v, a) && util.StringInSlice(k, supportedRegions) {
