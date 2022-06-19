@@ -19,6 +19,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/fatih/color"
+	"github.com/muesli/reflow/ansi"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -1231,18 +1232,11 @@ func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapRespo
 }
 
 func drawChartTitle(title string, chart string, periodTitle string) string {
-	var chartRunes = []rune(chart)
-	var chartLineLen = 0
-	var newline = '\n'
-	for i, r := range chartRunes {
-		if r == newline {
-			chartLineLen = i
-			break
-		}
-	}
-	spacerLen := chartLineLen - len(title) - len(periodTitle)
-	if len(title)+len(periodTitle)+1 < chartLineLen {
-		title = title + strings.Repeat(" ", spacerLen) + periodTitle
+	chartRows := strings.Split(chart, "\n")
+	chartWidth := ansi.PrintableRuneWidth(chartRows[0])
+	spacerWidth := chartWidth - len(title) - len(periodTitle)
+	if len(title)+len(periodTitle)+1 < chartWidth {
+		title = title + strings.Repeat(" ", spacerWidth) + periodTitle
 	}
 	return colorBold.Sprint(title)
 }
