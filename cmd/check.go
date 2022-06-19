@@ -531,6 +531,11 @@ View check status and metrics.
 
 		tableMainColumnDefinitions := []tableColumnDefinition{
 			{
+				Header:    "METRICS (" + periodTableTitle + ")",
+				Priority:  1,
+				Alignment: tablewriter.ALIGN_LEFT,
+			},
+			{
 				Header:    "CHECK",
 				Priority:  1,
 				Alignment: tablewriter.ALIGN_LEFT,
@@ -540,15 +545,10 @@ View check status and metrics.
 				Priority:  2,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
-			{
-				Header:    "METRICS (" + periodTableTitle + ")",
-				Priority:  1,
-				Alignment: tablewriter.ALIGN_LEFT,
-			},
 		}
 
 		var tableMainData [][]string
-		tableMainData = append(tableMainData, []string{tableMainCheckCellContent, tableMainSettingsCellContent, tableMainMetricsCellContent})
+		tableMainData = append(tableMainData, []string{tableMainMetricsCellContent, tableMainCheckCellContent, tableMainSettingsCellContent})
 		tableMain := composeTable(tableMainData, tableMainColumnDefinitions)
 
 		// Combined table
