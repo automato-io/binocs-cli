@@ -620,7 +620,7 @@ View check status and metrics.
 			os.Exit(1)
 		}
 
-		responseTimeHeatmapChart := drawResponseTimeHeatmapChart(responseTimeHeatmap, aggregateMetricsDataPoints[urlValues.Get("period")], "")
+		responseTimeHeatmapChart := drawResponseTimeHeatmapChart(responseTimeHeatmap, aggregateMetricsDataPoints[urlValues.Get("period")], respJSON.Target, "")
 		responseTimeHeatmapChartTitle := drawChartTitle("RESPONSE TIME HEATMAP", responseTimeHeatmapChart, periodTableTitle)
 		tableChartsData = append(tableChartsData, []string{responseTimeHeatmapChartTitle})
 		tableChartsData = append(tableChartsData, []string{responseTimeHeatmapChart})
@@ -1102,7 +1102,14 @@ func drawApdexChart(apdex []ApdexResponse, dataPoints int, leftMargin string) st
 		}
 	}
 	for i := 0; i < numRows; i++ {
-		chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + rows[i] + "\n" + chart
+		rowFraction := (float64(i) + 1.0) / float64(numRows)
+		if rowFraction > 0.8 {
+			chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + color.GreenString(rows[i]) + "\n" + chart
+		} else if rowFraction > 0.6 {
+			chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + color.YellowString(rows[i]) + "\n" + chart
+		} else {
+			chart = leftMargin + getApdexChartRowRange(i, numRows) + " " + color.RedString(rows[i]) + "\n" + chart
+		}
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
@@ -1150,7 +1157,10 @@ func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints in
 	return chart
 }
 
-func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapResponse, dataPoints int, leftMargin string) string {
+func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapResponse, dataPoints int, targetTime float64, leftMargin string) string {
+	var rowThresholds = []float32{
+		8.0, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125, 0.0,
+	}
 	var rowTitles = [8]string{
 		"   error / 8+ s",
 		"  4.00 - 8.00 s",
@@ -1230,7 +1240,13 @@ func drawResponseTimeHeatmapChart(responseTimeHeatmap []ResponseTimeHeatmapRespo
 		}
 	}
 	for i := 0; i < len(rows); i++ {
-		chart = chart + leftMargin + rowTitles[i] + " " + rows[i] + "\n"
+		if float64(rowThresholds[i]) > targetTime {
+			chart = chart + leftMargin + rowTitles[i] + " " + color.RedString(rows[i]) + "\n"
+		} else if i > 1 && float64(rowThresholds[i-1]) > targetTime {
+			chart = chart + leftMargin + rowTitles[i] + " " + color.YellowString(rows[i]) + "\n"
+		} else {
+			chart = chart + leftMargin + rowTitles[i] + " " + color.GreenString(rows[i]) + "\n"
+		}
 	}
 	chart = strings.TrimSuffix(chart, "\n")
 	return chart
