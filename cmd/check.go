@@ -535,19 +535,19 @@ View check status and metrics.
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
 			{
-				Header:    "METRICS (" + periodTableTitle + ")",
-				Priority:  1,
+				Header:    "SETTINGS",
+				Priority:  2,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
 			{
-				Header:    "SETTINGS",
-				Priority:  2,
+				Header:    "METRICS (" + periodTableTitle + ")",
+				Priority:  1,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
 		}
 
 		var tableMainData [][]string
-		tableMainData = append(tableMainData, []string{tableMainCheckCellContent, tableMainMetricsCellContent, tableMainSettingsCellContent})
+		tableMainData = append(tableMainData, []string{tableMainCheckCellContent, tableMainSettingsCellContent, tableMainMetricsCellContent})
 		tableMain := composeTable(tableMainData, tableMainColumnDefinitions)
 
 		// Combined table
