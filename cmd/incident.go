@@ -363,7 +363,7 @@ List all past and current incidents.
 		}
 		var tableData [][]string
 		for _, v := range incidents {
-			var identSnippet, checkNameSnippet, stateSnippet, closedSnippet, responseCodesSnippet string
+			var identSnippet, checkNameSnippet, stateSnippet, closedSnippet string
 			identSnippet = colorBold.Sprint(v.Ident)
 			if v.CheckName == "" {
 				checkNameSnippet = colorFaint.Sprint("-")
@@ -381,14 +381,9 @@ List all past and current incidents.
 			} else {
 				closedSnippet = v.Closed
 			}
-			responseCodes := []string{}
-			for _, r := range v.ResponseCodes {
-				responseCodes = append(responseCodes, colorFaint.Sprint(r))
-			}
-			responseCodesSnippet = strings.Join(responseCodes, "\n")
 
 			tableRow := []string{
-				identSnippet, v.CheckIdent, checkNameSnippet, util.Ellipsis(v.CheckResource, 50), stateSnippet, v.Opened, closedSnippet, util.OutputDurationWithDays(v.Duration), responseCodesSnippet,
+				identSnippet, v.CheckIdent, checkNameSnippet, util.Ellipsis(v.CheckResource, 50), stateSnippet, v.Opened, closedSnippet, util.OutputDurationWithDays(v.Duration),
 			}
 			tableData = append(tableData, tableRow)
 		}
@@ -431,11 +426,6 @@ List all past and current incidents.
 			},
 			{
 				Header:    "DURATION",
-				Priority:  3,
-				Alignment: tablewriter.ALIGN_LEFT,
-			},
-			{
-				Header:    "RESPONSES",
 				Priority:  3,
 				Alignment: tablewriter.ALIGN_LEFT,
 			},
