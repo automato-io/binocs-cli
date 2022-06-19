@@ -176,17 +176,17 @@ const (
 	validHTTPSResourcePattern = `^((https):\/\/)` + validURLUsernamePattern + `?` + `((` + validURLIPPattern + `|(\[` + validIPPattern + `\])|(([a-zA-Z0-9]([a-zA-Z0-9-_]+)?[a-zA-Z0-9]([-\.][a-zA-Z0-9]+)*)|(` + validURLSubdomainPattern + `?))?(([a-zA-Z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-zA-Z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-zA-Z\x{00a1}-\x{ffff}]{1,}))?))\.?` + validURLPortPattern + `?` + validURLPathPattern + `?$`
 )
 
-var supportedHTTPMethods = map[string]bool{
-	http.MethodGet:     true,
-	http.MethodHead:    true,
-	http.MethodPost:    true,
-	http.MethodPut:     true,
-	http.MethodPatch:   false,
-	http.MethodDelete:  true,
-	http.MethodConnect: false,
-	http.MethodOptions: false,
-	http.MethodTrace:   false,
-}
+// var supportedHTTPMethods = map[string]bool{
+// 	http.MethodGet:     true,
+// 	http.MethodHead:    true,
+// 	http.MethodPost:    true,
+// 	http.MethodPut:     true,
+// 	http.MethodPatch:   false,
+// 	http.MethodDelete:  true,
+// 	http.MethodConnect: false,
+// 	http.MethodOptions: false,
+// 	http.MethodTrace:   false,
+// }
 
 var aggregateMetricsDataPoints = map[string]int{
 	periodHour:  60,
@@ -405,10 +405,10 @@ View check status and metrics.
 
 		match = isValidRegionAlias(checkInspectFlagRegion)
 		if len(checkInspectFlagRegion) > 0 && !match {
-			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getRegionAliases(), ", "))
+			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getSupportedRegionAliases(), ", "))
 			os.Exit(1)
 		} else if err == nil && match {
-			urlValues.Set("region", getRegionByAlias(checkInspectFlagRegion))
+			urlValues.Set("region", getRegionIdByAlias(checkInspectFlagRegion))
 		}
 
 		spin.Start()
@@ -676,10 +676,10 @@ List all checks with status and metrics overview.
 
 		match = isValidRegionAlias(checkListFlagRegion)
 		if len(checkListFlagRegion) > 0 && !match {
-			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getRegionAliases(), ", "))
+			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getSupportedRegionAliases(), ", "))
 			os.Exit(1)
 		} else if err == nil && match {
-			urlValues2.Set("region", getRegionByAlias(checkListFlagRegion))
+			urlValues2.Set("region", getRegionIdByAlias(checkListFlagRegion))
 		}
 
 		checkListFlagStatus = strings.ToUpper(checkListFlagStatus)
@@ -1291,7 +1291,7 @@ func drawTimeline(user *User, period string, dataPoints int, leftMargin string) 
 				if len(timeline[0]) < 12 {
 					gap = gap - (12 - len(timeline[0]))
 				}
-				timeline[1] = fmt.Sprintf("%s", now.Format("Mon")) + strings.Repeat(" ", gap) + timeline[1]
+				timeline[1] = now.Format("Mon") + strings.Repeat(" ", gap) + timeline[1]
 			}
 		}
 	case periodMonth:
@@ -1305,7 +1305,7 @@ func drawTimeline(user *User, period string, dataPoints int, leftMargin string) 
 			// second line
 			if now.Day() == 1 {
 				var gap = len(timeline[0]) - len(now.Format("Jan"))
-				timeline[1] = fmt.Sprintf("%s", now.Format("Jan")) + strings.Repeat(" ", gap) + timeline[1]
+				timeline[1] = now.Format("Jan") + strings.Repeat(" ", gap) + timeline[1]
 			}
 		}
 	}
@@ -1319,31 +1319,6 @@ func drawTimeline(user *User, period string, dataPoints int, leftMargin string) 
 		return leftMargin + timeline[0] + "\n" + leftMargin + timeline[1]
 	}
 	return leftMargin + timeline[0]
-}
-
-func loadSupportedRegions() {
-	respData, err := util.BinocsAPI("/regions", http.MethodGet, []byte{})
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	regionsResponse := RegionsResponse{}
-	err = json.Unmarshal(respData, &regionsResponse)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	supportedRegions = regionsResponse.Regions
-	sort.Strings(supportedRegions)
-}
-
-func isSupportedRegion(region string) bool {
-	for _, r := range supportedRegions {
-		if r == region {
-			return true
-		}
-	}
-	return false
 }
 
 func setProtocolPrefix(res, proto string) string {
@@ -1596,22 +1571,20 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 
 	match = true
 	for _, fr := range flagRegions {
-		if !util.StringInSlice(fr, supportedRegions) {
+		if !isValidRegionAlias(fr) {
 			match = false
 		}
 	}
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	} else if !match || len(flagRegions) == 0 {
+	if !match || len(flagRegions) == 0 {
 		prompt := &survey.MultiSelect{
 			Message:  "Regions:",
-			Options:  supportedRegions,
-			PageSize: len(supportedRegions),
+			Options:  getSupportedRegionAliases(),
+			PageSize: len(getSupportedRegionAliases()),
 		}
-		prompt.Default = defaultRegions
 		if mode == "update" {
-			prompt.Default = currentCheck.Regions
+			prompt.Default = getRegionAliasesByIds(currentCheck.Regions)
+		} else {
+			prompt.Default = getDefaultRegionAliases()
 		}
 		err = survey.AskOne(prompt, &flagRegions, survey.WithValidator(survey.MinItems(1)))
 		if err != nil {

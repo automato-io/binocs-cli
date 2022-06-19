@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/automato-io/binocs-cli/util"
 	"github.com/automato-io/s3update"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
@@ -348,28 +352,66 @@ func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewri
 	return table
 }
 
-func getRegionAliases() []string {
+func loadSupportedRegions() {
+	respData, err := util.BinocsAPI("/regions", http.MethodGet, []byte{})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	regionsResponse := RegionsResponse{}
+	err = json.Unmarshal(respData, &regionsResponse)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	supportedRegions = regionsResponse.Regions
+	sort.Strings(supportedRegions)
+}
+
+func getSupportedRegionAliases() []string {
 	v := []string{}
-	for _, a := range regionAliases {
-		v = append(v, a)
+	for k, a := range regionAliases {
+		if util.StringInSlice(k, supportedRegions) {
+			v = append(v, a)
+		}
 	}
 	return v
 }
 
-func isValidRegionAlias(a string) bool {
-	for _, v := range regionAliases {
-		if strings.EqualFold(v, a) {
-			return true
+func getDefaultRegionAliases() []string {
+	v := []string{}
+	for k, a := range regionAliases {
+		if util.StringInSlice(k, supportedRegions) && util.StringInSlice(k, defaultRegions) {
+			v = append(v, a)
 		}
 	}
-	return false
+	return v
 }
 
-func getRegionByAlias(a string) string {
+func getRegionAliasesByIds(ids []string) []string {
+	v := []string{}
+	for k, a := range regionAliases {
+		if util.StringInSlice(k, supportedRegions) && util.StringInSlice(k, ids) {
+			v = append(v, a)
+		}
+	}
+	return v
+}
+
+func getRegionIdByAlias(a string) string {
 	for r, v := range regionAliases {
 		if strings.EqualFold(v, a) {
 			return r
 		}
 	}
 	return ""
+}
+
+func isValidRegionAlias(a string) bool {
+	for k, v := range regionAliases {
+		if strings.EqualFold(v, a) && util.StringInSlice(k, supportedRegions) {
+			return true
+		}
+	}
+	return false
 }
