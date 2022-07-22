@@ -706,11 +706,21 @@ List all checks with status and metrics overview.
 
 		ch := make(chan []string)
 		var tableData [][]string
+		var checksLen int
 		for _, v := range checks {
+			if urlValues2.Has("region") && !util.StringInSlice(urlValues2.Get("region"), v.Regions) {
+				continue
+			}
 			go makeCheckListRow(v, ch, &urlValues2, user.CreditBalance == 0)
+			checksLen++
 		}
-		for i := range checks {
-			spin.Suffix = colorFaint.Sprintf(" loading metrics... (%d/%d)", i+1, len(checks))
+		var i int
+		for _, v := range checks {
+			if urlValues2.Has("region") && !util.StringInSlice(urlValues2.Get("region"), v.Regions) {
+				continue
+			}
+			i++
+			spin.Suffix = colorFaint.Sprintf(" loading metrics... (%d/%d)", i, checksLen)
 			tableData = append(tableData, <-ch)
 		}
 		sort.Slice(tableData, func(i, j int) bool {
