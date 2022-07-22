@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/olekukonko/tablewriter"
+	"github.com/automato-io/tablewriter"
 	"github.com/spf13/cobra"
 )
 

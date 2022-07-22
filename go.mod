@@ -5,11 +5,11 @@ go 1.17
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.4
 	github.com/automato-io/s3update v0.1.1-0.20201020183735-c3f312c610b6
+	github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945
 	github.com/briandowns/spinner v1.18.1
 	github.com/fatih/color v1.13.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/reflow v0.3.0
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56

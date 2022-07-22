@@ -10,8 +10,10 @@ package tablewriter
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -47,6 +49,20 @@ type Border struct {
 	Bottom bool
 }
 
+type BorderSymbols struct {
+	Horizontal  string
+	Vertical    string
+	Center      string
+	Top         string
+	TopRight    string
+	Right       string
+	BottomRight string
+	Bottom      string
+	BottomLeft  string
+	Left        string
+	TopLeft     string
+}
+
 type Table struct {
 	out                     io.Writer
 	rows                    [][]string
@@ -61,9 +77,6 @@ type Table struct {
 	autoWrap                bool
 	reflowText              bool
 	mW                      int
-	pCenter                 string
-	pRow                    string
-	pColumn                 string
 	tColumn                 int
 	tRow                    int
 	hAlign                  int
@@ -77,6 +90,7 @@ type Table struct {
 	tablePadding            string
 	hdrLine                 bool
 	borders                 Border
+	borderSymbols           BorderSymbols
 	colSize                 int
 	headerParams            []string
 	columnsParams           []string
@@ -88,31 +102,41 @@ type Table struct {
 // Take io.Writer Directly
 func NewWriter(writer io.Writer) *Table {
 	t := &Table{
-		out:           writer,
-		rows:          [][]string{},
-		lines:         [][][]string{},
-		cs:            make(map[int]int),
-		rs:            make(map[int]int),
-		headers:       [][]string{},
-		footers:       [][]string{},
-		caption:       false,
-		captionText:   "Table caption.",
-		autoFmt:       true,
-		autoWrap:      true,
-		reflowText:    true,
-		mW:            MAX_ROW_WIDTH,
-		pCenter:       CENTER,
-		pRow:          ROW,
-		pColumn:       COLUMN,
-		tColumn:       -1,
-		tRow:          -1,
-		hAlign:        ALIGN_DEFAULT,
-		fAlign:        ALIGN_DEFAULT,
-		align:         ALIGN_DEFAULT,
-		newLine:       NEWLINE,
-		rowLine:       false,
-		hdrLine:       true,
-		borders:       Border{Left: true, Right: true, Bottom: true, Top: true},
+		out:         writer,
+		rows:        [][]string{},
+		lines:       [][][]string{},
+		cs:          make(map[int]int),
+		rs:          make(map[int]int),
+		headers:     [][]string{},
+		footers:     [][]string{},
+		caption:     false,
+		captionText: "Table caption.",
+		autoFmt:     true,
+		autoWrap:    true,
+		reflowText:  true,
+		mW:          MAX_ROW_WIDTH,
+		tColumn:     -1,
+		tRow:        -1,
+		hAlign:      ALIGN_DEFAULT,
+		fAlign:      ALIGN_DEFAULT,
+		align:       ALIGN_DEFAULT,
+		newLine:     NEWLINE,
+		rowLine:     false,
+		hdrLine:     true,
+		borders:     Border{Left: true, Right: true, Bottom: true, Top: true},
+		borderSymbols: BorderSymbols{
+			Horizontal:  ROW,
+			Vertical:    COLUMN,
+			Center:      CENTER,
+			Top:         CENTER,
+			TopRight:    CENTER,
+			Right:       CENTER,
+			BottomRight: CENTER,
+			Bottom:      CENTER,
+			BottomLeft:  CENTER,
+			Left:        CENTER,
+			TopLeft:     CENTER,
+		},
 		colSize:       -1,
 		headerParams:  []string{},
 		columnsParams: []string{},
@@ -124,7 +148,7 @@ func NewWriter(writer io.Writer) *Table {
 // Render table output
 func (t *Table) Render() {
 	if t.borders.Top {
-		t.printLine(true)
+		t.printTopLine()
 	}
 	t.printHeading()
 	if t.autoMergeCells {
@@ -133,7 +157,7 @@ func (t *Table) Render() {
 		t.printRows()
 	}
 	if !t.rowLine && t.borders.Bottom {
-		t.printLine(true)
+		t.printBottomLine()
 	}
 	t.printFooter()
 
@@ -198,19 +222,8 @@ func (t *Table) SetColMinWidth(column int, width int) {
 	t.cs[column] = width
 }
 
-// Set the Column Separator
-func (t *Table) SetColumnSeparator(sep string) {
-	t.pColumn = sep
-}
-
-// Set the Row Separator
-func (t *Table) SetRowSeparator(sep string) {
-	t.pRow = sep
-}
-
-// Set the center Separator
-func (t *Table) SetCenterSeparator(sep string) {
-	t.pCenter = sep
+func (t *Table) SetBorderSymbols(bs BorderSymbols) {
+	t.borderSymbols = bs
 }
 
 // Set Header Alignment
@@ -302,6 +315,95 @@ func (t *Table) SetBorders(border Border) {
 	t.borders = border
 }
 
+// SetStructs sets header and rows from slice of struct.
+// If something that is not a slice is passed, error will be returned.
+// The tag specified by "tablewriter" for the struct becomes the header.
+// If not specified or empty, the field name will be used.
+// The field of the first element of the slice is used as the header.
+// If the element implements fmt.Stringer, the result will be used.
+// And the slice contains nil, it will be skipped without rendering.
+func (t *Table) SetStructs(v interface{}) error {
+	if v == nil {
+		return errors.New("nil value")
+	}
+	vt := reflect.TypeOf(v)
+	vv := reflect.ValueOf(v)
+	switch vt.Kind() {
+	case reflect.Slice, reflect.Array:
+		if vv.Len() < 1 {
+			return errors.New("empty value")
+		}
+
+		// check first element to set header
+		first := vv.Index(0)
+		e := first.Type()
+		switch e.Kind() {
+		case reflect.Struct:
+			// OK
+		case reflect.Ptr:
+			if first.IsNil() {
+				return errors.New("the first element is nil")
+			}
+			e = first.Elem().Type()
+			if e.Kind() != reflect.Struct {
+				return fmt.Errorf("invalid kind %s", e.Kind())
+			}
+		default:
+			return fmt.Errorf("invalid kind %s", e.Kind())
+		}
+		n := e.NumField()
+		headers := make([]string, n)
+		for i := 0; i < n; i++ {
+			f := e.Field(i)
+			header := f.Tag.Get("tablewriter")
+			if header == "" {
+				header = f.Name
+			}
+			headers[i] = header
+		}
+		t.SetHeader(headers)
+
+		for i := 0; i < vv.Len(); i++ {
+			item := reflect.Indirect(vv.Index(i))
+			itemType := reflect.TypeOf(item)
+			switch itemType.Kind() {
+			case reflect.Struct:
+				// OK
+			default:
+				return fmt.Errorf("invalid item type %v", itemType.Kind())
+			}
+			if !item.IsValid() {
+				// skip rendering
+				continue
+			}
+			nf := item.NumField()
+			if n != nf {
+				return errors.New("invalid num of field")
+			}
+			rows := make([]string, nf)
+			for j := 0; j < nf; j++ {
+				f := reflect.Indirect(item.Field(j))
+				if f.Kind() == reflect.Ptr {
+					f = f.Elem()
+				}
+				if f.IsValid() {
+					if s, ok := f.Interface().(fmt.Stringer); ok {
+						rows[j] = s.String()
+						continue
+					}
+					rows[j] = fmt.Sprint(f)
+				} else {
+					rows[j] = "nil"
+				}
+			}
+			t.Append(rows)
+		}
+	default:
+		return fmt.Errorf("invalid type %T", v)
+	}
+	return nil
+}
+
 // Append row to table
 func (t *Table) Append(row []string) {
 	rowSize := len(t.headers)
@@ -375,51 +477,100 @@ func (t *Table) ClearFooter() {
 }
 
 // Center based on position and border.
-func (t *Table) center(i int) string {
-	if i == -1 && !t.borders.Left {
-		return t.pRow
+func (t *Table) center(x int, isTop bool, isBottom bool) string {
+	if isTop {
+		if x == -1 {
+			if t.borders.Left {
+				return t.borderSymbols.TopLeft
+			} else {
+				return t.borderSymbols.Horizontal
+			}
+		}
+		if x == len(t.cs)-1 {
+			if t.borders.Right {
+				return t.borderSymbols.TopRight
+			} else {
+				return t.borderSymbols.Horizontal
+			}
+		}
+		return t.borderSymbols.Top
+	} else if isBottom {
+		if x == -1 {
+			if t.borders.Left {
+				return t.borderSymbols.BottomLeft
+			} else {
+				return t.borderSymbols.Horizontal
+			}
+		}
+		if x == len(t.cs)-1 {
+			if t.borders.Right {
+				return t.borderSymbols.BottomRight
+			} else {
+				return t.borderSymbols.Horizontal
+			}
+		}
+		return t.borderSymbols.Bottom
+	} else {
+		if x == -1 {
+			if t.borders.Left {
+				return t.borderSymbols.Left
+			} else {
+				return t.borderSymbols.Horizontal
+			}
+		}
+		if x == len(t.cs)-1 {
+			if t.borders.Right {
+				return t.borderSymbols.Right
+			} else {
+				return t.borderSymbols.Horizontal
+			}
+		}
+		return t.borderSymbols.Center
 	}
-
-	if i == len(t.cs)-1 && !t.borders.Right {
-		return t.pRow
-	}
-
-	return t.pCenter
 }
 
 // Print line based on row width
-func (t *Table) printLine(nl bool) {
-	fmt.Fprint(t.out, t.center(-1))
+func (t *Table) printLine(isTop, isBottom bool) {
+	fmt.Fprint(t.out, t.center(-1, isTop, isBottom))
 	for i := 0; i < len(t.cs); i++ {
 		v := t.cs[i]
-		fmt.Fprintf(t.out, "%s%s%s%s",
-			t.pRow,
-			strings.Repeat(string(t.pRow), v),
-			t.pRow,
-			t.center(i))
+		fmt.Fprintf(t.out, "%s%s",
+			strings.Repeat(string(t.borderSymbols.Horizontal), v+2),
+			t.center(i, isTop, isBottom),
+		)
 	}
-	if nl {
-		fmt.Fprint(t.out, t.newLine)
-	}
+	fmt.Fprint(t.out, t.newLine)
+}
+
+func (t *Table) printTopLine() {
+	t.printLine(true, false)
+}
+
+func (t *Table) printMidLine() {
+	t.printLine(false, false)
+}
+
+func (t *Table) printBottomLine() {
+	t.printLine(false, true)
 }
 
 // Print line based on row width with our without cell separator
 func (t *Table) printLineOptionalCellSeparators(nl bool, displayCellSeparator []bool) {
-	fmt.Fprint(t.out, t.pCenter)
+	fmt.Fprint(t.out, t.borderSymbols.Center)
 	for i := 0; i < len(t.cs); i++ {
 		v := t.cs[i]
 		if i > len(displayCellSeparator) || displayCellSeparator[i] {
 			// Display the cell separator
 			fmt.Fprintf(t.out, "%s%s%s%s",
-				t.pRow,
-				strings.Repeat(string(t.pRow), v),
-				t.pRow,
-				t.pCenter)
+				t.borderSymbols.Horizontal,
+				strings.Repeat(string(t.borderSymbols.Horizontal), v),
+				t.borderSymbols.Horizontal,
+				t.borderSymbols.Center)
 		} else {
 			// Don't display the cell separator for this cell
 			fmt.Fprintf(t.out, "%s%s",
 				strings.Repeat(" ", v+2),
-				t.pCenter)
+				t.borderSymbols.Center)
 		}
 	}
 	if nl {
@@ -467,7 +618,7 @@ func (t *Table) printHeading() {
 		// Check if border is set
 		// Replace with space if not set
 		if !t.noWhiteSpace {
-			fmt.Fprint(t.out, ConditionString(t.borders.Left, t.pColumn, SPACE))
+			fmt.Fprint(t.out, ConditionString(t.borders.Left, t.borderSymbols.Vertical, SPACE))
 		}
 
 		for y := 0; y <= end; y++ {
@@ -480,7 +631,7 @@ func (t *Table) printHeading() {
 			if t.autoFmt {
 				h = Title(h)
 			}
-			pad := ConditionString((y == end && !t.borders.Left), SPACE, t.pColumn)
+			pad := ConditionString((y == end && !t.borders.Left), SPACE, t.borderSymbols.Vertical)
 			if t.noWhiteSpace {
 				pad = ConditionString((y == end && !t.borders.Left), SPACE, t.tablePadding)
 			}
@@ -511,7 +662,7 @@ func (t *Table) printHeading() {
 		fmt.Fprint(t.out, t.newLine)
 	}
 	if t.hdrLine {
-		t.printLine(true)
+		t.printMidLine()
 	}
 }
 
@@ -524,7 +675,7 @@ func (t *Table) printFooter() {
 
 	// Only print line if border is not set
 	if !t.borders.Bottom {
-		t.printLine(true)
+		t.printMidLine()
 	}
 
 	// Identify last column
@@ -547,7 +698,7 @@ func (t *Table) printFooter() {
 	for x := 0; x < max; x++ {
 		// Check if border is set
 		// Replace with space if not set
-		fmt.Fprint(t.out, ConditionString(t.borders.Bottom, t.pColumn, SPACE))
+		fmt.Fprint(t.out, ConditionString(t.borders.Bottom, t.borderSymbols.Vertical, SPACE))
 
 		for y := 0; y <= end; y++ {
 			v := t.cs[y]
@@ -558,7 +709,7 @@ func (t *Table) printFooter() {
 			if t.autoFmt {
 				f = Title(f)
 			}
-			pad := ConditionString((y == end && !t.borders.Top), SPACE, t.pColumn)
+			pad := ConditionString((y == end && !t.borders.Top), SPACE, t.borderSymbols.Vertical)
 
 			if erasePad[y] || (x == 0 && len(f) == 0) {
 				pad = SPACE
@@ -581,15 +732,14 @@ func (t *Table) printFooter() {
 		}
 		// Next line
 		fmt.Fprint(t.out, t.newLine)
-		//t.printLine(true)
 	}
 
 	hasPrinted := false
 
 	for i := 0; i <= end; i++ {
 		v := t.cs[i]
-		pad := t.pRow
-		center := t.pCenter
+		pad := t.borderSymbols.Horizontal
+		center := t.borderSymbols.Center
 		length := len(t.footers[i][0])
 
 		if length > 0 {
@@ -604,7 +754,7 @@ func (t *Table) printFooter() {
 		// Print first junction
 		if i == 0 {
 			if length > 0 && !t.borders.Left {
-				center = t.pRow
+				center = t.borderSymbols.Horizontal
 			}
 			fmt.Fprint(t.out, center)
 		}
@@ -615,14 +765,14 @@ func (t *Table) printFooter() {
 		}
 		// Ignore left space as it has printed before
 		if hasPrinted || t.borders.Left {
-			pad = t.pRow
-			center = t.pCenter
+			pad = t.borderSymbols.Horizontal
+			center = t.borderSymbols.Center
 		}
 
 		// Change Center end position
 		if center != SPACE {
 			if i == end && !t.borders.Right {
-				center = t.pRow
+				center = t.borderSymbols.Horizontal
 			}
 		}
 
@@ -630,9 +780,9 @@ func (t *Table) printFooter() {
 		if center == SPACE {
 			if i < end && len(t.footers[i+1][0]) != 0 {
 				if !t.borders.Left {
-					center = t.pRow
+					center = t.borderSymbols.Horizontal
 				} else {
-					center = t.pCenter
+					center = t.borderSymbols.Center
 				}
 			}
 		}
@@ -728,7 +878,7 @@ func (t *Table) printRow(columns [][]string, rowIdx int) {
 
 			// Check if border is set
 			if !t.noWhiteSpace {
-				fmt.Fprint(t.out, ConditionString((!t.borders.Left && y == 0), SPACE, t.pColumn))
+				fmt.Fprint(t.out, ConditionString((!t.borders.Left && y == 0), SPACE, t.borderSymbols.Vertical))
 				fmt.Fprintf(t.out, SPACE)
 			}
 
@@ -772,13 +922,17 @@ func (t *Table) printRow(columns [][]string, rowIdx int) {
 		// Check if border is set
 		// Replace with space if not set
 		if !t.noWhiteSpace {
-			fmt.Fprint(t.out, ConditionString(t.borders.Left, t.pColumn, SPACE))
+			fmt.Fprint(t.out, ConditionString(t.borders.Left, t.borderSymbols.Vertical, SPACE))
 		}
 		fmt.Fprint(t.out, t.newLine)
 	}
 
 	if t.rowLine {
-		t.printLine(true)
+		if rowIdx == len(t.rs)-1 {
+			t.printBottomLine()
+		} else {
+			t.printMidLine()
+		}
 	}
 }
 
@@ -799,7 +953,7 @@ func (t *Table) printRowsMergeCells() {
 	}
 	//Print the end of the table
 	if t.rowLine {
-		t.printLine(true)
+		t.printBottomLine()
 	}
 }
 
@@ -834,7 +988,7 @@ func (t *Table) printRowMergeCells(writer io.Writer, columns [][]string, rowIdx 
 		for y := 0; y < total; y++ {
 
 			// Check if border is set
-			fmt.Fprint(writer, ConditionString((!t.borders.Left && y == 0), SPACE, t.pColumn))
+			fmt.Fprint(writer, ConditionString((!t.borders.Left && y == 0), SPACE, t.borderSymbols.Vertical))
 
 			fmt.Fprintf(writer, SPACE)
 
@@ -888,7 +1042,7 @@ func (t *Table) printRowMergeCells(writer io.Writer, columns [][]string, rowIdx 
 		}
 		// Check if border is set
 		// Replace with space if not set
-		fmt.Fprint(writer, ConditionString(t.borders.Left, t.pColumn, SPACE))
+		fmt.Fprint(writer, ConditionString(t.borders.Left, t.borderSymbols.Vertical, SPACE))
 		fmt.Fprint(writer, t.newLine)
 	}
 

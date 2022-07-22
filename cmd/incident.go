@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	util "github.com/automato-io/binocs-cli/util"
+	"github.com/automato-io/tablewriter"
 	"github.com/fatih/color"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 

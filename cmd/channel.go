@@ -15,7 +15,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
-	"github.com/olekukonko/tablewriter"
+	"github.com/automato-io/tablewriter"
 	"github.com/spf13/cobra"
 )
 

@@ -14,10 +14,10 @@ import (
 
 	"github.com/automato-io/binocs-cli/util"
 	"github.com/automato-io/s3update"
+	"github.com/automato-io/tablewriter"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/muesli/reflow/ansi"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
@@ -243,9 +243,19 @@ func printZeroCreditsWarning() {
 	creditsBalanceWarning := color.RedString("WARNING: ") + "Your credit balance reached zero and all your checks were paused.\nIf you wish to continue using Binocs, please visit the Settings page at " + colorUnderline.Sprint("https://binocs.sh/settings") + " to purchase additional credits.\nYour checks will resume once you top up credits."
 	tableCreditsBalanceWarning := tablewriter.NewWriter(os.Stdout)
 	tableCreditsBalanceWarning.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
-	tableCreditsBalanceWarning.SetCenterSeparator(colorFaint.Sprint("┼"))
-	tableCreditsBalanceWarning.SetColumnSeparator(colorFaint.Sprint("│"))
-	tableCreditsBalanceWarning.SetRowSeparator(colorFaint.Sprint("─"))
+	tableCreditsBalanceWarning.SetBorderSymbols(tablewriter.BorderSymbols{
+		Horizontal:  colorFaint.Sprint("─"),
+		Vertical:    colorFaint.Sprint("│"),
+		Center:      colorFaint.Sprint("┼"),
+		Top:         colorFaint.Sprint("┬"),
+		TopRight:    colorFaint.Sprint("┐"),
+		Right:       colorFaint.Sprint("┤"),
+		BottomRight: colorFaint.Sprint("┘"),
+		Bottom:      colorFaint.Sprint("┴"),
+		BottomLeft:  colorFaint.Sprint("└"),
+		Left:        colorFaint.Sprint("├"),
+		TopLeft:     colorFaint.Sprint("┌"),
+	})
 	tableCreditsBalanceWarning.SetAutoWrapText(false)
 	tableCreditsBalanceWarning.Append([]string{creditsBalanceWarning})
 	tableCreditsBalanceWarning.Render()
@@ -312,9 +322,19 @@ func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewri
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
-	table.SetCenterSeparator(colorFaint.Sprint("┼"))
-	table.SetColumnSeparator(colorFaint.Sprint("│"))
-	table.SetRowSeparator(colorFaint.Sprint("─"))
+	table.SetBorderSymbols(tablewriter.BorderSymbols{
+		Horizontal:  colorFaint.Sprint("─"),
+		Vertical:    colorFaint.Sprint("│"),
+		Center:      colorFaint.Sprint("┼"),
+		Top:         colorFaint.Sprint("┬"),
+		TopRight:    colorFaint.Sprint("┐"),
+		Right:       colorFaint.Sprint("┤"),
+		BottomRight: colorFaint.Sprint("┘"),
+		Bottom:      colorFaint.Sprint("┴"),
+		BottomLeft:  colorFaint.Sprint("└"),
+		Left:        colorFaint.Sprint("├"),
+		TopLeft:     colorFaint.Sprint("┌"),
+	})
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetAutoWrapText(false)
 

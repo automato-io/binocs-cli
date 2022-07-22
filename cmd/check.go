@@ -18,9 +18,9 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	util "github.com/automato-io/binocs-cli/util"
+	"github.com/automato-io/tablewriter"
 	"github.com/fatih/color"
 	"github.com/muesli/reflow/ansi"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
