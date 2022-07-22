@@ -775,6 +775,7 @@ List all checks with status and metrics overview.
 			},
 		}
 
+		decorateStatusColumn(tableData)
 		table := composeTable(tableData, columnDefinitions)
 		spin.Stop()
 		if user.CreditBalance == 0 {
@@ -846,6 +847,24 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values, ze
 		colorFaint.Sprint(strconv.Itoa(len(check.Channels))), lastStatusCodeSnippet, tableValueMRT, tableValueUptime, tableValueApdex, apdexChart,
 	}
 	ch <- tableRow
+}
+
+func decorateStatusColumn(tableData [][]string) {
+	var statusColumnIndex = 4
+	var delimiter = " for "
+	var minStatusColumnSpace = 1
+	var maxStatusColumnLen int
+	for _, td := range tableData {
+		statusColumnLen := len(td[statusColumnIndex]) - len(delimiter) + minStatusColumnSpace
+		if statusColumnLen > maxStatusColumnLen {
+			maxStatusColumnLen = statusColumnLen
+		}
+	}
+	for i, td := range tableData {
+		statusColumnComps := strings.Split(td[statusColumnIndex], delimiter)
+		statusColumnSpacer := strings.Repeat(" ", maxStatusColumnLen-len(statusColumnComps[0])-len(statusColumnComps[1]))
+		tableData[i][statusColumnIndex] = statusColumnComps[0] + statusColumnSpacer + statusColumnComps[1]
+	}
 }
 
 var checkUpdateCmd = &cobra.Command{
