@@ -21,21 +21,32 @@ func Ellipsis(s string, maxLen int) string {
 }
 
 // OutputDurationWithDays extends time.Duration with number of elapsed days
-func OutputDurationWithDays(d string) string {
-	parsed, err := time.ParseDuration(d)
+func OutputDurationWithDays(duration string) string {
+	var days, h, m, s time.Duration
+	var withDays bool
+	d, err := time.ParseDuration(duration)
 	if err != nil {
-		return d
+		return duration
 	}
-	if parsed.Hours() > 48 {
-		days := math.Floor(parsed.Hours() / 24)
-		hours := math.Floor(parsed.Hours() - days*24)
-		re1 := regexp.MustCompile(`([0-9]+)h`)
-		rest := re1.ReplaceAllString(d, fmt.Sprintf("%.0f", hours)+"h")
-		re2 := regexp.MustCompile(`([0-9]+)s`)
-		rest = re2.ReplaceAllString(rest, "")
-		return fmt.Sprintf("%.0f days %s", days, rest)
+	if d.Hours() > 24 {
+		withDays = true
+		days = d / (time.Hour * 24)
+		d -= days * (time.Hour * 24)
 	}
-	return d
+	h = d / time.Hour
+	d -= h * time.Hour
+	m = d / time.Minute
+	d -= m * time.Minute
+	s = d / time.Second
+	if withDays {
+		if days == 1 {
+			return fmt.Sprintf("%d day %02d:%02d'%02d", days, h, m, s)
+		} else {
+			return fmt.Sprintf("%d days %02d:%02d'%02d", days, h, m, s)
+		}
+	} else {
+		return fmt.Sprintf("%02d:%02d'%02d", h, m, s)
+	}
 }
 
 // UtfSubstr produces utf-8-safe substr
