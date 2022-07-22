@@ -865,14 +865,14 @@ func decorateStatusColumn(tableData [][]string) {
 	var minStatusColumnSpace = 1
 	var maxStatusColumnLen int
 	for _, td := range tableData {
-		statusColumnLen := len(td[statusColumnIndex]) - len(delimiter) + minStatusColumnSpace
+		statusColumnLen := ansi.PrintableRuneWidth(td[statusColumnIndex]) - ansi.PrintableRuneWidth(delimiter) + minStatusColumnSpace
 		if statusColumnLen > maxStatusColumnLen {
 			maxStatusColumnLen = statusColumnLen
 		}
 	}
 	for i, td := range tableData {
 		statusColumnComps := strings.Split(td[statusColumnIndex], delimiter)
-		statusColumnSpacer := strings.Repeat(" ", maxStatusColumnLen-len(statusColumnComps[0])-len(statusColumnComps[1]))
+		statusColumnSpacer := strings.Repeat(" ", maxStatusColumnLen-ansi.PrintableRuneWidth(statusColumnComps[0])-ansi.PrintableRuneWidth(statusColumnComps[1]))
 		tableData[i][statusColumnIndex] = statusColumnComps[0] + statusColumnSpacer + statusColumnComps[1]
 	}
 }
