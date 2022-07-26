@@ -7,9 +7,13 @@ require (
 	github.com/automato-io/s3update v0.1.1-0.20201020183735-c3f312c610b6
 	github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945
 	github.com/briandowns/spinner v1.18.1
+	github.com/creack/pty v1.1.18
 	github.com/fatih/color v1.13.0
+	github.com/gdamore/tcell/v2 v2.5.1
+	github.com/iamacarpet/go-winpty v1.0.4
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/reflow v0.3.0
+	github.com/rivo/tview v0.0.0-20220709181631-73bf2902b59a
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56
@@ -18,9 +22,11 @@ require (
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -42,5 +48,3 @@ require (
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-// replace github.com/automato-io/s3update => /Users/jrslv/Code/go/src/github.com/automato-io/s3update

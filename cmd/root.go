@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"regexp"
 	"sort"
 	"strconv"
@@ -17,7 +19,9 @@ import (
 	"github.com/automato-io/tablewriter"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
+	"github.com/gdamore/tcell/v2"
 	"github.com/muesli/reflow/ansi"
+	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
@@ -76,6 +80,10 @@ const (
 const (
 	incidentStateOpen     = "open"
 	incidentStateResolved = "resolved"
+)
+
+const (
+	watchInterval = time.Duration(5 * time.Second)
 )
 
 var (
@@ -142,6 +150,51 @@ Get insight into current state of your endpoints and metrics history, and receiv
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		// fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func runAsWatch() {
+	app, screen, viewer, err := initWatchEnv()
+	if err != nil {
+		screen.Suspend()
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	args := os.Args
+	for i, v := range args {
+		if v == "--watch" {
+			args = append(args[:i], args[i+1:]...)
+		}
+	}
+	go func() {
+		for {
+			var buf bytes.Buffer
+			var cmdStart, cmdEnd time.Time
+			var watchIntervalRemainder time.Duration
+			cmdStart = time.Now()
+			cmd := exec.Command(args[0], args[1:]...)
+			err := util.CmdOutput(cmd, &buf)
+			if err != nil {
+				screen.Suspend()
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			app.QueueUpdateDraw(func() {
+				screen.Clear()
+				viewer.SetText(tview.TranslateANSI(buf.String()))
+			})
+			cmdEnd = time.Now()
+			watchIntervalRemainder = watchInterval - cmdEnd.Sub(cmdStart)
+			if watchIntervalRemainder > 0 {
+				time.Sleep(watchIntervalRemainder)
+			}
+		}
+	}()
+	err = app.Run()
+	if err != nil {
+		screen.Suspend()
+		fmt.Println(err)
 		os.Exit(1)
 	}
 }
@@ -239,6 +292,27 @@ func initAutoUpdater() {
 	}
 }
 
+func initWatchEnv() (*tview.Application, tcell.Screen, *tview.TextView, error) {
+	screen, err := tcell.NewScreen()
+	if err != nil {
+		return nil, screen, nil, err
+	}
+	err = screen.Init()
+	if err != nil {
+		return nil, screen, nil, err
+	}
+	app := tview.NewApplication()
+	app.SetScreen(screen)
+	viewer := tview.NewTextView().SetDynamicColors(true).SetScrollable(true).SetTextColor(tcell.ColorDefault)
+	viewer.SetBackgroundColor(tcell.ColorDefault)
+	flex := tview.NewFlex().SetDirection(tview.FlexRow)
+	flex.AddItem(viewer, 0, 1, true)
+	app.SetRoot(flex, true)
+	return app, screen, viewer, err
+}
+
+//
+
 func printZeroCreditsWarning() {
 	creditsBalanceWarning := color.RedString("WARNING: ") + "Your credit balance reached zero and all your checks were paused.\nIf you wish to continue using Binocs, please visit the Settings page at " + colorUnderline.Sprint("https://binocs.sh/settings") + " to purchase additional credits.\nYour checks will resume once you top up credits."
 	tableCreditsBalanceWarning := tablewriter.NewWriter(os.Stdout)
@@ -260,6 +334,8 @@ func printZeroCreditsWarning() {
 	tableCreditsBalanceWarning.Append([]string{creditsBalanceWarning})
 	tableCreditsBalanceWarning.Render()
 }
+
+//
 
 type tableColumnDefinition struct {
 	Header    string
@@ -371,6 +447,8 @@ func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewri
 
 	return table
 }
+
+//
 
 func loadSupportedRegions() {
 	respData, err := util.BinocsAPI("/regions", http.MethodGet, []byte{})

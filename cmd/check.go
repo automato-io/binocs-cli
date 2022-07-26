@@ -112,6 +112,7 @@ var (
 	checkListFlagPeriod string
 	checkListFlagRegion string
 	checkListFlagStatus string
+	checkListFlagWatch  bool
 )
 
 // `check inspect` flags
@@ -235,6 +236,7 @@ func init() {
 	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
 	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
+	checkListCmd.Flags().BoolVar(&checkListFlagWatch, "watch", false, "run in cell view and refresh binocs output every 5 seconds")
 
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagName, "name", "n", "", "check name")
 	checkUpdateCmd.Flags().StringVarP(&checkUpdateFlagMethod, "method", "m", "", "HTTP(S) method (GET, HEAD, POST, PUT, DELETE)")
@@ -653,6 +655,11 @@ List all checks with status and metrics overview.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.VerifyAuthenticated()
+
+		if checkListFlagWatch {
+			runAsWatch()
+			return
+		}
 
 		urlValues1 := url.Values{}
 		urlValues2 := url.Values{
