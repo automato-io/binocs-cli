@@ -118,8 +118,10 @@ var (
 	}
 )
 
-// Verbose flag
-var Verbose bool
+var (
+	Verbose bool
+	Quiet   bool
+)
 
 var AutoUpdateInterval = 3600 * 24 * 2
 
@@ -148,7 +150,8 @@ Get insight into current state of your endpoints and metrics history, and receiv
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	err := rootCmd.Execute()
+	if err != nil {
 		// fmt.Println(err)
 		os.Exit(1)
 	}
@@ -162,6 +165,7 @@ func runAsWatch() {
 		os.Exit(1)
 	}
 	args := os.Args
+	args = append(args, "--quiet")
 	for i, v := range args {
 		if v == "--watch" {
 			args = append(args[:i], args[i+1:]...)
@@ -207,6 +211,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.binocs/config.json)")
+	rootCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "enable quiet mode (hide spinners and progress bars)")
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 }
 
