@@ -5,8 +5,7 @@ package util
 
 import (
 	"bytes"
-	"io"
-	"os"
+	"fmt"
 	"os/exec"
 )
 
