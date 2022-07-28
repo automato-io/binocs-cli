@@ -1,23 +1,21 @@
-## binocs channel delete
+## binocs upgrade
 
-Delete notification channel(s)
+Upgrade Binocs to the latest version
 
 ### Synopsis
 
 
-Delete notification channel(s).
-
-This command is interactive and asks for confirmation.
+Upgrade Binocs to the latest version
 
 
 ```
-binocs channel delete [flags]
+binocs upgrade [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help   help for delete
+  -h, --help   help for upgrade
 ```
 
 ### Options inherited from parent commands
@@ -30,5 +28,5 @@ binocs channel delete [flags]
 
 ### SEE ALSO
 
-* [binocs channel](binocs_channel.md)	 - Manage notification channels
+* [binocs](binocs.md)	 - Monitoring tool for websites, applications and APIs
 

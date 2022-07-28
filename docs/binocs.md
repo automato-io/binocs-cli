@@ -18,6 +18,7 @@ Get insight into current state of your endpoints and metrics history, and receiv
 ```
       --config string   config file (default is $HOME/.binocs/config.json)
   -h, --help            help for binocs
+  -q, --quiet           enable quiet mode (hide spinners and progress bars)
   -v, --verbose         verbose output
 ```
 
@@ -33,6 +34,7 @@ Get insight into current state of your endpoints and metrics history, and receiv
 * [binocs login](binocs_login.md)	 - Login to Binocs
 * [binocs logout](binocs_logout.md)	 - Logout
 * [binocs regions](binocs_regions.md)	 - List supported regions
+* [binocs upgrade](binocs_upgrade.md)	 - Upgrade Binocs to the latest version
 * [binocs user](binocs_user.md)	 - Display information about current Binocs user
 * [binocs version](binocs_version.md)	 - Print the Binocs version number
 

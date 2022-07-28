@@ -21,7 +21,7 @@ To load completions for every new session, execute once:
 
 #### macOS:
 
-	binocs completion bash > /usr/local/etc/bash_completion.d/binocs
+	binocs completion bash > $(brew --prefix)/etc/bash_completion.d/binocs
 
 You will need to start a new shell for this setup to take effect.
 
@@ -41,6 +41,7 @@ binocs completion bash
 
 ```
       --config string   config file (default is $HOME/.binocs/config.json)
+  -q, --quiet           enable quiet mode (hide spinners and progress bars)
   -v, --verbose         verbose output
 ```
 

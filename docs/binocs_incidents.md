@@ -19,12 +19,14 @@ binocs incidents [flags]
   -h, --help           help for incidents
       --open           list only open incidents
       --resolved       list only resolved incidents
+      --watch          run in cell view and refresh binocs output every 5 seconds
 ```
 
 ### Options inherited from parent commands
 
 ```
       --config string   config file (default is $HOME/.binocs/config.json)
+  -q, --quiet           enable quiet mode (hide spinners and progress bars)
   -v, --verbose         verbose output
 ```
 
