@@ -49,19 +49,33 @@ func (u Updater) validate() error {
 
 // AutoUpdate runs synchronously a verification to ensure the binary is up-to-date.
 // If a new version gets released, the download will happen automatically
-// It's possible to bypass this mechanism by setting the S3UPDATE_DISABLED environment variable.
 func AutoUpdate(u Updater) error {
-	if os.Getenv("S3UPDATE_DISABLED") != "" {
-		fmt.Println("s3update: autoupdate disabled")
-		return nil
-	}
-
 	if err := u.validate(); err != nil {
 		fmt.Printf("s3update: %s - skipping auto update\n", err.Error())
 		return err
 	}
 
 	return runAutoUpdate(u)
+}
+
+// AutoUpdate runs synchronously a verification to ensure the binary is up-to-date.
+func IsUpdateAvailable(u Updater) (bool, string, error) {
+	err := u.validate()
+	if err != nil {
+		return false, "", err
+	}
+	if !semver.IsValid(u.CurrentVersion) {
+		return false, "", fmt.Errorf("invalid local version")
+	}
+	localVersion := u.CurrentVersion
+	remoteVersion, err := fetchRemoteVersion(u.S3Bucket)
+	if err != nil {
+		return false, "", err
+	}
+	if semver.Compare(localVersion, remoteVersion) == -1 {
+		return true, remoteVersion, nil
+	}
+	return false, "", nil
 }
 
 // generateURL composes the download or checksum URL depending on version, os and architecture
