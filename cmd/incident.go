@@ -56,6 +56,10 @@ type Timings struct {
 	Transfer   string `json:"transfer"`
 }
 
+var (
+	incidentInspectFlagWatch bool
+)
+
 // `incident ls` flags
 var (
 	incidentListFlagCheck    string
@@ -81,6 +85,8 @@ func init() {
 	incidentCmd.AddCommand(incidentInspectCmd)
 	incidentCmd.AddCommand(incidentListCmd)
 	incidentCmd.AddCommand(incidentUpdateCmd)
+
+	incidentInspectCmd.Flags().BoolVar(&incidentInspectFlagWatch, "watch", false, "run in cell view and refresh binocs output every 5 seconds")
 
 	incidentsCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
 	incidentsCmd.Flags().BoolVar(&incidentListFlagOpen, "open", false, "list only open incidents")
@@ -122,6 +128,11 @@ View incident details, notes and associated requests.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.VerifyAuthenticated()
+
+		if incidentInspectFlagWatch {
+			runAsWatch()
+			return
+		}
 
 		spin.Start()
 		defer spin.Stop()
