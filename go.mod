@@ -10,7 +10,6 @@ require (
 	github.com/creack/pty v1.1.18
 	github.com/fatih/color v1.13.0
 	github.com/gdamore/tcell/v2 v2.5.1
-	github.com/iamacarpet/go-winpty v1.0.4
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/reflow v0.3.0
 	github.com/rivo/tview v0.0.0-20220728094620-c6cff75ed57b

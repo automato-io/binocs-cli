@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -168,6 +169,10 @@ func Execute() {
 }
 
 func runAsWatch() {
+	// windows are unsupported because github.com/iamacarpet/go-winpty crashes during build in CI
+	if runtime.GOOS == "windows" {
+		return
+	}
 	app, screen, viewer, err := initWatchEnv()
 	if err != nil {
 		screen.Suspend()
