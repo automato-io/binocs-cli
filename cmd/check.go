@@ -119,6 +119,7 @@ var (
 var (
 	checkInspectFlagPeriod string
 	checkInspectFlagRegion string
+	checkInspectFlagWatch  bool
 )
 
 // `check add` flags
@@ -229,6 +230,7 @@ func init() {
 
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagPeriod, "period", "p", "day", "display values and charts for specified period")
 	checkInspectCmd.Flags().StringVarP(&checkInspectFlagRegion, "region", "r", "", "display values and charts from the specified region only")
+	checkInspectCmd.Flags().BoolVar(&checkInspectFlagWatch, "watch", false, "run in cell view and refresh binocs output every 5 seconds")
 
 	checksCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checksCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
@@ -384,6 +386,11 @@ View check status and metrics.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.VerifyAuthenticated()
+
+		if checkInspectFlagWatch {
+			runAsWatch()
+			return
+		}
 
 		var decoder *json.Decoder
 
