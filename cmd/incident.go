@@ -61,6 +61,7 @@ var (
 	incidentListFlagCheck    string
 	incidentListFlagOpen     bool
 	incidentListFlagResolved bool
+	incidentListFlagWatch    bool
 )
 
 // `incident update` flags
@@ -84,9 +85,11 @@ func init() {
 	incidentsCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
 	incidentsCmd.Flags().BoolVar(&incidentListFlagOpen, "open", false, "list only open incidents")
 	incidentsCmd.Flags().BoolVar(&incidentListFlagResolved, "resolved", false, "list only resolved incidents")
+	incidentsCmd.Flags().BoolVar(&incidentListFlagWatch, "watch", false, "run in cell view and refresh binocs output every 5 seconds")
 	incidentListCmd.Flags().StringVarP(&incidentListFlagCheck, "check", "c", "", "list only incidents of this check")
 	incidentListCmd.Flags().BoolVar(&incidentListFlagOpen, "open", false, "list only open incidents")
 	incidentListCmd.Flags().BoolVar(&incidentListFlagResolved, "resolved", false, "list only resolved incidents")
+	incidentListCmd.Flags().BoolVar(&incidentListFlagWatch, "watch", false, "run in cell view and refresh binocs output every 5 seconds")
 
 	incidentUpdateCmd.Flags().StringVarP(&incidentUpdateFlagNote, "note", "n", "", "incident note")
 }
@@ -328,6 +331,11 @@ List all past and current incidents.
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		util.VerifyAuthenticated()
+
+		if incidentListFlagWatch {
+			runAsWatch()
+			return
+		}
 
 		spin.Start()
 		defer spin.Stop()
