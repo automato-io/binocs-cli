@@ -48,3 +48,5 @@ require (
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace github.com/briandowns/spinner v1.18.1 => github.com/automato-io/spinner v1.18.2-0.20220728062523-8d8b981b151a

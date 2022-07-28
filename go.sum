@@ -66,14 +66,14 @@ github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj
 github.com/armon/go-radix v1.0.0/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/automato-io/s3update v0.1.1-0.20201020183735-c3f312c610b6 h1:f9Du9n9BbFhR5UwRbozhFyL0o8xbUnJHWtx0jrpzgRc=
 github.com/automato-io/s3update v0.1.1-0.20201020183735-c3f312c610b6/go.mod h1:rubsteC6h2qHLXXMqr2+BdjuiymCFOLK9bEgcf1GoVM=
+github.com/automato-io/spinner v1.18.2-0.20220728062523-8d8b981b151a h1:PzzBST/Ou9uCb2TjAIvcZ3jmEGusnw05Q8+jDO7kphk=
+github.com/automato-io/spinner v1.18.2-0.20220728062523-8d8b981b151a/go.mod h1:mQak9GHqbspjC/5iUx3qMlIho8xBS/ppAL/hX5SmPJU=
 github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945 h1:tY9rTEFS75AdGF7iUBK08QGuaf/m3szBokgzFzPnVqc=
 github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945/go.mod h1:vJ5LEvqqGXt4ALDZzwgWqXjiaCEksiVQBeGectuR+5w=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bgentry/speakeasy v0.1.0/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
-github.com/briandowns/spinner v1.18.1 h1:yhQmQtM1zsqFsouh09Bk/jCjd50pC3EOGsh28gLVvwY=
-github.com/briandowns/spinner v1.18.1/go.mod h1:mQak9GHqbspjC/5iUx3qMlIho8xBS/ppAL/hX5SmPJU=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/census-instrumentation/opencensus-proto v0.3.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=

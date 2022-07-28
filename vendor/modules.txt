@@ -9,7 +9,7 @@ github.com/automato-io/s3update
 # github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945
 ## explicit; go 1.17
 github.com/automato-io/tablewriter
-# github.com/briandowns/spinner v1.18.1
+# github.com/briandowns/spinner v1.18.1 => github.com/automato-io/spinner v1.18.2-0.20220728062523-8d8b981b151a
 ## explicit; go 1.14
 github.com/briandowns/spinner
 # github.com/cpuguy83/go-md2man/v2 v2.0.1
