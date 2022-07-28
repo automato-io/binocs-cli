@@ -12,5 +12,5 @@ import (
 const defaultShell = "cmd /c"
 
 func CmdOutput(cmd *exec.Cmd, buf *bytes.Buffer) error {
-	return fmt.Error("unsupported operating system")
+	return fmt.Errorf("unsupported operating system")
 }
