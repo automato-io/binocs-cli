@@ -73,10 +73,12 @@ type ApdexResponse struct {
 
 // ResponseCodesResponse comes from the API as a JSON
 type ResponseCodesResponse struct {
+	Xx1  int    `json:"1xx"`
 	Xx2  int    `json:"2xx"`
 	Xx3  int    `json:"3xx"`
 	Xx4  int    `json:"4xx"`
 	Xx5  int    `json:"5xx"`
+	Err  int    `json:"Err"`
 	From string `json:"from"`
 	To   string `json:"to"`
 }
@@ -589,7 +591,7 @@ View check status and metrics.
 				os.Exit(1)
 			}
 
-			responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], respJSON.UpCodes, "            ")
+			responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], respJSON.UpCodes, 16)
 			responseCodesChartTitle := drawChartTitle("HTTP RESPONSE CODES", responseCodesChart, periodTableTitle)
 			tableChartsData = append(tableChartsData, []string{responseCodesChartTitle})
 			tableChartsData = append(tableChartsData, []string{responseCodesChart})
@@ -1159,29 +1161,40 @@ func drawApdexChart(apdex []ApdexResponse, dataPoints int, leftMargin string) st
 	return chart
 }
 
-func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints int, upCodes string, leftMargin string) string {
-	var rows [4]string
+func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints int, upCodes string, yAreaWidth int) string {
+	const numRows = 6
+	var rows [numRows]string
 	var chart string
 	for _, v := range responseCodes {
-		if v.Xx2 > 0 {
+		if v.Xx1 > 0 {
 			rows[0] = rows[0] + "▩"
 		} else {
 			rows[0] = rows[0] + " "
 		}
-		if v.Xx3 > 0 {
+		if v.Xx2 > 0 {
 			rows[1] = rows[1] + "▩"
 		} else {
 			rows[1] = rows[1] + " "
 		}
-		if v.Xx4 > 0 {
+		if v.Xx3 > 0 {
 			rows[2] = rows[2] + "▩"
 		} else {
 			rows[2] = rows[2] + " "
 		}
-		if v.Xx5 > 0 {
+		if v.Xx4 > 0 {
 			rows[3] = rows[3] + "▩"
 		} else {
 			rows[3] = rows[3] + " "
+		}
+		if v.Xx5 > 0 {
+			rows[4] = rows[4] + "▩"
+		} else {
+			rows[4] = rows[4] + " "
+		}
+		if v.Err > 0 {
+			rows[5] = rows[5] + "▩"
+		} else {
+			rows[5] = rows[5] + " "
 		}
 	}
 	if len(responseCodes) < dataPoints {
@@ -1189,12 +1202,16 @@ func drawResponseCodesChart(responseCodes []ResponseCodesResponse, dataPoints in
 			rows[i] = strings.Repeat(" ", dataPoints-len(responseCodes)) + rows[i]
 		}
 	}
-	for i := 0; i < 4; i++ {
-		// @todo we should distinguish between a green code (in range and up), and a yellow code (in range and down, e.g. 303 in default range setup)
-		if ok, _ := util.IsCodeInRange((i+2)*100, upCodes); ok {
-			chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + color.GreenString(rows[i]) + "\n"
+	for i := 0; i < numRows; i++ {
+		if i == numRows-1 { // the err case
+			chart = chart + strings.Repeat(" ", yAreaWidth-6) + "error" + " " + color.RedString(rows[i]) + "\n"
 		} else {
-			chart = chart + leftMargin + strconv.Itoa(i+2) + "xx" + " " + color.RedString(rows[i]) + "\n"
+			// @todo we should distinguish between a green code (in range and up), and a yellow code (in range and down, e.g. 303 in default range setup)
+			if ok, _ := util.IsCodeInRange((i+1)*100, upCodes); ok {
+				chart = chart + strings.Repeat(" ", yAreaWidth-4) + strconv.Itoa(i+1) + "xx" + " " + color.GreenString(rows[i]) + "\n"
+			} else {
+				chart = chart + strings.Repeat(" ", yAreaWidth-4) + strconv.Itoa(i+1) + "xx" + " " + color.RedString(rows[i]) + "\n"
+			}
 		}
 	}
 	chart = strings.TrimSuffix(chart, "\n")
