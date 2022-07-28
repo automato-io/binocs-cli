@@ -206,10 +206,7 @@ func runAsWatch() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	cobra.OnInitialize(initAutoUpdater)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	cobra.OnInitialize(initGlobalFlags)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.binocs/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "enable quiet mode (hide spinners and progress bars)")
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
@@ -253,6 +250,12 @@ func initConfig() {
 		}
 	} else if Verbose {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+}
+
+func initGlobalFlags() {
+	if Quiet {
+		spin.Disable()
 	}
 }
 
