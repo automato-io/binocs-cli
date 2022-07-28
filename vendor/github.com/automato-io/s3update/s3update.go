@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,8 +12,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"syscall"
-	"time"
 
 	"github.com/mitchellh/ioprogress"
 	"golang.org/x/mod/semver"
@@ -75,14 +72,17 @@ func IsUpdateAvailable(u Updater) (bool, string, error) {
 	if semver.Compare(localVersion, remoteVersion) == -1 {
 		return true, remoteVersion, nil
 	}
-	return false, "", nil
+	return false, remoteVersion, nil
 }
 
 // generateURL composes the download or checksum URL depending on version, os and architecture
 func generateURL(bucket, pathTemplate, version string) string {
-	p := strings.Replace(pathTemplate, "{{VERSION}}", version, -1)
+	p := strings.Replace(pathTemplate, "{{VERSION}}", strings.Replace(version, "v", "", -1), -1)
 	p = strings.Replace(p, "{{ARCH}}", runtime.GOARCH, -1)
 	p = strings.Replace(p, "{{OS}}", runtime.GOOS, -1)
+	if runtime.GOARCH == "windows" {
+		p = p + ".exe"
+	}
 	return "https://" + bucket + ".s3.amazonaws.com/" + p
 }
 
@@ -143,24 +143,24 @@ func downloadUpdate(downloadURL, checksumURL, version string) error {
 	}
 	defer resp.Body.Close()
 
-	checksumResp, err := http.Get(checksumURL)
-	if err != nil {
-		return err
-	}
-	defer checksumResp.Body.Close()
-	checksumRespBody, err := ioutil.ReadAll(checksumResp.Body)
-	if err != nil {
-		return err
-	}
+	// checksumResp, err := http.Get(checksumURL)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer checksumResp.Body.Close()
+	// checksumRespBody, err := ioutil.ReadAll(checksumResp.Body)
+	// if err != nil {
+	// 	return err
+	// }
 
 	progressR := &ioprogress.Reader{
-		Reader:       resp.Body,
-		Size:         resp.ContentLength,
-		DrawInterval: 500 * time.Millisecond,
-		DrawFunc: ioprogress.DrawTerminalf(os.Stdout, func(progress, total int64) string {
-			bar := ioprogress.DrawTextFormatBar(40)
-			return fmt.Sprintf("%s %20s", bar(progress, total), ioprogress.DrawTextFormatBytes(progress, total))
-		}),
+		Reader: resp.Body,
+		Size:   resp.ContentLength,
+		// DrawInterval: 500 * time.Millisecond,
+		// DrawFunc: ioprogress.DrawTerminalf(os.Stdout, func(progress, total int64) string {
+		// 	bar := ioprogress.DrawTextFormatBar(40)
+		// 	return fmt.Sprintf("%s %20s", bar(progress, total), ioprogress.DrawTextFormatBytes(progress, total))
+		// }),
 	}
 
 	// follow symlinks
@@ -204,10 +204,10 @@ func downloadUpdate(downloadURL, checksumURL, version string) error {
 		os.Rename(backup, target)
 		return err
 	}
-	if string(checksumRespBody) != hex.EncodeToString(h.Sum(nil)) {
-		os.Rename(backup, target)
-		return fmt.Errorf("%s checksum mismatch", version)
-	}
+	// if string(checksumRespBody) != hex.EncodeToString(h.Sum(nil)) {
+	// 	os.Rename(backup, target)
+	// 	return fmt.Errorf("%s checksum mismatch", version)
+	// }
 
 	if strings.HasSuffix(downloadURL, ".tgz") {
 		err = untgzFile(target)
@@ -225,10 +225,9 @@ func downloadUpdate(downloadURL, checksumURL, version string) error {
 
 	os.Remove(backup)
 
-	fmt.Printf("successfully updated to %s\n", version)
+	fmt.Printf("Successfully upgraded to %s.\n", version)
 
-	// re-run original command
-	return syscall.Exec(target, os.Args, os.Environ())
+	return nil
 }
 
 func runAutoUpdate(u Updater) error {
@@ -241,12 +240,16 @@ func runAutoUpdate(u Updater) error {
 		return err
 	}
 	if semver.Compare(localVersion, remoteVersion) == -1 {
-		fmt.Printf("upgrading from %s to %s\n", localVersion, remoteVersion)
+		if u.Verbose {
+			fmt.Printf("upgrading from %s to %s\n", localVersion, remoteVersion)
+		}
 		downloadURL := generateURL(u.S3Bucket, u.S3ReleaseKey, remoteVersion)
 		checksumURL := generateURL(u.S3Bucket, u.ChecksumKey, remoteVersion)
 		if u.Verbose {
-			fmt.Printf("downloadURL: %s\n", downloadURL)
-			fmt.Printf("checksumURL: %s\n", checksumURL)
+			if u.Verbose {
+				fmt.Printf("downloadURL: %s\n", downloadURL)
+				fmt.Printf("checksumURL: %s\n", checksumURL)
+			}
 		}
 		err = downloadUpdate(downloadURL, checksumURL, remoteVersion)
 		if err != nil {

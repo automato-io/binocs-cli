@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.5
-	github.com/automato-io/s3update v0.1.1-0.20220728150252-21ad45938b96
+	github.com/automato-io/s3update v0.1.1-0.20220728172854-2b892c77487e
 	github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945
 	github.com/briandowns/spinner v1.18.1
 	github.com/creack/pty v1.1.18

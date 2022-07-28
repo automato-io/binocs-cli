@@ -3,7 +3,7 @@
 github.com/AlecAivazis/survey/v2
 github.com/AlecAivazis/survey/v2/core
 github.com/AlecAivazis/survey/v2/terminal
-# github.com/automato-io/s3update v0.1.1-0.20220728150252-21ad45938b96
+# github.com/automato-io/s3update v0.1.1-0.20220728172854-2b892c77487e
 ## explicit; go 1.17
 github.com/automato-io/s3update
 # github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945

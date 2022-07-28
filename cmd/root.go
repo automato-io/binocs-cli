@@ -124,12 +124,12 @@ var (
 )
 
 var (
-	autoUpdateInterval = 3600 * 24 * 2
-	autoUpdaterConfig  = s3update.Updater{
+	autoUpgradeInterval = 3600 * 24 * 2
+	autoUpdaterConfig   = s3update.Updater{
 		CurrentVersion: BinocsVersion,
 		S3VersionKey:   "VERSION",
 		S3Bucket:       "binocs-download-website",
-		S3ReleaseKey:   "binocs_{{VERSION}}_{{OS}}_{{ARCH}}.tgz",
+		S3ReleaseKey:   "binocs_{{VERSION}}_{{OS}}_{{ARCH}}",
 		ChecksumKey:    "binocs_{{VERSION}}_{{OS}}_{{ARCH}}_checksum.txt",
 		Verbose:        false,
 	}
@@ -215,7 +215,7 @@ func runAsWatch() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	cobra.OnInitialize(initAutoUpdater)
+	cobra.OnInitialize(initAutoUpgrader)
 	cobra.OnInitialize(initGlobalFlags)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.binocs/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "enable quiet mode (hide spinners and progress bars)")
@@ -274,32 +274,30 @@ func writeConfigTemplate(path string) error {
 	return ioutil.WriteFile(path, configContent, 0600)
 }
 
-func initAutoUpdater() {
-	var err error
+// sister function of upgradeCmd.Run()
+func initAutoUpgrader() {
 	currentTimestamp := int(time.Now().UTC().Unix())
-	lastUpdated, err := strconv.Atoi(viper.GetString("update_last_checked"))
-	if err != nil {
-		fmt.Println(err)
-	}
-	if lastUpdated+autoUpdateInterval < currentTimestamp {
-		updateAvailable, versionAvailable, err := s3update.IsUpdateAvailable(autoUpdaterConfig)
+	// ignore error, proceed, and try to write the correct value after a successful check
+	lastUpgraded, _ := strconv.Atoi(viper.GetString("upgrade_last_checked"))
+	if lastUpgraded+autoUpgradeInterval < currentTimestamp {
+		upgradeAvailable, versionAvailable, err := s3update.IsUpdateAvailable(autoUpdaterConfig)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
-		if updateAvailable {
+		if upgradeAvailable {
 			if !Quiet {
-				updateMessage := fmt.Sprintf("Binocs %s is available. You are currently using %s.\n", versionAvailable, BinocsVersion)
-				updateMessage = updateMessage + "Run " + colorBold.Sprint("binocs upgrade") + " to get the latest version.\n"
-				fmt.Print(updateMessage)
+				upgradeMessage := fmt.Sprintf("Binocs CLI %s is available. You are currently using version %s.\n", versionAvailable, BinocsVersion)
+				upgradeMessage = upgradeMessage + "Run " + colorBold.Sprint("binocs upgrade") + " to get the latest version.\n"
+				fmt.Print(upgradeMessage)
 			}
 		} else {
-			viper.Set("update_last_checked", fmt.Sprintf("%v", currentTimestamp))
+			viper.Set("upgrade_last_checked", fmt.Sprintf("%v", currentTimestamp))
 			err = viper.WriteConfigAs(viper.ConfigFileUsed())
 			if err != nil {
 				fmt.Println(err)
 			}
 		}
-		// err = s3update.AutoUpdate(autoUpdaterConfig)
 	}
 }
 
