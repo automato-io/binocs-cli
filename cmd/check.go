@@ -233,6 +233,7 @@ func init() {
 	checksCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checksCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
 	checksCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"up\" or \"dow\" checks, default \"all\"")
+	checksCmd.Flags().BoolVar(&checkListFlagWatch, "watch", false, "run in cell view and refresh binocs output every 5 seconds")
 	checkListCmd.Flags().StringVarP(&checkListFlagPeriod, "period", "p", "day", "display MRT, UPTIME, APDEX values and APDEX chart for specified period")
 	checkListCmd.Flags().StringVarP(&checkListFlagRegion, "region", "r", "", "display MRT, UPTIME, APDEX values and APDEX chart from the specified region only")
 	checkListCmd.Flags().StringVarP(&checkListFlagStatus, "status", "s", "", "list only \"up\" or \"down\" checks, default \"all\"")
