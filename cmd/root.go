@@ -123,7 +123,17 @@ var (
 	Quiet   bool
 )
 
-var AutoUpdateInterval = 3600 * 24 * 2
+var (
+	autoUpdateInterval = 3600 * 24 * 2
+	autoUpdaterConfig  = s3update.Updater{
+		CurrentVersion: BinocsVersion,
+		S3VersionKey:   "VERSION",
+		S3Bucket:       "binocs-download-website",
+		S3ReleaseKey:   "binocs_{{VERSION}}_{{OS}}_{{ARCH}}.tgz",
+		ChecksumKey:    "binocs_{{VERSION}}_{{OS}}_{{ARCH}}_checksum.txt",
+		Verbose:        false,
+	}
+)
 
 var cfgFile string
 
@@ -265,38 +275,31 @@ func writeConfigTemplate(path string) error {
 }
 
 func initAutoUpdater() {
-	currentUnix := int(time.Now().UTC().Unix())
-	lastUpdatedRaw := viper.GetString("update_last_checked")
-	lastUpdated, err := strconv.Atoi(lastUpdatedRaw)
+	var err error
+	currentTimestamp := int(time.Now().UTC().Unix())
+	lastUpdated, err := strconv.Atoi(viper.GetString("update_last_checked"))
 	if err != nil {
-		if Verbose {
+		fmt.Println(err)
+	}
+	if lastUpdated+autoUpdateInterval < currentTimestamp {
+		updateAvailable, versionAvailable, err := s3update.IsUpdateAvailable(autoUpdaterConfig)
+		if err != nil {
 			fmt.Println(err)
 		}
-	}
-	if lastUpdated+AutoUpdateInterval < currentUnix {
-		err := s3update.AutoUpdate(s3update.Updater{
-			CurrentVersion: BinocsVersion,
-			S3VersionKey:   "VERSION",
-			S3Bucket:       "binocs-download-website",
-			S3ReleaseKey:   "binocs_{{VERSION}}_{{OS}}_{{ARCH}}.tgz",
-			ChecksumKey:    "binocs_{{VERSION}}_{{OS}}_{{ARCH}}_checksum.txt",
-			Verbose:        true,
-		})
-		if err != nil {
-			fmt.Println("Error loading auto updater (2)")
-			if Verbose {
-				fmt.Println(err)
+		if updateAvailable {
+			if !Quiet {
+				updateMessage := fmt.Sprintf("Binocs %s is available. You are currently using %s.\n", versionAvailable, BinocsVersion)
+				updateMessage = updateMessage + "Run " + colorBold.Sprint("binocs upgrade") + " to get the latest version.\n"
+				fmt.Print(updateMessage)
 			}
 		} else {
-			viper.Set("update_last_checked", fmt.Sprintf("%v", currentUnix))
+			viper.Set("update_last_checked", fmt.Sprintf("%v", currentTimestamp))
 			err = viper.WriteConfigAs(viper.ConfigFileUsed())
 			if err != nil {
-				fmt.Println("Error loading auto updater (3)")
-				if Verbose {
-					fmt.Println(err)
-				}
+				fmt.Println(err)
 			}
 		}
+		// err = s3update.AutoUpdate(autoUpdaterConfig)
 	}
 }
 
