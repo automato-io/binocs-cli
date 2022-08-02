@@ -889,8 +889,10 @@ func decorateStatusColumn(tableData [][]string) {
 	}
 	for i, td := range tableData {
 		statusColumnComps := strings.Split(td[statusColumnIndex], delimiter)
-		statusColumnSpacer := strings.Repeat(" ", maxStatusColumnLen-ansi.PrintableRuneWidth(statusColumnComps[0])-ansi.PrintableRuneWidth(statusColumnComps[1]))
-		tableData[i][statusColumnIndex] = statusColumnComps[0] + statusColumnSpacer + statusColumnComps[1]
+		if len(statusColumnComps) == 2 {
+			statusColumnSpacer := strings.Repeat(" ", maxStatusColumnLen-ansi.PrintableRuneWidth(statusColumnComps[0])-ansi.PrintableRuneWidth(statusColumnComps[1]))
+			tableData[i][statusColumnIndex] = statusColumnComps[0] + statusColumnSpacer + statusColumnComps[1]
+		}
 	}
 }
 
