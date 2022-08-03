@@ -29,11 +29,7 @@ Download binaries to `~/Code/automato/binocs-download/public/`
 
 ```shell
 $ cd ~/Code/automato/binocs-download/
-$ cp ~/Downloads/binocs_0.4.0_* public/
-$ echo "v0.4.0" > public/VERSION
-$ git add .
-$ git commit -m 'v0.4.0'
-$ git push origin master
+$ ./update 0.4.0
 $ ./sync
 ```
 
