@@ -79,16 +79,18 @@ var (
 const (
 	validChannelIdentPattern      = `^[a-f0-9]{5}$`
 	validAliasPattern             = `^[\p{L}\p{N}_\s\/\-\.]{0,25}$`
-	validTypePattern              = `^(email|slack|telegram)$`
+	validTypePattern              = `^(email|slack|telegram|sms)$`
 	validChannelsIdentListPattern = `^(all|([a-f0-9]{5})(,[a-f0-9]{5})*)$`
 	validNotificationTypePattern  = `^(response-change|status)$`
 	channelTypeEmail              = "email"
-	channelTypeTelegram           = "telegram"
+	channelTypeSms                = "sms"
 	channelTypeSlack              = "slack"
+	channelTypeTelegram           = "telegram"
 )
 
 var validHandlePattern = map[string]string{
 	"email": `^(?:[a-z0-9!#$%&'*+/=?^_{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$`,
+	"sms":   `^\+?[1-9][0-9]{7,14}$`,
 }
 
 func init() {
@@ -112,8 +114,8 @@ func init() {
 	channelDetachCmd.Flags().BoolVarP(&channelDetachFlagAll, "all", "a", false, "detach all checks from this channel")
 	channelDetachCmd.Flags().SortFlags = false
 
-	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram)")
-	channelAddCmd.Flags().StringVar(&channelAddFlagHandle, "handle", "", "channel handle - an address for \"E-mail\" channel type; handles for Slack and Telegram will be obtained programmatically")
+	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram, SMS)")
+	channelAddCmd.Flags().StringVar(&channelAddFlagHandle, "handle", "", "channel handle - an address for \"E-mail\" channel type; a phone number for \"SMS\" channel type; handles for Slack and Telegram will be obtained programmatically")
 	channelAddCmd.Flags().StringVar(&channelAddFlagAlias, "alias", "", "channel alias (optional)")
 	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\", or one or more check identifiers")
 	channelAddCmd.Flags().SortFlags = false
@@ -672,7 +674,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		} else if !match {
 			prompt := &survey.Select{
 				Message: "Choose type:",
-				Options: []string{channelTypeEmail, channelTypeSlack, channelTypeTelegram},
+				Options: []string{channelTypeEmail, channelTypeSlack, channelTypeTelegram, channelTypeSms},
 			}
 			err = survey.AskOne(prompt, &flagType)
 			if err != nil {
@@ -701,13 +703,58 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 					return nil
 				}
 				prompt := &survey.Input{
-					Message: "Enter a valid " + flagType + " handle:",
+					Message: "Enter a valid e-mail address:",
 				}
 				err = survey.AskOne(prompt, &flagHandle, survey.WithValidator(validate))
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
+			}
+		} else if flagType == channelTypeSms {
+			match, err = regexp.MatchString(validHandlePattern[channelTypeSms], flagHandle)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			} else if !match {
+				validate := func(val interface{}) error {
+					match, err = regexp.MatchString(validHandlePattern[channelTypeSms], val.(string))
+					if err != nil {
+						return err
+					} else if !match {
+						return errors.New("invalid handle format")
+					}
+					return nil
+				}
+				prompt := &survey.Input{
+					Message: "Enter a valid phone number:",
+				}
+				err = survey.AskOne(prompt, &flagHandle, survey.WithValidator(validate))
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			}
+			var smsVerificationInput string
+			smsVerificationCode, err := sendVerificationSms(flagHandle)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			validate := func(val interface{}) error {
+				if val.(string) == smsVerificationCode.Token {
+					return nil
+				}
+				return errors.New("invalid code")
+			}
+			fmt.Println("We sent you a verification SMS with a 4 digit code.")
+			smsVerifyPrompt := &survey.Input{
+				Message: "SMS verification code:",
+			}
+			err = survey.AskOne(smsVerifyPrompt, &smsVerificationInput, survey.WithValidator(validate))
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		} else if flagType == channelTypeSlack {
 			slackIntegrationToken, err := requestSlackIntegrationToken()
@@ -1031,4 +1078,31 @@ func pollTelegramIntegrationStatus(token string) (TelegramIntegrationStatus, err
 		os.Exit(1)
 	}
 	return status, nil
+}
+
+// SmsVerificationRequest as expected input
+type SmsVerificationRequest struct {
+	Number string `json:"number"`
+}
+
+// SmsVerificationToken as expected input
+type SmsVerificationToken struct {
+	Token string `json:"token"`
+}
+
+func sendVerificationSms(num string) (SmsVerificationToken, error) {
+	var token SmsVerificationToken
+	postData, err := json.Marshal(&SmsVerificationRequest{Number: num})
+	if err != nil {
+		return token, err
+	}
+	respData, err := util.BinocsAPI("/integration/sms/request-verification-token", http.MethodPost, postData)
+	if err != nil {
+		return token, err
+	}
+	err = json.Unmarshal(respData, &token)
+	if err != nil {
+		return token, err
+	}
+	return token, nil
 }
