@@ -31,9 +31,21 @@ Upgrade Binocs to the latest version
 		}
 		if upgradeAvailable {
 			upgradeMessage := fmt.Sprintf("Binocs CLI %s is available. You are currently using version %s.\n", versionAvailable, BinocsVersion)
-			upgradeMessage = upgradeMessage + "Attempting upgrade...\n"
+			upgradeMessage = upgradeMessage + "Attempting upgrade..."
 			fmt.Println(upgradeMessage)
-			err := s3update.AutoUpdate(autoUpdaterConfig)
+			filePath, err := os.Executable()
+			if err != nil {
+				fmt.Println("Cannot determine current binary location.")
+				os.Exit(1)
+			}
+			f, err := os.OpenFile(filePath, os.O_RDWR, 0755)
+			if err != nil && os.IsPermission(err) {
+				defer f.Close()
+				fmt.Printf("Please execute this command as sudo for %s to be replaced.\n", filePath)
+				os.Exit(1)
+			}
+			f.Close()
+			err = s3update.AutoUpdate(autoUpdaterConfig)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

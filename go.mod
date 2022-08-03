@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.5
-	github.com/automato-io/s3update v0.1.1-0.20220728172854-2b892c77487e
+	github.com/automato-io/s3update v0.1.1-0.20220803155358-9b19ac4d3c8c
 	github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945
 	github.com/briandowns/spinner v1.18.1
 	github.com/creack/pty v1.1.18
@@ -31,7 +31,6 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
-	github.com/mitchellh/ioprogress v0.0.0-20180201004757-6a23b12fa88e // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect

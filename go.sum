@@ -42,8 +42,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2 h1:+vx7roKuyA63nhn5WAunQHLTznkw5W8b1Xc0dNjp83s=
 github.com/Netflix/go-expect v0.0.0-20220104043353-73e0943537d2/go.mod h1:HBCaDeC1lPdgDeDbhX8XFpy1jqjK0IBG8W5K+xYqA0w=
-github.com/automato-io/s3update v0.1.1-0.20220728172854-2b892c77487e h1:A/F5F2+6B5zQCPYzdTFxLMe3jPYGCB+kvAnY5RfXrB8=
-github.com/automato-io/s3update v0.1.1-0.20220728172854-2b892c77487e/go.mod h1:Wm+S9L+UEyxkMIJAIE0Eunx4r5nIe+NcjzBRs3Mgni0=
+github.com/automato-io/s3update v0.1.1-0.20220803155358-9b19ac4d3c8c h1:sA7ZVOjejMZhv9gnTocVJJ3w6bE51OrXft+4AvVos3o=
+github.com/automato-io/s3update v0.1.1-0.20220803155358-9b19ac4d3c8c/go.mod h1:zuQjrCac9fDcppzezRWJz9lrA2OeliU+MsOx/Ye5jC4=
 github.com/automato-io/spinner v1.18.2-0.20220728062523-8d8b981b151a h1:PzzBST/Ou9uCb2TjAIvcZ3jmEGusnw05Q8+jDO7kphk=
 github.com/automato-io/spinner v1.18.2-0.20220728062523-8d8b981b151a/go.mod h1:mQak9GHqbspjC/5iUx3qMlIho8xBS/ppAL/hX5SmPJU=
 github.com/automato-io/tablewriter v0.0.6-0.20220722150333-396053a67945 h1:tY9rTEFS75AdGF7iUBK08QGuaf/m3szBokgzFzPnVqc=
@@ -180,8 +180,6 @@ github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d h1:5PJl274Y63IEHC+7izoQ
 github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
-github.com/mitchellh/ioprogress v0.0.0-20180201004757-6a23b12fa88e h1:Qa6dnn8DlasdXRnacluu8HzPts0S1I9zvvUPDbBnXFI=
-github.com/mitchellh/ioprogress v0.0.0-20180201004757-6a23b12fa88e/go.mod h1:waEya8ee1Ro/lgxpVhkJI4BVASzkm3UZqkx/cFJiYHM=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/muesli/reflow v0.3.0 h1:IFsN6K9NfGtjeggFP+68I4chLZV2yIKsXJFNZ+eWh6s=

@@ -3,7 +3,6 @@ package s3update
 import (
 	"archive/tar"
 	"compress/gzip"
-	"crypto/md5"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,7 +12,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/mitchellh/ioprogress"
 	"golang.org/x/mod/semver"
 )
 
@@ -153,15 +151,15 @@ func downloadUpdate(downloadURL, checksumURL, version string) error {
 	// 	return err
 	// }
 
-	progressR := &ioprogress.Reader{
-		Reader: resp.Body,
-		Size:   resp.ContentLength,
-		// DrawInterval: 500 * time.Millisecond,
-		// DrawFunc: ioprogress.DrawTerminalf(os.Stdout, func(progress, total int64) string {
-		// 	bar := ioprogress.DrawTextFormatBar(40)
-		// 	return fmt.Sprintf("%s %20s", bar(progress, total), ioprogress.DrawTextFormatBytes(progress, total))
-		// }),
-	}
+	// progressR := &ioprogress.Reader{
+	// 	Reader: resp.Body,
+	// 	Size:   resp.ContentLength,
+	// 	// DrawInterval: 500 * time.Millisecond,
+	// 	// DrawFunc: ioprogress.DrawTerminalf(os.Stdout, func(progress, total int64) string {
+	// 	// 	bar := ioprogress.DrawTextFormatBar(40)
+	// 	// 	return fmt.Sprintf("%s %20s", bar(progress, total), ioprogress.DrawTextFormatBytes(progress, total))
+	// 	// }),
+	// }
 
 	// follow symlinks
 	currentExecutable, err := os.Executable()
@@ -188,22 +186,22 @@ func downloadUpdate(downloadURL, checksumURL, version string) error {
 		return err
 	}
 	defer f.Close()
-	if _, err := io.Copy(f, progressR); err != nil {
+	if _, err := io.Copy(f, resp.Body); err != nil {
 		os.Rename(backup, target)
 		return err
 	}
 	f.Close()
 
-	f, err = os.Open(target)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	h := md5.New()
-	if _, err := io.Copy(h, f); err != nil {
-		os.Rename(backup, target)
-		return err
-	}
+	// f, err = os.Open(target)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer f.Close()
+	// h := md5.New()
+	// if _, err := io.Copy(h, f); err != nil {
+	// 	os.Rename(backup, target)
+	// 	return err
+	// }
 	// if string(checksumRespBody) != hex.EncodeToString(h.Sum(nil)) {
 	// 	os.Rename(backup, target)
 	// 	return fmt.Errorf("%s checksum mismatch", version)
@@ -246,16 +244,13 @@ func runAutoUpdate(u Updater) error {
 		downloadURL := generateURL(u.S3Bucket, u.S3ReleaseKey, remoteVersion)
 		checksumURL := generateURL(u.S3Bucket, u.ChecksumKey, remoteVersion)
 		if u.Verbose {
-			if u.Verbose {
-				fmt.Printf("downloadURL: %s\n", downloadURL)
-				fmt.Printf("checksumURL: %s\n", checksumURL)
-			}
+			fmt.Printf("downloadURL: %s\n", downloadURL)
+			fmt.Printf("checksumURL: %s\n", checksumURL)
 		}
 		err = downloadUpdate(downloadURL, checksumURL, remoteVersion)
 		if err != nil {
 			return err
 		}
-		os.Exit(0)
 	}
 	if u.Verbose {
 		fmt.Printf("updater: using the latest version: %s\n", u.CurrentVersion)
