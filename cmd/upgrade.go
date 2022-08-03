@@ -38,7 +38,6 @@ Upgrade Binocs to the latest version
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			fmt.Printf("Binocs CLI %s\n was installed.\n", versionAvailable)
 			fmt.Println("Thank you for using Binocs 🙏")
 		} else {
 			viper.Set("upgrade_last_checked", fmt.Sprintf("%v", currentTimestamp))
