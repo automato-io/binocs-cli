@@ -455,9 +455,7 @@ View check status and metrics.
 		// Table "main"
 
 		var resourceTitle, methodLine, responseLine, lastCheckedLine, upHTTPCodesLine, checkName, statusLine string
-		switch respJSON.Protocol {
-		case protocolHTTP:
-		case protocolHTTPS:
+		if respJSON.Protocol == protocolHTTP || respJSON.Protocol == protocolHTTPS {
 			resourceTitle = "URL"
 			methodLine = colorBold.Sprint("Method: ") + respJSON.Method + "\n"
 			if len(respJSON.LastStatusCode) > 0 {
@@ -466,8 +464,8 @@ View check status and metrics.
 				responseLine = colorBold.Sprint("Response: ") + "[waiting for data]" + "\n"
 			}
 			upHTTPCodesLine = colorBold.Sprint("UP HTTP Codes: ") + respJSON.UpCodes + "\n"
-		case protocolICMP:
-		case protocolTCP:
+		}
+		if respJSON.Protocol == protocolICMP || respJSON.Protocol == protocolTCP {
 			resourceTitle = "Host"
 		}
 
