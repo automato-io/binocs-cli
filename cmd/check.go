@@ -158,7 +158,7 @@ const (
 	supportedTargetMinimum                 = 0.01
 	supportedTargetMaximum                 = 10.0
 	validNamePattern                       = `^[\p{L}\p{N}_\s\/\-\.]{0,25}$`
-	validProtocolPattern                   = `^(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolTCP + `)$`
+	validProtocolPattern                   = `^(?i)(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolTCP + `)$`
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
 	validUpCodePattern                     = `^([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))){1}(,([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))*$`
 	validRegionPattern                     = `^[a-z0-9\-]{8,30}$`
@@ -1519,6 +1519,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				os.Exit(1)
 			}
 		}
+		flagProtocol = strings.ToUpper(flagProtocol)
 	}
 
 	if mode == "update" {
