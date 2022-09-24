@@ -1102,7 +1102,7 @@ func drawCompactApdexChart(apdexChartData []ApdexResponse, currentApdex string) 
 		}
 	}
 
-	chartSnippet = reverse(string(chart))
+	chartSnippet = util.Reverse(string(chart))
 
 	var apdexFloat, err = strconv.ParseFloat(currentApdex, 32)
 	if err != nil {
@@ -1900,18 +1900,4 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	}
 	spin.Stop()
 	fmt.Println(tpl)
-}
-
-func reverse(s string) string {
-	n := 0
-	rune := make([]rune, len(s))
-	for _, r := range s {
-		rune[n] = r
-		n++
-	}
-	rune = rune[0:n]
-	for i := 0; i < n/2; i++ {
-		rune[i], rune[n-1-i] = rune[n-1-i], rune[i]
-	}
-	return string(rune)
 }

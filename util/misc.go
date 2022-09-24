@@ -9,6 +9,20 @@ import (
 	"time"
 )
 
+func Reverse(s string) string {
+	n := 0
+	rune := make([]rune, len(s))
+	for _, r := range s {
+		rune[n] = r
+		n++
+	}
+	rune = rune[0:n]
+	for i := 0; i < n/2; i++ {
+		rune[i], rune[n-1-i] = rune[n-1-i], rune[i]
+	}
+	return string(rune)
+}
+
 // Ellipsis produces shortened utf-8-safe version of a string
 func Ellipsis(s string, maxLen int) string {
 	var l = len([]rune(s))
