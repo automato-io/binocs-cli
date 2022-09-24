@@ -487,6 +487,7 @@ func getSupportedRegionAliases() []string {
 			v = append(v, a)
 		}
 	}
+	sort.Strings(v)
 	return v
 }
 
@@ -497,6 +498,7 @@ func getDefaultRegionAliases() []string {
 			v = append(v, a)
 		}
 	}
+	sort.Strings(v)
 	return v
 }
 
@@ -507,6 +509,7 @@ func getRegionAliasesByIds(ids []string) []string {
 			v = append(v, a)
 		}
 	}
+	sort.Strings(v)
 	return v
 }
 
@@ -527,6 +530,7 @@ func getRegionIdsByAliases(as []string) []string {
 			res = append(res, r)
 		}
 	}
+	sort.Strings(res)
 	return res
 }
 
