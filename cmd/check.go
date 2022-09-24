@@ -1792,6 +1792,11 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 				fmt.Println(err)
 				os.Exit(1)
 			}
+		} else if len(flagAttach) == 1 && flagAttach[0] == "all" {
+			flagAttach = []string{}
+			for _, v := range channels {
+				flagAttach = append(flagAttach, v.Ident)
+			}
 		}
 	} else {
 		fmt.Println("No notification channels configured. Skipping.")
