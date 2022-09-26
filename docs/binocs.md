@@ -31,7 +31,7 @@ Get insight into current state of your endpoints and metrics history, and receiv
 * [binocs completion](binocs_completion.md)	 - Generate the autocompletion script for the specified shell
 * [binocs incident](binocs_incident.md)	 - Manage incidents
 * [binocs incidents](binocs_incidents.md)	 - List all past and current incidents
-* [binocs login](binocs_login.md)	 - Login to Binocs
+* [binocs login](binocs_login.md)	 - Login to you Binocs account
 * [binocs logout](binocs_logout.md)	 - Logout
 * [binocs regions](binocs_regions.md)	 - List supported regions
 * [binocs upgrade](binocs_upgrade.md)	 - Upgrade Binocs to the latest version
