@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"regexp"
@@ -25,12 +28,6 @@ type User struct {
 	Created       string `json:"created,omitempty"`
 }
 
-// AccessKeyPair struct
-type AccessKeyPair struct {
-	AccessKey string `json:"access_key,omitempty"`
-	SecretKey string `json:"secret_key,omitempty"`
-}
-
 // `user update` flags
 var (
 	userFlagName     string
@@ -38,8 +35,6 @@ var (
 )
 
 const (
-	// validAccessKeyPattern = `^[A-Z0-9]{10}$`
-	// validSecretKeyPattern = `^[a-z0-9]{16}$`
 	validUserNamePattern = `^[\p{L}\p{N}_\s\/\-\.]{0,100}$`
 	storageDir           = ".binocs"
 	configFile           = "config.json"
@@ -52,8 +47,6 @@ func init() {
 	userUpdateCmd.Flags().StringVarP(&userFlagName, "name", "n", "", "Your name")
 	userUpdateCmd.Flags().StringVarP(&userFlagTimezone, "timezone", "t", "", "Your timezone")
 
-	userCmd.AddCommand(generateKeyCmd)
-	userCmd.AddCommand(invalidateKeyCmd)
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(logoutCmd)
 }
@@ -211,133 +204,26 @@ This command is interactive and asks user for parameters that were not provided 
 	},
 }
 
-var generateKeyCmd = &cobra.Command{
-	Use:   "generate-key",
-	Short: "Generate new Access Key and Secret Key",
-	Long: `
-Generate new Access Key and Secret Key.
-`,
-	DisableAutoGenTag: true,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.VerifyAuthenticated()
-
-		var tpl string
-		spin.Start()
-		defer spin.Stop()
-		spin.Suffix = colorFaint.Sprint(" generating new key pair...")
-		respData, err := util.BinocsAPI("/user/generate-key", http.MethodPost, []byte{})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		var respJSON AccessKeyPair
-		err = json.Unmarshal(respData, &respJSON)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		tpl = `Please keep your secret safe. We will not be able to show it to you again.
-Type ` + "`binocs login`" + ` to authenticate to Binocs using your key pair.
-
-This is your new key pair: 
-Access Key: ` + respJSON.AccessKey + `
-Secret Key : ` + respJSON.SecretKey + `
-`
-		spin.Stop()
-		fmt.Print(tpl)
-	},
-}
-
-var invalidateKeyCmd = &cobra.Command{
-	Use:   "invalidate-key",
-	Short: "Deny future login attempts using this key",
-	Long: `
-Deny future login attempts using this key
-`,
-	Args:              cobra.ExactArgs(1),
-	DisableAutoGenTag: true,
-	Run: func(cmd *cobra.Command, args []string) {
-		util.VerifyAuthenticated()
-
-		var tpl string
-		spin.Start()
-		defer spin.Stop()
-		spin.Suffix = colorFaint.Sprintf(" invalidating key %s", args[0])
-		accessKey := AccessKeyPair{
-			AccessKey: args[0],
-		}
-		postData, err := json.Marshal(accessKey)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		_, err = util.BinocsAPI("/user/invalidate-key", http.MethodPost, postData)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		tpl = `Successfully invalidated Access Key ` + args[0] + `
-`
-		spin.Stop()
-		fmt.Print(tpl)
-	},
-}
-
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Login to Binocs",
+	Short: "Login to you Binocs account",
 	Long: `
-Login to Binocs using your Access Key and Secret Key. 
-
-You can generate key pairs at https://binocs.sh/settings. Later when you're logged in, you can also use "binocs user generate-key" command to generate keys for your other devices.
+Login to you Binocs account.
 `,
 	Aliases:           []string{"auth"},
 	DisableAutoGenTag: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		var accessKey, secretKey string
-		promptAccessKey := &survey.Input{
-			Message: "Enter Access Key:",
-		}
-		err := survey.AskOne(promptAccessKey, &accessKey)
-		if err != nil {
-			fmt.Println(err)
+		clientKey := viper.Get("client_key")
+		if clientKey == nil {
+			fmt.Println("Cannot read Client Key")
 			os.Exit(1)
 		}
-
-		promptSecretKey := &survey.Password{
-			Message: "Enter Secret Key:",
-		}
-		err = survey.AskOne(promptSecretKey, &secretKey)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		err = util.BinocsAPIGetAccessToken(accessKey, secretKey)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		viper.Set("access_key", accessKey)
-		viper.Set("secret_key", secretKey)
-		err = viper.WriteConfigAs(viper.ConfigFileUsed())
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		user, err := fetchUser()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		if user.CreditBalance == 0 {
-			printZeroCreditsWarning()
-		}
-
-		fmt.Println(`You are authenticated as ` + user.Name + ` (` + user.Email + `).`)
+		tpl := `Please visit the following URL in your browser.
+It will link your Binocs user account with this Binocs CLI installation.
+		
+https://binocs.sh/connect/` + clientKey.(string) + `
+`
+		fmt.Println(tpl)
 	},
 }
 
@@ -353,8 +239,7 @@ Log out of Binocs on this machine.
 		util.VerifyAuthenticated()
 
 		var err error
-		viper.Set("access_key", "")
-		viper.Set("secret_key", "")
+		viper.Set("client_key", generateClientKey())
 		err = viper.WriteConfigAs(viper.ConfigFileUsed())
 		if err != nil {
 			fmt.Println(err)
@@ -378,4 +263,11 @@ func fetchUser() (User, error) {
 	}
 	err = json.Unmarshal(respData, &respJSON)
 	return respJSON, err
+}
+
+func generateClientKey() string {
+	rand.Seed(time.Now().UnixNano())
+	h := sha1.New()
+	io.WriteString(h, fmt.Sprintf("%d (.)(.) %v", rand.Int(), time.Now().UnixNano()))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

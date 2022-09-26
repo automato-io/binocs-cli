@@ -17,6 +17,8 @@ const apiURLBase = "https://api.binocs.sh"
 const storageDir = ".binocs"
 const jwtFile = "auth.json"
 
+var binocsAPIAccessToken string
+
 // AuthResponse comes from the API
 type AuthResponse struct {
 	AccessToken string `json:"access_token"`
@@ -56,31 +58,36 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 		return []byte{}, fmt.Errorf(apiErrorResponse.Status + `: ` + apiErrorResponse.Error)
 	}
 	if respStatusCode == http.StatusUnauthorized {
-		_ = BinocsAPIGetAccessToken(viper.Get("access_key").(string), viper.Get("secret_key").(string))
+		clientKey := viper.Get("client_key")
+		if clientKey == nil {
+			fmt.Println("Cannot read Client Key")
+			os.Exit(1)
+		}
+		_ = BinocsAPIGetAccessToken(clientKey.(string))
 		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
 		if err != nil {
 			return []byte{}, err
 		}
 		if respStatusCode == http.StatusUnauthorized {
-			return []byte{}, fmt.Errorf("Please login to your account using `binocs login` command.\nGet your Access Key and Secret Key at https://binocs.sh/settings")
+			return []byte{}, fmt.Errorf("Please login to your account using `binocs login` command.")
 		}
 	}
 	return respBody, nil
 }
 
 // BinocsAPIGetAccessToken attempts to get an access token via API and stores it
-func BinocsAPIGetAccessToken(accessKey, secretKey string) error {
+func BinocsAPIGetAccessToken(clientKey string) error {
 	url, err := url.Parse(apiURLBase + "/authenticate")
 	if err != nil {
 		return err
 	}
-	postData := []byte("{\"access_key\": \"" + accessKey + "\", \"secret_key\": \"" + secretKey + "\"}")
+	postData := []byte("{\"client_key\": \"" + clientKey + "\"}")
 	respBody, respStatusCode, err := makeBinocsAPIRequest(url, http.MethodPost, postData)
 	if err != nil {
 		return err
 	}
 	if respStatusCode == http.StatusUnauthorized {
-		return fmt.Errorf("Invalid credentials provided")
+		return fmt.Errorf("invalid credentials")
 	}
 	var respJSON AuthResponse
 	err = json.Unmarshal(respBody, &respJSON)
@@ -115,8 +122,6 @@ func VerifyAuthenticated() {
 		os.Exit(1)
 	}
 }
-
-var binocsAPIAccessToken string
 
 func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int, error) {
 	req, err := http.NewRequest(method, url.String(), bytes.NewReader(data))

@@ -222,6 +222,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	cobra.OnInitialize(initAutoUpgrader)
 	cobra.OnInitialize(initGlobalFlags)
+	cobra.OnInitialize(initClientKey)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.binocs/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "enable quiet mode (hide spinners and progress bars)")
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
@@ -268,14 +269,8 @@ func initConfig() {
 	}
 }
 
-func initGlobalFlags() {
-	if Quiet {
-		spin.Disable()
-	}
-}
-
 func writeConfigTemplate(path string) error {
-	configContent := []byte("{\"access_key\": \"\", \"secret_key\": \"\"}")
+	configContent := []byte("{\"client_key\": \"\"}")
 	return ioutil.WriteFile(path, configContent, 0600)
 }
 
@@ -303,6 +298,29 @@ func initAutoUpgrader() {
 				fmt.Println(err)
 			}
 		}
+	}
+}
+
+func initClientKey() {
+	clientKey := viper.Get("client_key")
+	if clientKey == nil || len(clientKey.(string)) != 40 { // sha1 hash length
+		viper.Set("client_key", generateClientKey())
+		err := viper.WriteConfigAs(viper.ConfigFileUsed())
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		err = util.ResetAccessToken()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}
+}
+
+func initGlobalFlags() {
+	if Quiet {
+		spin.Disable()
 	}
 }
 
