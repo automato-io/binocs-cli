@@ -239,7 +239,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 		if _, err = os.Stat(home + "/.binocs/config.json"); os.IsNotExist(err) {
-			err = os.Mkdir(home+"/.binocs", 0755)
+			err = os.MkdirAll(home+"/.binocs", 0755)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
