@@ -221,6 +221,7 @@ func runAsWatch() {
 }
 
 func init() {
+	cobra.OnInitialize(initRuntimeSystemSpecifics)
 	cobra.OnInitialize(initConfig)
 	cobra.OnInitialize(initAutoUpgrader)
 	cobra.OnInitialize(initGlobalFlags)
@@ -228,6 +229,12 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.binocs/config.json)")
 	rootCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "enable quiet mode (hide spinners and progress bars)")
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
+}
+
+func initRuntimeSystemSpecifics() {
+	if runtime.GOOS == "windows" {
+		color.NoColor = true
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
