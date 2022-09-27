@@ -173,7 +173,8 @@ func Execute() {
 func runAsWatch() {
 	// windows are unsupported because github.com/iamacarpet/go-winpty crashes during build in CI
 	if runtime.GOOS == "windows" {
-		return
+		fmt.Println("The --watch flag is not currently supported on Windows.")
+		os.Exit(1)
 	}
 	app, screen, viewer, err := initWatchEnv()
 	if err != nil {
