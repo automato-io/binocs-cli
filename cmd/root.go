@@ -472,7 +472,9 @@ func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewri
 
 	if tableHeadersEnabled {
 		table.SetHeader(tableHeaders)
-		table.SetHeaderColor(tableHeadersColor...)
+		if !color.NoColor {
+			table.SetHeaderColor(tableHeadersColor...)
+		}
 	}
 	table.SetColumnAlignment(tableColumnAlignments)
 
