@@ -35,6 +35,13 @@ $ ./sync
 
 Release `binocs-website`
 
+## Develop completions
+
+```shell
+go run main.go completion bash > $(brew --prefix)/etc/bash_completion.d/binocs
+source $(brew --prefix)/etc/bash_completion.d/binocs
+```
+
 ## Test cases for valid UpCode regexp pattern
 
 ```
