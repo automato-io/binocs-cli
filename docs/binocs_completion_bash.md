@@ -33,8 +33,7 @@ binocs completion bash
 ### Options
 
 ```
-  -h, --help              help for bash
-      --no-descriptions   disable completion descriptions
+  -h, --help   help for bash
 ```
 
 ### Options inherited from parent commands

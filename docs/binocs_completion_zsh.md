@@ -35,8 +35,7 @@ binocs completion zsh [flags]
 ### Options
 
 ```
-  -h, --help              help for zsh
-      --no-descriptions   disable completion descriptions
+  -h, --help   help for zsh
 ```
 
 ### Options inherited from parent commands

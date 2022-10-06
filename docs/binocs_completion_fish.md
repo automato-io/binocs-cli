@@ -24,8 +24,7 @@ binocs completion fish [flags]
 ### Options
 
 ```
-  -h, --help              help for fish
-      --no-descriptions   disable completion descriptions
+  -h, --help   help for fish
 ```
 
 ### Options inherited from parent commands

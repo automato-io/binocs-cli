@@ -21,8 +21,7 @@ binocs completion powershell [flags]
 ### Options
 
 ```
-  -h, --help              help for powershell
-      --no-descriptions   disable completion descriptions
+  -h, --help   help for powershell
 ```
 
 ### Options inherited from parent commands
