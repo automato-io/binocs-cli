@@ -808,8 +808,8 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 				}
 				time.Sleep(3 * time.Second)
 			}
-			fmt.Println("Successfully associated with Telegram.")
 			spin.Stop()
+			fmt.Println("Successfully associated with Telegram.")
 		}
 	}
 
@@ -850,41 +850,43 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	}
 	spin.Stop()
 
-	match, err = regexp.MatchString(validChecksIdentListPattern, strings.Join(flagAttach, ","))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	} else if !match {
-		var options = []string{}
-		for _, c := range checks {
-			options = append(options, c.Ident+" "+c.Identity())
-		}
-		var defaultOptions = []string{}
-		if mode == "update" {
-			for _, cc := range currentChannel.Checks {
-				for _, c := range checks {
-					if c.Ident == cc {
-						defaultOption := c.Ident + " " + c.Identity()
-						defaultOptions = append(defaultOptions, defaultOption)
-					}
-				}
-			}
-		}
-		prompt := &survey.MultiSelect{
-			Message:  "Checks to attach (optional):",
-			Options:  options,
-			Default:  defaultOptions,
-			PageSize: 9,
-		}
-		err = survey.AskOne(prompt, &flagAttach)
+	if len(checks) > 0 {
+		match, err = regexp.MatchString(validChecksIdentListPattern, strings.Join(flagAttach, ","))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		}
-	} else if strings.Join(flagAttach, ",") == "all" {
-		flagAttach = []string{}
-		for _, c := range checks {
-			flagAttach = append(flagAttach, c.Ident)
+		} else if !match {
+			var options = []string{}
+			for _, c := range checks {
+				options = append(options, c.Ident+" "+c.Identity())
+			}
+			var defaultOptions = []string{}
+			if mode == "update" {
+				for _, cc := range currentChannel.Checks {
+					for _, c := range checks {
+						if c.Ident == cc {
+							defaultOption := c.Ident + " " + c.Identity()
+							defaultOptions = append(defaultOptions, defaultOption)
+						}
+					}
+				}
+			}
+			prompt := &survey.MultiSelect{
+				Message:  "Checks to attach (optional):",
+				Options:  options,
+				Default:  defaultOptions,
+				PageSize: 9,
+			}
+			err = survey.AskOne(prompt, &flagAttach)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		} else if strings.Join(flagAttach, ",") == "all" {
+			flagAttach = []string{}
+			for _, c := range checks {
+				flagAttach = append(flagAttach, c.Ident)
+			}
 		}
 	}
 
@@ -912,59 +914,67 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	spin.Suffix = colorFaint.Sprint(" saving channel...")
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
+		spin.Stop()
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	err = json.Unmarshal(respData, &channel)
 	if err != nil {
+		spin.Stop()
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	if channel.ID > 0 {
 		var channelDescription string
 		if len(channel.Alias) > 0 {
-			channelDescription = channel.Alias + " (" + channel.Handle + ")"
+			channelDescription = `"` + channel.Alias + `"` + " (" + channel.Handle + ")"
 		} else {
-			channelDescription = channel.Handle
+			channelDescription = `"` + channel.Handle + `"`
 		}
 		if mode == "add" {
-			tpl = "[" + channel.Ident + "] " + channelDescription + ` added successfully`
+			tpl = channel.Type + " notifications channel " + channelDescription + " [" + channel.Ident + `] added successfully`
 		}
 		if mode == "update" {
-			tpl = "[" + channel.Ident + "] " + channelDescription + ` updated successfully`
+			tpl = channel.Type + " notifications channel " + channelDescription + " [" + channel.Ident + `] updated successfully`
 		}
-		spin.Suffix = colorFaint.Sprintf(" attaching channel to %d check(s)...", len(flagAttach))
-		var detachCheckIdents = []string{}
-		for _, c := range checks {
-			for _, cc := range c.Channels {
-				if cc == channel.Ident {
-					detachCheckIdents = append(detachCheckIdents, c.Ident)
+		if len(flagAttach) > 0 {
+			spin.Suffix = colorFaint.Sprintf(" attaching channel to %d check(s)...", len(flagAttach))
+			var detachCheckIdents = []string{}
+			for _, c := range checks {
+				for _, cc := range c.Channels {
+					if cc == channel.Ident {
+						detachCheckIdents = append(detachCheckIdents, c.Ident)
+					}
 				}
 			}
-		}
-		for _, c := range detachCheckIdents {
-			deleteData, err := json.Marshal(ChannelAttachment{})
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+			for _, c := range detachCheckIdents {
+				deleteData, err := json.Marshal(ChannelAttachment{})
+				if err != nil {
+					spin.Stop()
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+c, http.MethodDelete, deleteData)
+				if err != nil {
+					spin.Stop()
+					fmt.Println(err)
+					os.Exit(1)
+				}
 			}
-			_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+c, http.MethodDelete, deleteData)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}
-		for _, fa := range flagAttach {
-			attachIdent := strings.Split(fa, " ")[0]
-			postData, err := json.Marshal(ChannelAttachment{})
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+attachIdent, http.MethodPost, postData)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+			for _, fa := range flagAttach {
+				attachIdent := strings.Split(fa, " ")[0]
+				postData, err := json.Marshal(ChannelAttachment{})
+				if err != nil {
+					spin.Stop()
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+attachIdent, http.MethodPost, postData)
+				if err != nil {
+					spin.Stop()
+					fmt.Println(err)
+					os.Exit(1)
+				}
 			}
 		}
 	} else {
