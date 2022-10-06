@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/sha1"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,9 +11,11 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"runtime"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/ProtonMail/gopenpgp/v2/helper"
 	util "github.com/automato-io/binocs-cli/util"
 	"github.com/automato-io/tablewriter"
 	"github.com/spf13/cobra"
@@ -28,6 +31,14 @@ type User struct {
 	Created       string `json:"created,omitempty"`
 }
 
+type ConnectToken struct {
+	ClientKey string `json:"c"`
+	Time      int64  `json:"t"`
+	Location  string `json:"l"`
+	OS        string `json:"o"`
+	Hostname  string `json:"h"`
+}
+
 // `user update` flags
 var (
 	userFlagName     string
@@ -38,6 +49,7 @@ const (
 	validUserNamePattern = `^[\p{L}\p{N}_\s\/\-\.]{0,100}$`
 	storageDir           = ".binocs"
 	configFile           = "config.json"
+	connectTokenSalt     = "GVuUEdQ"
 )
 
 func init() {
@@ -218,10 +230,11 @@ Login to you Binocs account.
 			fmt.Println("Cannot read Client Key")
 			os.Exit(1)
 		}
+		connectToken := generateConnectToken(clientKey.(string))
 		tpl := `Please visit the following URL in your browser.
 It will link your Binocs user account with this Binocs CLI installation.
 		
-https://binocs.sh/connect/` + clientKey.(string) + `
+https://binocs.sh/connect/` + connectToken + `
 `
 		fmt.Println(tpl)
 	},
@@ -270,4 +283,43 @@ func generateClientKey() string {
 	h := sha1.New()
 	io.WriteString(h, fmt.Sprintf("%d (.)(.) %v", rand.Int(), time.Now().UnixNano()))
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func generateConnectToken(clientKey string) string {
+	token := ConnectToken{
+		ClientKey: clientKey,
+		Time:      time.Now().Unix(),
+		Location:  "", // @todo determine user's location
+		OS:        getUserOS(),
+		Hostname:  getUserHostname(),
+	}
+	tokenJson, err := json.Marshal(token)
+	if err != nil {
+		fmt.Println("Cannot marshal Connect Token")
+		os.Exit(1)
+	}
+	tokenPGP, err := helper.EncryptMessageWithPassword([]byte(connectTokenSalt), string(tokenJson))
+	if err != nil {
+		fmt.Println("Cannot generate Connect Token (E3)")
+		os.Exit(1)
+	}
+	tokenBase64 := base64.StdEncoding.EncodeToString([]byte(tokenPGP))
+	return tokenBase64
+}
+
+func getUserOS() string {
+	userOS := ""
+	if runtime.GOOS == "darwin" {
+		userOS = "MacOS"
+	} else if runtime.GOOS == "windows" {
+		userOS = "Windows"
+	} else if runtime.GOOS == "linux" {
+		userOS = "Linux"
+	}
+	return userOS
+}
+
+func getUserHostname() string {
+	hostname, _ := os.Hostname()
+	return hostname
 }
