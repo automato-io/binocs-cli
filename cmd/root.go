@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -284,7 +283,7 @@ func initConfig() {
 
 func writeConfigTemplate(path string) error {
 	configContent := []byte("{\"client_key\": \"\"}")
-	return ioutil.WriteFile(path, configContent, 0600)
+	return os.WriteFile(path, configContent, 0600)
 }
 
 // sister function of upgradeCmd.Run()

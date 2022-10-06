@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -143,7 +143,7 @@ func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return []byte{}, 0, err
 	}
@@ -156,7 +156,7 @@ func loadAccessToken() (string, error) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	data, err := ioutil.ReadFile(home + "/" + storageDir + "/" + jwtFile)
+	data, err := os.ReadFile(home + "/" + storageDir + "/" + jwtFile)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return "", nil
@@ -185,5 +185,5 @@ func storeAccessToken(d *AuthResponse) error {
 		}
 	}
 	authContent := []byte("{\"access_token\": \"" + d.AccessToken + "\"}")
-	return ioutil.WriteFile(home+"/"+storageDir+"/"+jwtFile, authContent, 0600)
+	return os.WriteFile(home+"/"+storageDir+"/"+jwtFile, authContent, 0600)
 }
