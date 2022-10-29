@@ -25,15 +25,34 @@ $ git push origin master
 $ git push origin v0.4.0
 ```
 
-Download binaries to `~/Code/automato/binocs-download/public/`
+### 4. Execute post-GitHub Actions script
+
+This will 
+- fetch assets from the GitHub Release
+- zip files for Homebrew
+- add files to github.com/automato-io/binocs-downloads
+- sync files with download.binocs.sh
 
 ```shell
 $ cd ~/Code/automato/binocs-download/
 $ ./update 0.4.0
-$ ./sync
 ```
 
-Release `binocs-website`
+### 5. Release website with updated downloads
+
+Trigger GitHub Actions
+
+### 6. Create a Homebrew PR
+
+- create a branch in `~/Code/automato/homebrew-cask/`
+- update `sha256` and `version` in `Casks/binocs.rb`
+- use `brew bump-cask-pr` command to bump version
+
+## Testing the continuous integration pipeline
+
+```shell
+git push --delete origin v69.1.0 && git tag -d v69.1.0 && git tag -a v69.1.0 -m "release v69.1.0" && git push origin v69.1.0
+```
 
 ## Develop completions
 

@@ -1,23 +1,36 @@
 project_name: binocs
 builds:
-  - id: binocs
+  - id: binocs-linux
     binary: binocs
     goos:
       - linux
+    goarch:
+      - 386
+      - amd64
+      - arm64
+    goamd64:
+      - v1
+  - id: binocs-windows
+    binary: binocs
+    goos:
       - windows
     goarch:
       - 386
       - amd64
       - arm64
+    goamd64:
+      - v1
   - id: binocs-macos-amd64
     binary: binocs
     goos:
       - darwin
     goarch:
       - amd64
+    goamd64:
+      - v1
     hooks:
       post:
-       - cmd: 'gon -log-level=debug -log-json gon.amd64.json'
+       - cmd: 'gon -log-level=info -log-json gon.amd64.json'
          output: true
   - id: binocs-macos-arm64
     binary: binocs
@@ -27,7 +40,7 @@ builds:
       - arm64
     hooks:
       post:
-       - cmd: 'gon -log-level=debug -log-json gon.arm64.json'
+       - cmd: 'gon -log-level=info -log-json gon.arm64.json'
          output: true
 archives:
   - format: binary
@@ -35,3 +48,29 @@ checksum:
   algorithm: sha256
 changelog:
   sort: asc
+nfpms:
+  -
+    id: binocs
+    package_name: binocs
+    file_name_template: "{{ .ConventionalFileName }}"
+    builds:
+      - binocs-linux
+    vendor: Binocs
+    homepage: https://binocs.sh/
+    maintainer: Jaroslav Holub <jaroslav@binocs.sh>
+    description: |-
+      Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and APIs.
+    formats:
+      - apk
+      - deb
+      - rpm
+    bindir: /usr/bin
+    rpm:
+      group: Unspecified
+      compression: gzip
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
+    # apk:
+    
