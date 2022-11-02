@@ -27,26 +27,31 @@ $ git push origin v0.4.0
 
 ### 4. Execute post-GitHub Actions script
 
+```shell
+$ cd ~/Code/automato/binocs-download/
+$ ./update 0.4.0
+```
+
 This will 
 - fetch assets from the GitHub Release
 - zip files for Homebrew
 - add files to github.com/automato-io/binocs-downloads
 - sync files with download.binocs.sh
 
+### 5. Create a Homebrew PR
+
+- create a branch in `~/Code/automato/homebrew-cask/` manually? - test next time
+then:
 ```shell
-$ cd ~/Code/automato/binocs-download/
-$ ./update 0.4.0
+brew bump-cask-pr --version 0.4.0 binocs
 ```
 
-### 5. Release website with updated downloads
+### 6. Release website with updated downloads
 
-Trigger GitHub Actions
-
-### 6. Create a Homebrew PR
-
-- create a branch in `~/Code/automato/homebrew-cask/`
-- update `sha256` and `version` in `Casks/binocs.rb`
-- use `brew bump-cask-pr` command to bump version
+```shell
+$ cd ~/Code/automato/binocs-website/
+$ git push origin master
+```
 
 ## Testing the continuous integration pipeline
 
