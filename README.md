@@ -46,7 +46,18 @@ then:
 brew bump-cask-pr --version 0.4.0 binocs
 ```
 
-### 6. Release website with updated downloads
+### 6. Build Docker image
+
+- update `BINOCS_VERSION` in `Dockerfile`
+
+```shell
+git commit -m 'bump version to v0.4.0'
+git tag -a v0.4.0 -m 'release v0.4.0'
+git push origin main
+git push origin v0.4.0
+```
+
+### 7. Release website with updated downloads
 
 ```shell
 $ cd ~/Code/automato/binocs-website/
@@ -56,7 +67,8 @@ $ git push origin master
 ## Testing the continuous integration pipeline
 
 ```shell
-git push --delete origin v69.1.0 && git tag -d v69.1.0 && git tag -a v69.1.0 -m "release v69.1.0" && git push origin v69.1.0
+git push --delete origin v69.1.0 && git tag -d v69.1.0
+git tag -a v69.1.0 -m "release v69.1.0" && git push origin v69.1.0
 ```
 
 ## Develop completions
