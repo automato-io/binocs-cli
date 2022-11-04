@@ -8,22 +8,11 @@
 
 ### 2. Generate docs and update docs on the website
 
-```shell
-$ go run main.go docgen
-$ mkdir ~/Code/automato/binocs-website/resources/docs/v0.4.0/
-$ cp -a docs/* ~/Code/automato/binocs-website/resources/docs/v0.4.0/
-```
-
-Update `routes/web.php` and `config/binocs.php` in web project to include the new version and make it default.
+`cd scripts && ./generate-docs.sh 0.4.0`
 
 ### 3. Execute release via GitHub Actions
 
-```shell
-$ git commit -m 'bump version to 0.4.0'
-$ git tag -a v0.4.0 -m 'release v0.4.0'
-$ git push origin master
-$ git push origin v0.4.0
-```
+`cd scripts && ./release.sh 0.4.0`
 
 ### 4. Execute post-GitHub Actions script
 
@@ -58,6 +47,8 @@ git push origin v0.4.0
 ```
 
 ### 7. Release website with updated downloads
+
+- update `routes/web.php` and `config/binocs.php` to include the new default version v0.4.0
 
 ```shell
 $ cd ~/Code/automato/binocs-website/

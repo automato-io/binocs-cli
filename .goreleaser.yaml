@@ -43,7 +43,16 @@ builds:
        - cmd: 'gon -log-level=info -log-json gon.arm64.json'
          output: true
 archives:
-  - format: binary
+  -
+    id: archive-all
+    format: binary
+  -
+    id: archive-windows-zip
+    builds:
+      - binocs-windows
+    files:
+      - none*
+    format: zip
 checksum:
   algorithm: sha256
 changelog:
@@ -73,4 +82,21 @@ nfpms:
         - statically-linked-binary
         - changelog-file-missing-in-native-package
     # apk:
+# .goreleaser.yaml
+scoop:
+  bucket:
+    owner: automato-io
+    name: scoop-bucket
+    branch: master
+  folder: bucket
+  commit_author:
+    name: Jaroslav Holub
+    email: jaroslav@binocs.sh
+  commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
+  homepage: "https://binocs.sh/"
+  description: "Binocs is a CLI-first uptime and performance monitoring tool for websites, applications and APIs."
+  license: Proprietary
+  skip_upload: false
+  goamd64: v1
+
     
