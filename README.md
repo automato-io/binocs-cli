@@ -50,7 +50,17 @@ git push origin main
 git push origin v0.4.0
 ```
 
-### 7. Release website with updated downloads
+### 7. Update Scoop manifest
+
+- make sure there is a newline at the end of the json schema
+
+```shell
+git tag -a v0.4.0 -m 'release v0.4.0'
+git push origin master
+git push origin v0.4.0
+```
+
+### 8. Release website with updated downloads
 
 - update `routes/web.php` and `config/binocs.php` to include the new default version v0.4.0
 
