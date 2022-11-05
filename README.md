@@ -8,11 +8,15 @@
 
 ### 2. Generate docs and update docs on the website
 
-`cd scripts && ./generate-docs.sh 0.4.0`
+in `scripts`
+
+`./generate-docs.sh 0.4.0`
 
 ### 3. Execute release via GitHub Actions
 
-`cd scripts && ./release.sh 0.4.0`
+in `scripts`
+
+`./release.sh 0.4.0`
 
 ### 4. Execute post-GitHub Actions script
 
