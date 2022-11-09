@@ -27,14 +27,13 @@ $ ./update 0.4.0
 
 This will 
 - fetch assets from the GitHub Release
-- zip files for Homebrew
-- add files to github.com/automato-io/binocs-downloads
-- sync files with download.binocs.sh
+- zip files for Homebrew [move this to goreleaser]
+- add files to github.com/automato-io/binocs-downloads [is it needed?]
+- sync files with download.binocs.sh [goreleaser?]
+- change /VERSION - as the very last step of the entire CI process !
 
 ### 5. Create a Homebrew PR
 
-- create a branch in `~/Code/automato/homebrew-cask/` manually? - test next time
-then:
 ```shell
 brew bump-cask-pr --version 0.4.0 binocs
 ```
@@ -44,6 +43,7 @@ brew bump-cask-pr --version 0.4.0 binocs
 - update `BINOCS_VERSION` in `Dockerfile`
 
 ```shell
+git add Dockerfile
 git commit -m 'bump version to v0.4.0'
 git tag -a v0.4.0 -m 'release v0.4.0'
 git push origin main
@@ -55,6 +55,10 @@ git push origin v0.4.0
 - make sure there is a newline at the end of the json schema
 
 ```shell
+git pull
+echo ""  >> bucket/binocs.json
+git add bucket/binocs.json
+git commit -m "fix newlines"
 git tag -a v0.4.0 -m 'release v0.4.0'
 git push origin master
 git push origin v0.4.0
