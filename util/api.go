@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -34,6 +36,18 @@ type ApiErrorResponse struct {
 	Error  string `json:"error"`
 }
 
+func handleErr(err error) {
+	sentry.CaptureException(err)
+	sentry.Flush(10 * time.Second)
+	fmt.Println(err)
+	os.Exit(1)
+}
+
+func handleWarn(msg string) {
+	sentry.CaptureMessage(msg)
+	fmt.Println(msg)
+}
+
 // BinocsAPI is a gateway to the binocs REST API
 func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 	var err error
@@ -52,16 +66,14 @@ func BinocsAPI(path, method string, data []byte) ([]byte, error) {
 		var apiErrorResponse ApiErrorResponse
 		err = json.Unmarshal(respBody, &apiErrorResponse)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		return []byte{}, fmt.Errorf(apiErrorResponse.Status + `: ` + apiErrorResponse.Error)
 	}
 	if respStatusCode == http.StatusUnauthorized {
 		clientKey := viper.Get("client_key")
 		if clientKey == nil {
-			fmt.Println("Cannot read Client Key")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Cannot read Client Key"))
 		}
 		_ = BinocsAPIGetAccessToken(clientKey.(string))
 		respBody, respStatusCode, err = makeBinocsAPIRequest(url, method, data)
@@ -105,8 +117,7 @@ func BinocsAPIGetAccessToken(clientKey string) error {
 func ResetAccessToken() error {
 	home, err := homedir.Dir()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 
 	if _, err = os.Stat(home + "/" + storageDir + "/" + jwtFile); os.IsNotExist(err) {
@@ -118,8 +129,7 @@ func ResetAccessToken() error {
 func VerifyAuthenticated() {
 	_, err := BinocsAPI("/authd", http.MethodGet, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 }
 
@@ -139,8 +149,7 @@ func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Cannot reach Binocs API: %v\n", err)
-		os.Exit(1)
+		handleErr(fmt.Errorf("Cannot reach Binocs API: %v\n", err))
 	}
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
@@ -153,8 +162,7 @@ func makeBinocsAPIRequest(url *url.URL, method string, data []byte) ([]byte, int
 func loadAccessToken() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	data, err := os.ReadFile(home + "/" + storageDir + "/" + jwtFile)
 	if err != nil {
@@ -174,8 +182,7 @@ func loadAccessToken() (string, error) {
 func storeAccessToken(d *AuthResponse) error {
 	home, err := homedir.Dir()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 
 	if _, err = os.Stat(home + "/" + storageDir + "/" + jwtFile); os.IsNotExist(err) {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -26,8 +27,7 @@ Upgrade Binocs to the latest version
 		currentTimestamp := int(time.Now().UTC().Unix())
 		upgradeAvailable, versionAvailable, err := s3update.IsUpdateAvailable(autoUpdaterConfig)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		if upgradeAvailable {
 			upgradeMessage := fmt.Sprintf("Binocs CLI %s is available. You are currently using version %s.\n", versionAvailable, BinocsVersion)
@@ -35,28 +35,24 @@ Upgrade Binocs to the latest version
 			fmt.Println(upgradeMessage)
 			filePath, err := os.Executable()
 			if err != nil {
-				fmt.Println("Cannot determine current binary location.")
-				os.Exit(1)
+				handleErr(errors.New("Cannot determine current binary location."))
 			}
 			f, err := os.OpenFile(filePath, os.O_RDWR, 0755)
 			if err != nil && os.IsPermission(err) {
 				defer f.Close()
-				fmt.Printf("Please execute this command as sudo for %s to be replaced.\n", filePath)
-				os.Exit(1)
+				handleErr(fmt.Errorf("Please execute this command as sudo for %s to be replaced.\n", filePath))
 			}
 			f.Close()
 			err = s3update.AutoUpdate(autoUpdaterConfig)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			fmt.Println("Thank you for using Binocs 🙏")
 		} else {
 			viper.Set("upgrade_last_checked", fmt.Sprintf("%v", currentTimestamp))
 			err = viper.WriteConfigAs(viper.ConfigFileUsed())
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			fmt.Printf("You are currently using Binocs CLI %s.\n", versionAvailable)
 			fmt.Println("Binocs CLI is up to date.")

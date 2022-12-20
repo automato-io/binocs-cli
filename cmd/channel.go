@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -179,8 +178,7 @@ This command is interactive and asks user for confirmation.
 		var err error
 
 		if channelAttachFlagAll && len(channelAttachFlagCheck) > 0 {
-			fmt.Println("Cannot combine --all and --check flags")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Cannot combine --all and --check flags"))
 		}
 
 		spin.Start()
@@ -188,21 +186,18 @@ This command is interactive and asks user for confirmation.
 		spin.Suffix = colorFaint.Sprintf(" loading channel %s", args[0])
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		var currentRespJSON Channel
 		err = json.Unmarshal(channelRespData, &currentRespJSON)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		checkIdents := []string{}
 		if channelAttachFlagAll {
 			checks, err := fetchChecks(url.Values{})
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			for _, c := range checks {
 				checkIdents = append(checkIdents, c.Ident)
@@ -210,18 +205,15 @@ This command is interactive and asks user for confirmation.
 		} else {
 			// validate checks against pattern, single or slice, required
 			if len(channelAttachFlagCheck) == 0 {
-				fmt.Println("Set at least one check to attach to the channel")
-				os.Exit(1)
+				handleErr(fmt.Errorf("Set at least one check to attach to the channel"))
 			}
 			checkIdents = channelAttachFlagCheck
 			for _, c := range checkIdents {
 				match, err := regexp.MatchString(validCheckIdentPattern, c)
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				} else if !match {
-					fmt.Println("Provided check identifier is invalid")
-					os.Exit(1)
+					handleErr(fmt.Errorf("Provided check identifier is invalid"))
 				}
 			}
 		}
@@ -232,8 +224,7 @@ This command is interactive and asks user for confirmation.
 		var yes bool
 		err = survey.AskOne(prompt, &yes)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		if yes {
 			spin.Start()
@@ -242,13 +233,11 @@ This command is interactive and asks user for confirmation.
 			for _, c := range checkIdents {
 				postData, err := json.Marshal(ChannelAttachment{})
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodPost, postData)
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 			}
 			spin.Stop()
@@ -275,8 +264,7 @@ This command is interactive and asks user for confirmation.
 		var err error
 
 		if channelDetachFlagAll && len(channelDetachFlagCheck) > 0 {
-			fmt.Println("Cannot combine --all and --check flags")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Cannot combine --all and --check flags"))
 		}
 
 		spin.Start()
@@ -284,21 +272,18 @@ This command is interactive and asks user for confirmation.
 		spin.Suffix = colorFaint.Sprintf(" loading channel %s", args[0])
 		channelRespData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		var currentRespJSON Channel
 		err = json.Unmarshal(channelRespData, &currentRespJSON)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		checkIdents := []string{}
 		if channelDetachFlagAll {
 			checks, err := fetchChecks(url.Values{})
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			for _, c := range checks {
 				for _, cc := range c.Channels {
@@ -310,18 +295,15 @@ This command is interactive and asks user for confirmation.
 		} else {
 			// validate checks against pattern, single or slice, required
 			if len(channelDetachFlagCheck) == 0 {
-				fmt.Println("Set at least one check to detach from the channel")
-				os.Exit(1)
+				handleErr(fmt.Errorf("Set at least one check to detach from the channel"))
 			}
 			checkIdents = channelDetachFlagCheck
 			for _, c := range checkIdents {
 				match, err := regexp.MatchString(validCheckIdentPattern, c)
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				} else if !match {
-					fmt.Println("Provided check identifier is invalid")
-					os.Exit(1)
+					handleErr(fmt.Errorf("Provided check identifier is invalid"))
 				}
 			}
 		}
@@ -332,8 +314,7 @@ This command is interactive and asks user for confirmation.
 		var yes bool
 		err = survey.AskOne(prompt, &yes)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		if yes {
 			spin.Start()
@@ -342,13 +323,11 @@ This command is interactive and asks user for confirmation.
 			for _, c := range checkIdents {
 				deleteData, err := json.Marshal(ChannelAttachment{})
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 				_, err = util.BinocsAPI("/channels/"+args[0]+"/check/"+c, http.MethodDelete, deleteData)
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 			}
 			spin.Stop()
@@ -376,13 +355,13 @@ This command is interactive and asks for confirmation.
 		for _, arg := range args {
 			respData, err := util.BinocsAPI("/channels/"+arg, http.MethodGet, []byte{})
 			if err != nil {
-				fmt.Println("Error loading channel " + arg)
+				handleWarn("Error loading channel " + arg)
 				continue
 			}
 			var respJSON Channel
 			err = json.Unmarshal(respData, &respJSON)
 			if err != nil {
-				fmt.Println("Invalid response from binocs.sh")
+				handleWarn("Invalid response from binocs.sh")
 				continue
 			}
 			prompt := &survey.Confirm{
@@ -396,7 +375,7 @@ This command is interactive and asks for confirmation.
 			if yes {
 				_, err = util.BinocsAPI("/channels/"+arg, http.MethodDelete, []byte{})
 				if err != nil {
-					fmt.Println("Error deleting channel " + arg)
+					handleWarn("Error deleting channel " + arg)
 					continue
 				} else {
 					fmt.Println("Channel successfully deleted")
@@ -425,14 +404,12 @@ View channel details and attached checks.
 		spin.Suffix = colorFaint.Sprint(" loading channel...")
 		respData, err := util.BinocsAPI("/channels/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		var respJSON Channel
 		err = json.Unmarshal(respData, &respJSON)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		// Table "main"
@@ -468,8 +445,7 @@ View channel details and attached checks.
 		if len(respJSON.Checks) > 0 {
 			checks, err := fetchChecks(url.Values{})
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			for _, c := range checks {
 				for _, cc := range respJSON.Checks {
@@ -527,8 +503,7 @@ List all notification channels.
 		}
 		channels, err := fetchChannels(urlValues)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		var tableData [][]string
@@ -620,8 +595,7 @@ This command is interactive and asks user for parameters that were not provided 
 
 func channelAddOrUpdate(mode string, channelIdent string) {
 	if mode != "add" && mode != "update" {
-		fmt.Println("Unknown mode: " + mode)
-		os.Exit(1)
+		handleErr(fmt.Errorf("Unknown mode: " + mode))
 	}
 
 	var err error
@@ -653,13 +627,11 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		spin.Suffix = colorFaint.Sprint(" loading channel...")
 		respData, err := util.BinocsAPI("/channels/"+channelIdent, http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		err = json.Unmarshal(respData, &currentChannel)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		spin.Stop()
 	}
@@ -669,8 +641,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	} else {
 		match, err = regexp.MatchString(validTypePattern, flagType)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		} else if !match {
 			prompt := &survey.Select{
 				Message: "Choose type:",
@@ -678,8 +649,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			}
 			err = survey.AskOne(prompt, &flagType)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 	}
@@ -690,8 +660,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		if flagType == channelTypeEmail {
 			match, err = regexp.MatchString(validHandlePattern[channelTypeEmail], flagHandle)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			} else if !match {
 				validate := func(val interface{}) error {
 					match, err = regexp.MatchString(validHandlePattern[channelTypeEmail], val.(string))
@@ -707,15 +676,13 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 				}
 				err = survey.AskOne(prompt, &flagHandle, survey.WithValidator(validate))
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 			}
 		} else if flagType == channelTypeSms {
 			match, err = regexp.MatchString(validHandlePattern[channelTypeSms], flagHandle)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			} else if !match {
 				validate := func(val interface{}) error {
 					match, err = regexp.MatchString(validHandlePattern[channelTypeSms], val.(string))
@@ -731,15 +698,13 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 				}
 				err = survey.AskOne(prompt, &flagHandle, survey.WithValidator(validate))
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 			}
 			var smsVerificationInput string
 			smsVerificationCode, err := sendVerificationSms(flagHandle)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			validate := func(val interface{}) error {
 				if val.(string) == smsVerificationCode.Token {
@@ -753,14 +718,12 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			}
 			err = survey.AskOne(smsVerifyPrompt, &smsVerificationInput, survey.WithValidator(validate))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		} else if flagType == channelTypeSlack {
 			slackIntegrationToken, err := requestSlackIntegrationToken()
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			slackScope := "incoming-webhook"
 			slackRedirectURI := "https://binocs.sh/integration/slack/callback"
@@ -774,8 +737,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			for {
 				pollResult, err := pollSlackIntegrationStatus(slackIntegrationToken.Token)
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 				if pollResult.Updated != "nil" {
 					flagHandle = pollResult.IncomingWebhookURL
@@ -787,8 +749,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		} else if flagType == channelTypeTelegram {
 			telegramIntegrationToken, err := requestTelegramIntegrationToken()
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			telegramInstallURL := "https://t.me/binocs_bot?start=" + telegramIntegrationToken.Token
 			fmt.Println("Visit the following URL to add @binocs_bot to your Telegram:")
@@ -799,8 +760,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			for {
 				pollResult, err := pollTelegramIntegrationStatus(telegramIntegrationToken.Token)
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 				if pollResult.Updated != "nil" {
 					flagHandle = fmt.Sprintf("%d", pollResult.ChatID)
@@ -815,8 +775,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 
 	match, err = regexp.MatchString(validAliasPattern, flagAlias)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	} else if !match || flagAlias == "" {
 		validate := func(val interface{}) error {
 			match, err = regexp.MatchString(validAliasPattern, val.(string))
@@ -835,8 +794,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 		}
 		err = survey.AskOne(prompt, &flagAlias, survey.WithValidator(validate))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 	}
 
@@ -845,16 +803,14 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	spin.Suffix = colorFaint.Sprint(" loading checks...")
 	checks, err := fetchChecks(url.Values{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	spin.Stop()
 
 	if len(checks) > 0 {
 		match, err = regexp.MatchString(validChecksIdentListPattern, strings.Join(flagAttach, ","))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		} else if !match {
 			var options = []string{}
 			for _, c := range checks {
@@ -879,8 +835,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			}
 			err = survey.AskOne(prompt, &flagAttach)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		} else if strings.Join(flagAttach, ",") == "all" {
 			flagAttach = []string{}
@@ -897,8 +852,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	}
 	postData, err := json.Marshal(channel)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	var reqURL, reqMethod string
 	if mode == "add" {
@@ -915,14 +869,12 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
 		spin.Stop()
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	err = json.Unmarshal(respData, &channel)
 	if err != nil {
 		spin.Stop()
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	if channel.ID > 0 {
 		var channelDescription string
@@ -951,14 +903,12 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 				deleteData, err := json.Marshal(ChannelAttachment{})
 				if err != nil {
 					spin.Stop()
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+c, http.MethodDelete, deleteData)
 				if err != nil {
 					spin.Stop()
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 			}
 			for _, fa := range flagAttach {
@@ -966,25 +916,21 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 				postData, err := json.Marshal(ChannelAttachment{})
 				if err != nil {
 					spin.Stop()
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 				_, err = util.BinocsAPI("/channels/"+channel.Ident+"/check/"+attachIdent, http.MethodPost, postData)
 				if err != nil {
 					spin.Stop()
-					fmt.Println(err)
-					os.Exit(1)
+					handleErr(err)
 				}
 			}
 		}
 	} else {
 		if mode == "add" {
-			fmt.Println("Error adding channel")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Error adding channel"))
 		}
 		if mode == "update" {
-			fmt.Println("Error updating channel")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Error updating channel"))
 		}
 	}
 	spin.Stop()
@@ -1015,13 +961,11 @@ func requestSlackIntegrationToken() (SlackIntegrationToken, error) {
 	var token SlackIntegrationToken
 	respData, err := util.BinocsAPI("/integration/slack/request-integration-token", http.MethodPost, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	err = json.Unmarshal(respData, &token)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	return token, nil
 }
@@ -1037,13 +981,11 @@ func pollSlackIntegrationStatus(token string) (SlackIntegrationStatus, error) {
 	var status SlackIntegrationStatus
 	respData, err := util.BinocsAPI("/integration/slack/status/"+token, http.MethodGet, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	err = json.Unmarshal(respData, &status)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	return status, nil
 }
@@ -1057,13 +999,11 @@ func requestTelegramIntegrationToken() (TelegramIntegrationToken, error) {
 	var token TelegramIntegrationToken
 	respData, err := util.BinocsAPI("/integration/telegram/request-integration-token", http.MethodPost, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	err = json.Unmarshal(respData, &token)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	return token, nil
 }
@@ -1079,13 +1019,11 @@ func pollTelegramIntegrationStatus(token string) (TelegramIntegrationStatus, err
 	var status TelegramIntegrationStatus
 	respData, err := util.BinocsAPI("/integration/telegram/status/"+token, http.MethodGet, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	err = json.Unmarshal(respData, &status)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	return status, nil
 }

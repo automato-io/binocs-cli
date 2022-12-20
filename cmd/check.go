@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -418,8 +417,7 @@ View check status and metrics.
 
 		match = isValidRegionAlias(checkInspectFlagRegion)
 		if len(checkInspectFlagRegion) > 0 && !match {
-			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getSupportedRegionAliases(), ", "))
-			os.Exit(1)
+			handleErr(fmt.Errorf("Invalid region provided. Supported regions: " + strings.Join(getSupportedRegionAliases(), ", ")))
 		} else if err == nil && match {
 			urlValues.Set("region", getRegionIdByAlias(checkInspectFlagRegion))
 		}
@@ -430,26 +428,22 @@ View check status and metrics.
 
 		user, err := fetchUser()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		respData, err := util.BinocsAPI("/checks/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		var respJSON Check
 		err = json.Unmarshal(respData, &respJSON)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		metrics, err := fetchMetrics(respJSON.Ident, &urlValues)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		// Table "main"
@@ -578,15 +572,13 @@ View check status and metrics.
 		if respJSON.Protocol == protocolHTTP || respJSON.Protocol == protocolHTTPS {
 			responseCodesData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/response-codes?"+urlValues.Encode(), http.MethodGet, []byte{})
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			responseCodes := make([]ResponseCodesResponse, 0)
 			decoder = json.NewDecoder(bytes.NewBuffer(responseCodesData))
 			err = decoder.Decode(&responseCodes)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 
 			responseCodesChart := drawResponseCodesChart(responseCodes, aggregateMetricsDataPoints[urlValues.Get("period")], respJSON.UpCodes, 16)
@@ -599,15 +591,13 @@ View check status and metrics.
 
 		apdexData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/apdex?"+urlValues.Encode(), http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		apdex := make([]ApdexResponse, 0)
 		decoder = json.NewDecoder(bytes.NewBuffer(apdexData))
 		err = decoder.Decode(&apdex)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		apdexChart := drawApdexChart(apdex, aggregateMetricsDataPoints[urlValues.Get("period")], "      ")
@@ -619,15 +609,13 @@ View check status and metrics.
 
 		responseTimeHeatmapData, err := util.BinocsAPI("/checks/"+respJSON.Ident+"/response-time-heatmap?"+urlValues.Encode(), http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		responseTimeHeatmap := make([]ResponseTimeHeatmapResponse, 0)
 		decoder = json.NewDecoder(bytes.NewBuffer(responseTimeHeatmapData))
 		err = decoder.Decode(&responseTimeHeatmap)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		responseTimeHeatmapChart := drawResponseTimeHeatmapChart(responseTimeHeatmap, aggregateMetricsDataPoints[urlValues.Get("period")], respJSON.Target, "")
@@ -692,8 +680,7 @@ List all checks with status and metrics overview.
 
 		match = isValidRegionAlias(checkListFlagRegion)
 		if len(checkListFlagRegion) > 0 && !match {
-			fmt.Println("Invalid region provided. Supported regions: " + strings.Join(getSupportedRegionAliases(), ", "))
-			os.Exit(1)
+			handleErr(fmt.Errorf("Invalid region provided. Supported regions: " + strings.Join(getSupportedRegionAliases(), ", ")))
 		} else if err == nil && match {
 			urlValues2.Set("region", getRegionIdByAlias(checkListFlagRegion))
 		}
@@ -709,16 +696,13 @@ List all checks with status and metrics overview.
 
 		user, err := fetchUser()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		checks, err := fetchChecks(urlValues1)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
-
 		ch := make(chan []string)
 		var tableData [][]string
 		var checksLen int
@@ -818,20 +802,17 @@ func makeCheckListRow(check Check, ch chan<- []string, urlValues *url.Values, ze
 	}
 	metrics, err := fetchMetrics(check.Ident, urlValues)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	apdexData, err := util.BinocsAPI("/checks/"+check.Ident+"/apdex?"+urlValues.Encode(), http.MethodGet, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	apdex := make([]ApdexResponse, 0)
 	decoder := json.NewDecoder(bytes.NewBuffer(apdexData))
 	err = decoder.Decode(&apdex)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	apdexChart := drawCompactApdexChart(apdex, metrics.Apdex)
 	tableValueMRT := formatMRT(metrics.MRT)
@@ -926,13 +907,13 @@ This command is interactive and asks user for confirmation.
 		for _, arg := range args {
 			respData, err := util.BinocsAPI("/checks/"+arg, http.MethodGet, []byte{})
 			if err != nil {
-				fmt.Println("Error loading check " + arg)
+				handleWarn("Error loading check " + arg)
 				continue
 			}
 			var respJSON Check
 			err = json.Unmarshal(respData, &respJSON)
 			if err != nil {
-				fmt.Println("Invalid response from binocs.sh")
+				handleWarn("Invalid response from binocs.sh")
 				continue
 			}
 			prompt := &survey.Confirm{
@@ -946,7 +927,7 @@ This command is interactive and asks user for confirmation.
 			if yes {
 				_, err = util.BinocsAPI("/checks/"+arg, http.MethodDelete, []byte{})
 				if err != nil {
-					fmt.Println("Error deleting check " + arg)
+					handleWarn("Error deleting check " + arg)
 					continue
 				} else {
 					fmt.Println("Check successfully deleted")
@@ -1408,8 +1389,7 @@ func setProtocolPrefix(res, proto string) string {
 
 func checkAddOrUpdate(mode string, checkIdent string) {
 	if mode != "add" && mode != "update" {
-		fmt.Println("Unknown mode: " + mode)
-		os.Exit(1)
+		handleErr(fmt.Errorf("Unknown mode: " + mode))
 	}
 
 	var err error
@@ -1462,21 +1442,18 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		spin.Suffix = colorFaint.Sprint(" loading check...")
 		respData, err := util.BinocsAPI("/checks/"+checkIdent, http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		err = json.Unmarshal(respData, &currentCheck)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		spin.Stop()
 	}
 
 	match, err = regexp.MatchString(validNamePattern, flagName)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	} else if !match || flagName == "" {
 		validate := func(val interface{}) error {
 			match, err = regexp.MatchString(validNamePattern, val.(string))
@@ -1495,8 +1472,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 		err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 	}
 
@@ -1505,8 +1481,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	} else {
 		match, err = regexp.MatchString(validProtocolPattern, flagProtocol)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		} else if !match || flagProtocol == "" {
 			prompt := &survey.Select{
 				Message: "Protocol:",
@@ -1515,8 +1490,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			err := survey.AskOne(prompt, &flagProtocol)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 		flagProtocol = strings.ToUpper(flagProtocol)
@@ -1569,8 +1543,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			err = survey.AskOne(prompt, &flagResource, survey.WithValidator(validate))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 		flagResource = setProtocolPrefix(flagResource, flagProtocol)
@@ -1579,8 +1552,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS || currentCheck.Protocol == protocolHTTP || currentCheck.Protocol == protocolHTTPS {
 		match, err = regexp.MatchString(validMethodPattern, flagMethod)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		} else if !match || flagMethod == "" {
 			prompt := &survey.Select{
 				Message: "HTTP method:",
@@ -1592,8 +1564,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			err := survey.AskOne(prompt, &flagMethod)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 	} else {
@@ -1618,8 +1589,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 		err := survey.AskOne(prompt, &flagInterval, survey.WithValidator(validate))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 	}
 
@@ -1641,8 +1611,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 		err := survey.AskOne(prompt, &flagTarget, survey.WithValidator(validate))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 	}
 
@@ -1665,16 +1634,14 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		}
 		err = survey.AskOne(prompt, &flagRegions, survey.WithValidator(survey.MinItems(1)))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 	}
 
 	if flagProtocol == protocolHTTP || flagProtocol == protocolHTTPS || currentCheck.Protocol == protocolHTTP || currentCheck.Protocol == protocolHTTPS {
 		match, err = regexp.MatchString(validUpCodePattern, flagUpCodes)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		} else if !match || flagUpCodes == "" {
 			validate := func(val interface{}) error {
 				match, err = regexp.MatchString(validUpCodePattern, val.(string))
@@ -1694,8 +1661,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			err := survey.AskOne(prompt, &flagUpCodes, survey.WithValidator(validate))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 	} else {
@@ -1720,8 +1686,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			err := survey.AskOne(prompt, &flagUpConfirmationsThreshold, survey.WithValidator(validate))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 	}
@@ -1744,8 +1709,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			err := survey.AskOne(prompt, &flagDownConfirmationsThreshold, survey.WithValidator(validate))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 	}
@@ -1755,16 +1719,14 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	spin.Suffix = colorFaint.Sprint(" loading channels...")
 	channels, err := fetchChannels(url.Values{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	spin.Stop()
 
 	if len(channels) > 0 {
 		match, err = regexp.MatchString(validChannelsIdentListPattern, strings.Join(flagAttach, ","))
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		} else if !match || len(flagAttach) == 0 {
 			var options = []string{}
 			for _, ch := range channels {
@@ -1789,8 +1751,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 			}
 			err = survey.AskOne(prompt, &flagAttach)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		} else if len(flagAttach) == 1 && flagAttach[0] == "all" {
 			flagAttach = []string{}
@@ -1816,8 +1777,7 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	}
 	postData, err := json.Marshal(check)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	var reqURL, reqMethod string
 	if mode == "add" {
@@ -1833,13 +1793,11 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 	spin.Suffix = colorFaint.Sprint(" saving check...")
 	respData, err := util.BinocsAPI(reqURL, reqMethod, postData)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	err = json.Unmarshal(respData, &check)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	if check.ID > 0 {
 		var checkDescription string
@@ -1866,36 +1824,30 @@ func checkAddOrUpdate(mode string, checkIdent string) {
 		for _, ch := range detachChannelIdents {
 			deleteData, err := json.Marshal(ChannelAttachment{})
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			_, err = util.BinocsAPI("/channels/"+ch+"/check/"+check.Ident, http.MethodDelete, deleteData)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 		for _, fa := range flagAttach {
 			attachIdent := strings.Split(fa, " ")[0]
 			postData, err := json.Marshal(ChannelAttachment{})
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			_, err = util.BinocsAPI("/channels/"+attachIdent+"/check/"+check.Ident, http.MethodPost, postData)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 	} else {
 		if mode == "add" {
-			fmt.Println("Error adding check")
-			os.Exit(1)
+			handleErr(errors.New("error adding check"))
 		}
 		if mode == "update" {
-			fmt.Println("Error updating check")
-			os.Exit(1)
+			handleErr(errors.New("error updating check"))
 		}
 	}
 	spin.Stop()

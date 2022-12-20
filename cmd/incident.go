@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -139,19 +138,16 @@ View incident details, notes and associated requests.
 		spin.Suffix = colorFaint.Sprint(" loading incident...")
 		user, err := fetchUser()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		respData, err := util.BinocsAPI("/incidents/"+args[0], http.MethodGet, []byte{})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		var respJSON Incident
 		err = json.Unmarshal(respData, &respJSON)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		var checkName string
 		if respJSON.CheckName == "" {
@@ -353,8 +349,7 @@ List all past and current incidents.
 		spin.Suffix = colorFaint.Sprint(" loading incidents...")
 		user, err := fetchUser()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		urlValues := url.Values{
 			"period": []string{"all"},
@@ -365,8 +360,7 @@ List all past and current incidents.
 		}
 		if incidentListFlagOpen && incidentListFlagResolved {
 			spin.Stop()
-			fmt.Println("Cannot use --open and --resolved flags together")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Cannot use --open and --resolved flags together"))
 		}
 		if incidentListFlagOpen {
 			urlValues.Set("state", "open")
@@ -377,8 +371,7 @@ List all past and current incidents.
 
 		incidents, err := fetchIncidents(urlValues)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		var tableData [][]string
 		for _, v := range incidents {

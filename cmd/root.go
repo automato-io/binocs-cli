@@ -20,6 +20,7 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/gdamore/tcell/v2"
+	"github.com/getsentry/sentry-go"
 	"github.com/muesli/reflow/ansi"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
@@ -141,6 +142,18 @@ var cfgFile string
 
 var spin = spinner.New(spinner.CharSets[53], 100*time.Millisecond, spinner.WithColor("faint"))
 
+func handleErr(err error) {
+	sentry.CaptureException(err)
+	sentry.Flush(10 * time.Second)
+	fmt.Println(err)
+	os.Exit(1)
+}
+
+func handleWarn(msg string) {
+	sentry.CaptureMessage(msg)
+	fmt.Println(msg)
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "binocs",
@@ -157,6 +170,9 @@ Get insight into current state of your endpoints and metrics history, and receiv
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDescriptions: true,
 	},
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		sentry.CaptureMessage(fmt.Sprintf("%v", os.Args))
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -167,22 +183,19 @@ Get insight into current state of your endpoints and metrics history, and receiv
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		// fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 }
 
 func runAsWatch() {
 	// windows are unsupported because github.com/iamacarpet/go-winpty crashes during build in CI
 	if runtime.GOOS == "windows" {
-		fmt.Println("The --watch flag is not currently supported on Windows.")
-		os.Exit(1)
+		handleErr(fmt.Errorf("The --watch flag is not currently supported on Windows."))
 	}
 	app, screen, viewer, err := initWatchEnv()
 	if err != nil {
 		screen.Suspend()
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	args := os.Args
 	args = append(args, "--quiet")
@@ -201,8 +214,7 @@ func runAsWatch() {
 			err := util.CmdOutput(cmd, &buf)
 			if err != nil {
 				screen.Suspend()
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			app.QueueUpdateDraw(func() {
 				screen.Clear()
@@ -218,8 +230,7 @@ func runAsWatch() {
 	err = app.Run()
 	if err != nil {
 		screen.Suspend()
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 }
 
@@ -248,19 +259,16 @@ func initConfig() {
 	} else {
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		if _, err = os.Stat(home + "/.binocs/config.json"); os.IsNotExist(err) {
 			err = os.MkdirAll(home+"/.binocs", 0755)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 			err = writeConfigTemplate(home + "/.binocs/config.json")
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 		viper.AddConfigPath(home + "/.binocs/")
@@ -272,12 +280,12 @@ func initConfig() {
 	err = viper.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Println("Config file not found")
+			handleWarn("Config file not found")
 		} else {
-			fmt.Println("Cannot use config file:", viper.ConfigFileUsed())
+			handleWarn("Cannot use config file: " + viper.ConfigFileUsed())
 		}
 	} else if Verbose {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		handleWarn("Using config file: " + viper.ConfigFileUsed())
 	}
 }
 
@@ -294,7 +302,7 @@ func initAutoUpgrader() {
 	if lastUpgraded+autoUpgradeInterval < currentTimestamp {
 		upgradeAvailable, versionAvailable, err := s3update.IsUpdateAvailable(autoUpdaterConfig)
 		if err != nil {
-			fmt.Println(err)
+			handleWarn(err.Error())
 			return
 		}
 		if upgradeAvailable {
@@ -307,7 +315,7 @@ func initAutoUpgrader() {
 			viper.Set("upgrade_last_checked", fmt.Sprintf("%v", currentTimestamp))
 			err = viper.WriteConfigAs(viper.ConfigFileUsed())
 			if err != nil {
-				fmt.Println(err)
+				handleWarn(err.Error())
 			}
 		}
 	}
@@ -319,13 +327,11 @@ func initClientKey() {
 		viper.Set("client_key", generateClientKey())
 		err := viper.WriteConfigAs(viper.ConfigFileUsed())
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		err = util.ResetAccessToken()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 	}
 }
@@ -339,10 +345,12 @@ func initGlobalFlags() {
 func initWatchEnv() (*tview.Application, tcell.Screen, *tview.TextView, error) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
+		handleWarn(err.Error())
 		return nil, screen, nil, err
 	}
 	err = screen.Init()
 	if err != nil {
+		handleWarn(err.Error())
 		return nil, screen, nil, err
 	}
 	app := tview.NewApplication()
@@ -434,8 +442,7 @@ func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewri
 			}
 		}
 		if nextToHide < 0 {
-			fmt.Println("Error drawing a table, cannot hide another column")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Error drawing a table, cannot hide another column"))
 		}
 		columnDefs[nextToHide].hidden = true
 	}
@@ -499,14 +506,12 @@ func composeTable(data [][]string, columnDefs []tableColumnDefinition) *tablewri
 func loadSupportedRegions() {
 	respData, err := util.BinocsAPI("/regions", http.MethodGet, []byte{})
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	regionsResponse := RegionsResponse{}
 	err = json.Unmarshal(respData, &regionsResponse)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleErr(err)
 	}
 	supportedRegions = regionsResponse.Regions
 	sort.Strings(supportedRegions)

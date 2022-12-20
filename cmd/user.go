@@ -80,15 +80,13 @@ Display information about current Binocs user
 		respJSON, err := fetchUser()
 		if err != nil {
 			spin.Stop()
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		timezone, err := time.LoadLocation(respJSON.Timezone)
 		if err != nil {
 			spin.Stop()
-			fmt.Println("Unknown timezone " + respJSON.Timezone)
-			os.Exit(1)
+			handleErr(fmt.Errorf("Unknown timezone " + respJSON.Timezone))
 		}
 
 		tableCheckCellContent := colorBold.Sprint(`Name: `) + respJSON.Name + "\n" +
@@ -144,15 +142,13 @@ This command is interactive and asks user for parameters that were not provided 
 		respJSON, err := fetchUser()
 		if err != nil {
 			spin.Stop()
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		spin.Stop()
 
 		match, err = regexp.MatchString(validUserNamePattern, flagName)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		} else if !match || flagName == "" {
 			validate := func(val interface{}) error {
 				match, err = regexp.MatchString(validUserNamePattern, val.(string))
@@ -169,15 +165,13 @@ This command is interactive and asks user for parameters that were not provided 
 			}
 			err = survey.AskOne(prompt, &flagName, survey.WithValidator(validate))
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 
 		_, err = time.LoadLocation(flagTimezone)
 		if err != nil {
-			fmt.Println("Invalid timezone " + flagTimezone)
-			os.Exit(1)
+			handleErr(fmt.Errorf("Invalid timezone " + flagTimezone))
 		} else if flagTimezone == "" {
 			prompt := &survey.Select{
 				Message: "Enter your timezone:",
@@ -186,8 +180,7 @@ This command is interactive and asks user for parameters that were not provided 
 			}
 			err = survey.AskOne(prompt, &flagTimezone)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				handleErr(err)
 			}
 		}
 
@@ -197,18 +190,15 @@ This command is interactive and asks user for parameters that were not provided 
 		}
 		postData, err := json.Marshal(user)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		respData, err := util.BinocsAPI("/user", http.MethodPut, postData)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		err = json.Unmarshal(respData, &user)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 
 		tpl = "User " + user.Email + " updated successfully"
@@ -227,8 +217,7 @@ Login to you Binocs account.
 	Run: func(cmd *cobra.Command, args []string) {
 		clientKey := viper.Get("client_key")
 		if clientKey == nil {
-			fmt.Println("Cannot read Client Key")
-			os.Exit(1)
+			handleErr(fmt.Errorf("Cannot read Client Key"))
 		}
 		connectToken := generateConnectToken(clientKey.(string))
 		tpl := `Please visit the following URL in your browser.
@@ -255,13 +244,11 @@ Log out of Binocs on this machine.
 		viper.Set("client_key", generateClientKey())
 		err = viper.WriteConfigAs(viper.ConfigFileUsed())
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		err = util.ResetAccessToken()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		tpl := `You were logged out of Binocs.`
 		fmt.Println(tpl)
@@ -295,13 +282,11 @@ func generateConnectToken(clientKey string) string {
 	}
 	tokenJson, err := json.Marshal(token)
 	if err != nil {
-		fmt.Println("Cannot marshal Connect Token")
-		os.Exit(1)
+		handleErr(fmt.Errorf("Cannot marshal Connect Token"))
 	}
 	tokenPGP, err := helper.EncryptMessageWithPassword([]byte(connectTokenSalt), string(tokenJson))
 	if err != nil {
-		fmt.Println("Cannot generate Connect Token (E3)")
-		os.Exit(1)
+		handleErr(fmt.Errorf("Cannot generate Connect Token (E3)"))
 	}
 	tokenBase64 := base64.StdEncoding.EncodeToString([]byte(tokenPGP))
 	return tokenBase64

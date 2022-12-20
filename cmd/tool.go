@@ -23,13 +23,11 @@ var docGenCmd = &cobra.Command{
 		fmt.Println("purged: " + docOutputBase)
 		err := os.Mkdir(docOutputBase, 0755)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		err = doc.GenMarkdownTree(rootCmd, docOutputBase)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleErr(err)
 		}
 		fmt.Println("documentation generated successfully")
 	},
