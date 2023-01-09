@@ -156,7 +156,7 @@ const (
 	supportedIntervalMaximum               = 900
 	supportedTargetMinimum                 = 0.01
 	supportedTargetMaximum                 = 10.0
-	validNamePattern                       = `^[\p{L}\p{N}_\s\/\-\.]{0,25}$`
+	validNamePattern                       = `^[\p{L}\p{N}_\s\/\-\.\(\)]{0,25}$`
 	validProtocolPattern                   = `^(?i)(` + protocolHTTP + `|` + protocolHTTPS + `|` + protocolTCP + `)$`
 	validMethodPattern                     = `^(GET|HEAD|POST|PUT|DELETE)$` // hardcoded; reflects supportedHTTPMethods
 	validUpCodePattern                     = `^([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))){1}(,([1-5]{1}[0-9]{2}-[1-5]{1}[0-9]{2}|([1-5]{1}(([0-9]{2}|[0-9]{1}x)|xx))))*$`
