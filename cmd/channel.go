@@ -23,7 +23,7 @@ type Channel struct {
 	ID        int      `json:"id,omitempty"`
 	Ident     string   `json:"ident,omitempty"`
 	Type      string   `json:"type,omitempty"`
-	Alias     string   `json:"alias"`
+	Alias     string   `json:"alias,omitempty"`
 	Handle    string   `json:"handle,omitempty"`
 	UsedCount int      `json:"used_count,omitempty"`
 	LastUsed  string   `json:"last_used,omitempty"`
@@ -33,6 +33,7 @@ type Channel struct {
 
 // Identity method returns "Type - Alias (handle)" or "handle"
 func (ch Channel) Identity() string {
+	// @todo remove in 0.8.x, alias always set
 	if len(ch.Alias) > 0 {
 		return ch.Alias + " (" + ch.Handle + ")"
 	}
@@ -77,7 +78,7 @@ var (
 
 const (
 	validChannelIdentPattern      = `^[a-f0-9]{5}$`
-	validAliasPattern             = `^[\p{L}\p{N}_\s\/\-\.]{0,25}$`
+	validAliasPattern             = `^[\p{L}\p{N}_\s\/\-\.]{1,25}$`
 	validTypePattern              = `^(email|slack|telegram|sms)$`
 	validChannelsIdentListPattern = `^(all|([a-f0-9]{5})(,[a-f0-9]{5})*)$`
 	validNotificationTypePattern  = `^(response-change|status)$`
@@ -115,14 +116,14 @@ func init() {
 
 	channelAddCmd.Flags().StringVarP(&channelAddFlagType, "type", "t", "", "channel type (E-mail, Slack, Telegram, SMS)")
 	channelAddCmd.Flags().StringVar(&channelAddFlagHandle, "handle", "", "channel handle - an address for \"E-mail\" channel type; a phone number for \"SMS\" channel type; handles for Slack and Telegram will be obtained programmatically")
-	channelAddCmd.Flags().StringVar(&channelAddFlagAlias, "alias", "", "channel alias (optional)")
+	channelAddCmd.Flags().StringVar(&channelAddFlagAlias, "alias", "", "channel alias")
 	channelAddCmd.Flags().StringSliceVar(&channelAddFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\", or one or more check identifiers")
 	channelAddCmd.Flags().SortFlags = false
 
 	channelsCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 	channelListCmd.Flags().StringVarP(&channelListFlagCheck, "check", "c", "", "list only notification channels attached to a specific check")
 
-	channelUpdateCmd.Flags().StringVar(&channelUpdateFlagAlias, "alias", "", "channel alias (optional)")
+	channelUpdateCmd.Flags().StringVar(&channelUpdateFlagAlias, "alias", "", "channel alias")
 	channelUpdateCmd.Flags().StringSliceVar(&channelUpdateFlagAttach, "attach", []string{}, "checks to attach to this channel (optional); can be either \"all\", or one or more check identifiers")
 	channelUpdateCmd.Flags().SortFlags = false
 }
@@ -428,6 +429,7 @@ View channel details and attached checks.
 		} else {
 			used = fmt.Sprintf("%d ×", respJSON.UsedCount)
 		}
+		// @todo remove in 0.8.x, alias always set
 		if respJSON.Alias == "" {
 			alias = "-"
 		} else {
@@ -522,6 +524,7 @@ List all notification channels.
 			} else {
 				handle = util.Ellipsis(v.Handle, 50)
 			}
+			// @todo remove in 0.8.x, alias always set
 			if v.Alias == "" {
 				alias = "-"
 			} else {
@@ -787,7 +790,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 			return nil
 		}
 		prompt := &survey.Input{
-			Message: "Channel alias (optional):",
+			Message: "Channel alias:",
 		}
 		if mode == "update" {
 			prompt.Default = currentChannel.Alias
@@ -878,6 +881,7 @@ func channelAddOrUpdate(mode string, channelIdent string) {
 	}
 	if channel.ID > 0 {
 		var channelDescription string
+		// @todo remove in 0.8.x, alias always set
 		if len(channel.Alias) > 0 {
 			channelDescription = `"` + channel.Alias + `"` + " (" + channel.Handle + ")"
 		} else {
